@@ -1,0 +1,9 @@
+.next
+node_modules
+coverage
+test-results
+playwright-report
+blob-report
+package-lock.json
+src/payload-types.ts
+src/app/(payload)/cms/importMap.js

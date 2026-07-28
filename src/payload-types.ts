@@ -68,7 +68,23 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
-    media: Media;
+    organizations: Organization;
+    workspaces: Workspace;
+    domains: Domain;
+    'fallback-origins': FallbackOrigin;
+    'organization-invitations': OrganizationInvitation;
+    'organization-memberships': OrganizationMembership;
+    subscriptions: Subscription;
+    'billing-events': BillingEvent;
+    'usage-counters': UsageCounter;
+    apps: App;
+    'deep-links': DeepLink;
+    'abuse-reports': AbuseReport;
+    'abuse-cases': AbuseCase;
+    'enforcement-events': EnforcementEvent;
+    'abuse-case-events': AbuseCaseEvent;
+    'link-events': LinkEvent;
+    'verification-runs': VerificationRun;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -77,14 +93,30 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
+    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
+    workspaces: WorkspacesSelect<false> | WorkspacesSelect<true>;
+    domains: DomainsSelect<false> | DomainsSelect<true>;
+    'fallback-origins': FallbackOriginsSelect<false> | FallbackOriginsSelect<true>;
+    'organization-invitations': OrganizationInvitationsSelect<false> | OrganizationInvitationsSelect<true>;
+    'organization-memberships': OrganizationMembershipsSelect<false> | OrganizationMembershipsSelect<true>;
+    subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
+    'billing-events': BillingEventsSelect<false> | BillingEventsSelect<true>;
+    'usage-counters': UsageCountersSelect<false> | UsageCountersSelect<true>;
+    apps: AppsSelect<false> | AppsSelect<true>;
+    'deep-links': DeepLinksSelect<false> | DeepLinksSelect<true>;
+    'abuse-reports': AbuseReportsSelect<false> | AbuseReportsSelect<true>;
+    'abuse-cases': AbuseCasesSelect<false> | AbuseCasesSelect<true>;
+    'enforcement-events': EnforcementEventsSelect<false> | EnforcementEventsSelect<true>;
+    'abuse-case-events': AbuseCaseEventsSelect<false> | AbuseCaseEventsSelect<true>;
+    'link-events': LinkEventsSelect<false> | LinkEventsSelect<true>;
+    'verification-runs': VerificationRunsSelect<false> | VerificationRunsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
   globals: {};
@@ -122,7 +154,13 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  name: string;
+  role: 'super-admin' | 'admin' | 'viewer';
+  status: 'active' | 'pending-verification' | 'disabled';
+  allowedApps?: (number | App)[] | null;
+  emailVerificationTokenHash?: string | null;
+  emailVerificationExpiresAt?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -144,29 +182,419 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
+ * via the `definition` "apps".
  */
-export interface Media {
-  id: string;
-  alt: string;
+export interface App {
+  id: number;
+  /**
+   * Tenant workspace that owns this app. Legacy apps may remain empty until backfilled.
+   */
+  workspace?: (number | null) | Workspace;
+  name: string;
+  slug: string;
+  description?: string | null;
+  /**
+   * Custom mobile URL scheme without ://. Required for new apps; legacy apps can be backfilled.
+   */
+  nativeScheme?: string | null;
+  status: 'draft' | 'active' | 'paused';
+  iosBundleId?: string | null;
+  iosTeamId?: string | null;
+  androidPackageName?: string | null;
+  androidSha256CertFingerprints?: string[] | null;
+  appStoreUrl?: string | null;
+  playStoreUrl?: string | null;
+  fallbackUrl: string;
+  /**
+   * Hostnames permitted for per-link fallback overrides.
+   */
+  allowedFallbackHosts?: string[] | null;
+  /**
+   * Platform abuse hold. Tenant lifecycle changes cannot clear this control.
+   */
+  platformSuspended?: boolean | null;
+  platformSuspendedAt?: string | null;
+  platformRestoredAt?: string | null;
+  platformSuspensionReason?: string | null;
+  platformSuspensionCase?: (number | null) | AbuseCase;
   updatedAt: string;
   createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "workspaces".
+ */
+export interface Workspace {
+  id: number;
+  organization: number | Organization;
+  name: string;
+  slug: string;
+  status: 'active' | 'pending-verification' | 'suspended';
+  /**
+   * Platform abuse hold. Tenant lifecycle changes cannot clear this control.
+   */
+  platformSuspended?: boolean | null;
+  platformSuspendedAt?: string | null;
+  platformRestoredAt?: string | null;
+  platformSuspensionReason?: string | null;
+  platformSuspensionCase?: (number | null) | AbuseCase;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  name: string;
+  slug: string;
+  status: 'active' | 'pending-verification' | 'suspended';
+  /**
+   * Platform abuse hold. Tenant lifecycle changes cannot clear this control.
+   */
+  platformSuspended?: boolean | null;
+  platformSuspendedAt?: string | null;
+  platformRestoredAt?: string | null;
+  platformSuspensionReason?: string | null;
+  platformSuspensionCase?: (number | null) | AbuseCase;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "abuse-cases".
+ */
+export interface AbuseCase {
+  id: number;
+  title: string;
+  status: 'open' | 'investigating' | 'actioned' | 'closed';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  primaryReport?: (number | null) | AbuseReport;
+  workspace?: (number | null) | Workspace;
+  domain?: (number | null) | Domain;
+  app?: (number | null) | App;
+  link?: (number | null) | DeepLink;
+  assignedTo?: (number | null) | User;
+  openedAt: string;
+  closedAt?: string | null;
+  resolution?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "abuse-reports".
+ */
+export interface AbuseReport {
+  id: number;
+  category: 'malware' | 'phishing' | 'spam' | 'impersonation' | 'other';
+  targetHostname: string;
+  targetPath?: string | null;
+  details: string;
+  reporterContact?: string | null;
+  reporterKeyHash: string;
+  userAgentHash?: string | null;
+  submissionHash: string;
+  receivedAt: string;
+  status: 'received' | 'triaged' | 'attached-to-case' | 'closed';
+  workspace?: (number | null) | Workspace;
+  domain?: (number | null) | Domain;
+  app?: (number | null) | App;
+  link?: (number | null) | DeepLink;
+  /**
+   * Bounded identifiers captured at intake; no raw client IP is retained.
+   */
+  evidenceSnapshot:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "domains".
+ */
+export interface Domain {
+  id: number;
+  workspace: number | Workspace;
+  hostname: string;
+  type: 'managed' | 'custom';
+  status: 'pending-dns' | 'verifying' | 'certificate-ready' | 'association-incomplete' | 'active' | 'suspended';
+  /**
+   * Public DNS ownership challenge. Rotate by registering a new domain.
+   */
+  verificationToken: string;
+  dnsVerifiedAt?: string | null;
+  cnameVerifiedAt?: string | null;
+  /**
+   * Set only after the configured ingress reports certificate readiness.
+   */
+  tlsReadyAt?: string | null;
+  /**
+   * Opaque certificate-provider reference. Never exposed in tenant APIs.
+   */
+  tlsCertificateRef?: string | null;
+  /**
+   * Provider-reported certificate renewal instant.
+   */
+  tlsRenewsAt?: string | null;
+  associationsVerifiedAt?: string | null;
+  activatedAt?: string | null;
+  lastCheckedAt?: string | null;
+  lastVerificationError?: string | null;
+  /**
+   * Platform abuse hold. Tenant lifecycle changes cannot clear this control.
+   */
+  platformSuspended?: boolean | null;
+  platformSuspendedAt?: string | null;
+  platformRestoredAt?: string | null;
+  platformSuspensionReason?: string | null;
+  platformSuspensionCase?: (number | null) | AbuseCase;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deep-links".
+ */
+export interface DeepLink {
+  id: number;
+  name: string;
+  app: number | App;
+  slug: string;
+  destinationPath: string;
+  parameters?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  fallbackUrl?: string | null;
+  status: 'draft' | 'active' | 'paused';
+  expiresAt?: string | null;
+  /**
+   * Platform abuse hold. Tenant lifecycle changes cannot clear this control.
+   */
+  platformSuspended?: boolean | null;
+  platformSuspendedAt?: string | null;
+  platformRestoredAt?: string | null;
+  platformSuspensionReason?: string | null;
+  platformSuspensionCase?: (number | null) | AbuseCase;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fallback-origins".
+ */
+export interface FallbackOrigin {
+  id: number;
+  workspace: number | Workspace;
+  hostname: string;
+  status: 'pending' | 'verifying' | 'verified' | 'revoked';
+  /**
+   * Publish the generated TXT challenge to prove hostname ownership.
+   */
+  verificationToken: string;
+  lastCheckedAt?: string | null;
+  verifiedAt?: string | null;
+  revokedAt?: string | null;
+  lastVerificationError?: string | null;
+  /**
+   * Bounded, provider-neutral DNS evidence hashes; raw TXT values are not stored.
+   */
+  lastEvidence?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organization-invitations".
+ */
+export interface OrganizationInvitation {
+  id: number;
+  organization: number | Organization;
+  emailNormalized: string;
+  role: 'owner' | 'admin' | 'member' | 'viewer';
+  status: 'pending' | 'accepted' | 'revoked';
+  tokenHash: string;
+  expiresAt: string;
+  deliveryMode: 'webhook' | 'manual';
+  deliveredAt?: string | null;
+  acceptedAt?: string | null;
+  revokedAt?: string | null;
+  invitedBy: number | User;
+  acceptedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organization-memberships".
+ */
+export interface OrganizationMembership {
+  id: number;
+  organization: number | Organization;
+  user: number | User;
+  role: 'owner' | 'admin' | 'member' | 'viewer';
+  status: 'active' | 'disabled';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions".
+ */
+export interface Subscription {
+  id: number;
+  organization: number | Organization;
+  plan: 'free' | 'starter' | 'pro';
+  status: 'active' | 'trialing' | 'past-due' | 'paused' | 'canceled';
+  provider: string;
+  providerCustomerID?: string | null;
+  providerSubscriptionID: string;
+  currentPeriodEnd?: string | null;
+  graceEndsAt?: string | null;
+  lastEventAt: string;
+  lastProviderEventID: string;
+  catalogVersion: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "billing-events".
+ */
+export interface BillingEvent {
+  id: number;
+  organization: number | Organization;
+  provider: string;
+  providerEventID: string;
+  providerSubscriptionID: string;
+  occurredAt: string;
+  receivedAt: string;
+  payloadHash: string;
+  plan: 'free' | 'starter' | 'pro';
+  status: 'active' | 'trialing' | 'past-due' | 'paused' | 'canceled';
+  outcome: 'applied' | 'stale';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "usage-counters".
+ */
+export interface UsageCounter {
+  id: number;
+  organization: number | Organization;
+  metric: 'monthly-resolutions';
+  periodStart: string;
+  count: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enforcement-events".
+ */
+export interface EnforcementEvent {
+  id: number;
+  resourceType: 'organization' | 'workspace' | 'domain' | 'app' | 'link';
+  resourceID: string;
+  action: 'suspend' | 'restore';
+  previousSuspended: boolean;
+  reason: string;
+  abuseCase?: (number | null) | AbuseCase;
+  actor: number | User;
+  occurredAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "abuse-case-events".
+ */
+export interface AbuseCaseEvent {
+  id: number;
+  abuseCase: number | AbuseCase;
+  eventType: 'opened' | 'note' | 'status-changed' | 'resource-suspended' | 'resource-restored';
+  summary: string;
+  actor: number | User;
+  enforcementEvent?: (number | null) | EnforcementEvent;
+  occurredAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "link-events".
+ */
+export interface LinkEvent {
+  id: number;
+  link: number | DeepLink;
+  app: number | App;
+  eventType: 'resolved' | 'fallback-viewed' | 'open-app-clicked' | 'store-clicked' | 'app-opened';
+  platform: 'ios' | 'android' | 'web' | 'unknown';
+  hostname?: string | null;
+  sessionHash?: string | null;
+  referrer?: string | null;
+  userAgent?: string | null;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  occurredAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "verification-runs".
+ */
+export interface VerificationRun {
+  id: number;
+  app: number | App;
+  link?: (number | null) | DeepLink;
+  kind: 'association' | 'deep-link';
+  status: 'queued' | 'running' | 'passed' | 'failed';
+  checks?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  startedAt: string;
+  finishedAt?: string | null;
+  initiatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -183,20 +611,84 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
-        relationTo: 'media';
-        value: string | Media;
+        relationTo: 'organizations';
+        value: number | Organization;
+      } | null)
+    | ({
+        relationTo: 'workspaces';
+        value: number | Workspace;
+      } | null)
+    | ({
+        relationTo: 'domains';
+        value: number | Domain;
+      } | null)
+    | ({
+        relationTo: 'fallback-origins';
+        value: number | FallbackOrigin;
+      } | null)
+    | ({
+        relationTo: 'organization-invitations';
+        value: number | OrganizationInvitation;
+      } | null)
+    | ({
+        relationTo: 'organization-memberships';
+        value: number | OrganizationMembership;
+      } | null)
+    | ({
+        relationTo: 'subscriptions';
+        value: number | Subscription;
+      } | null)
+    | ({
+        relationTo: 'billing-events';
+        value: number | BillingEvent;
+      } | null)
+    | ({
+        relationTo: 'usage-counters';
+        value: number | UsageCounter;
+      } | null)
+    | ({
+        relationTo: 'apps';
+        value: number | App;
+      } | null)
+    | ({
+        relationTo: 'deep-links';
+        value: number | DeepLink;
+      } | null)
+    | ({
+        relationTo: 'abuse-reports';
+        value: number | AbuseReport;
+      } | null)
+    | ({
+        relationTo: 'abuse-cases';
+        value: number | AbuseCase;
+      } | null)
+    | ({
+        relationTo: 'enforcement-events';
+        value: number | EnforcementEvent;
+      } | null)
+    | ({
+        relationTo: 'abuse-case-events';
+        value: number | AbuseCaseEvent;
+      } | null)
+    | ({
+        relationTo: 'link-events';
+        value: number | LinkEvent;
+      } | null)
+    | ({
+        relationTo: 'verification-runs';
+        value: number | VerificationRun;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -206,10 +698,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -229,7 +721,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -240,6 +732,12 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  status?: T;
+  allowedApps?: T;
+  emailVerificationTokenHash?: T;
+  emailVerificationExpiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -259,21 +757,310 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
+ * via the `definition` "organizations_select".
  */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
+export interface OrganizationsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  status?: T;
+  platformSuspended?: T;
+  platformSuspendedAt?: T;
+  platformRestoredAt?: T;
+  platformSuspensionReason?: T;
+  platformSuspensionCase?: T;
   updatedAt?: T;
   createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "workspaces_select".
+ */
+export interface WorkspacesSelect<T extends boolean = true> {
+  organization?: T;
+  name?: T;
+  slug?: T;
+  status?: T;
+  platformSuspended?: T;
+  platformSuspendedAt?: T;
+  platformRestoredAt?: T;
+  platformSuspensionReason?: T;
+  platformSuspensionCase?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "domains_select".
+ */
+export interface DomainsSelect<T extends boolean = true> {
+  workspace?: T;
+  hostname?: T;
+  type?: T;
+  status?: T;
+  verificationToken?: T;
+  dnsVerifiedAt?: T;
+  cnameVerifiedAt?: T;
+  tlsReadyAt?: T;
+  tlsCertificateRef?: T;
+  tlsRenewsAt?: T;
+  associationsVerifiedAt?: T;
+  activatedAt?: T;
+  lastCheckedAt?: T;
+  lastVerificationError?: T;
+  platformSuspended?: T;
+  platformSuspendedAt?: T;
+  platformRestoredAt?: T;
+  platformSuspensionReason?: T;
+  platformSuspensionCase?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fallback-origins_select".
+ */
+export interface FallbackOriginsSelect<T extends boolean = true> {
+  workspace?: T;
+  hostname?: T;
+  status?: T;
+  verificationToken?: T;
+  lastCheckedAt?: T;
+  verifiedAt?: T;
+  revokedAt?: T;
+  lastVerificationError?: T;
+  lastEvidence?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organization-invitations_select".
+ */
+export interface OrganizationInvitationsSelect<T extends boolean = true> {
+  organization?: T;
+  emailNormalized?: T;
+  role?: T;
+  status?: T;
+  tokenHash?: T;
+  expiresAt?: T;
+  deliveryMode?: T;
+  deliveredAt?: T;
+  acceptedAt?: T;
+  revokedAt?: T;
+  invitedBy?: T;
+  acceptedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organization-memberships_select".
+ */
+export interface OrganizationMembershipsSelect<T extends boolean = true> {
+  organization?: T;
+  user?: T;
+  role?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions_select".
+ */
+export interface SubscriptionsSelect<T extends boolean = true> {
+  organization?: T;
+  plan?: T;
+  status?: T;
+  provider?: T;
+  providerCustomerID?: T;
+  providerSubscriptionID?: T;
+  currentPeriodEnd?: T;
+  graceEndsAt?: T;
+  lastEventAt?: T;
+  lastProviderEventID?: T;
+  catalogVersion?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "billing-events_select".
+ */
+export interface BillingEventsSelect<T extends boolean = true> {
+  organization?: T;
+  provider?: T;
+  providerEventID?: T;
+  providerSubscriptionID?: T;
+  occurredAt?: T;
+  receivedAt?: T;
+  payloadHash?: T;
+  plan?: T;
+  status?: T;
+  outcome?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "usage-counters_select".
+ */
+export interface UsageCountersSelect<T extends boolean = true> {
+  organization?: T;
+  metric?: T;
+  periodStart?: T;
+  count?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "apps_select".
+ */
+export interface AppsSelect<T extends boolean = true> {
+  workspace?: T;
+  name?: T;
+  slug?: T;
+  description?: T;
+  nativeScheme?: T;
+  status?: T;
+  iosBundleId?: T;
+  iosTeamId?: T;
+  androidPackageName?: T;
+  androidSha256CertFingerprints?: T;
+  appStoreUrl?: T;
+  playStoreUrl?: T;
+  fallbackUrl?: T;
+  allowedFallbackHosts?: T;
+  platformSuspended?: T;
+  platformSuspendedAt?: T;
+  platformRestoredAt?: T;
+  platformSuspensionReason?: T;
+  platformSuspensionCase?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deep-links_select".
+ */
+export interface DeepLinksSelect<T extends boolean = true> {
+  name?: T;
+  app?: T;
+  slug?: T;
+  destinationPath?: T;
+  parameters?: T;
+  fallbackUrl?: T;
+  status?: T;
+  expiresAt?: T;
+  platformSuspended?: T;
+  platformSuspendedAt?: T;
+  platformRestoredAt?: T;
+  platformSuspensionReason?: T;
+  platformSuspensionCase?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "abuse-reports_select".
+ */
+export interface AbuseReportsSelect<T extends boolean = true> {
+  category?: T;
+  targetHostname?: T;
+  targetPath?: T;
+  details?: T;
+  reporterContact?: T;
+  reporterKeyHash?: T;
+  userAgentHash?: T;
+  submissionHash?: T;
+  receivedAt?: T;
+  status?: T;
+  workspace?: T;
+  domain?: T;
+  app?: T;
+  link?: T;
+  evidenceSnapshot?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "abuse-cases_select".
+ */
+export interface AbuseCasesSelect<T extends boolean = true> {
+  title?: T;
+  status?: T;
+  severity?: T;
+  primaryReport?: T;
+  workspace?: T;
+  domain?: T;
+  app?: T;
+  link?: T;
+  assignedTo?: T;
+  openedAt?: T;
+  closedAt?: T;
+  resolution?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enforcement-events_select".
+ */
+export interface EnforcementEventsSelect<T extends boolean = true> {
+  resourceType?: T;
+  resourceID?: T;
+  action?: T;
+  previousSuspended?: T;
+  reason?: T;
+  abuseCase?: T;
+  actor?: T;
+  occurredAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "abuse-case-events_select".
+ */
+export interface AbuseCaseEventsSelect<T extends boolean = true> {
+  abuseCase?: T;
+  eventType?: T;
+  summary?: T;
+  actor?: T;
+  enforcementEvent?: T;
+  occurredAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "link-events_select".
+ */
+export interface LinkEventsSelect<T extends boolean = true> {
+  link?: T;
+  app?: T;
+  eventType?: T;
+  platform?: T;
+  hostname?: T;
+  sessionHash?: T;
+  referrer?: T;
+  userAgent?: T;
+  metadata?: T;
+  occurredAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "verification-runs_select".
+ */
+export interface VerificationRunsSelect<T extends boolean = true> {
+  app?: T;
+  link?: T;
+  kind?: T;
+  status?: T;
+  checks?: T;
+  startedAt?: T;
+  finishedAt?: T;
+  initiatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: relay_test
+          POSTGRES_PASSWORD: relay_ci_password
+          POSTGRES_USER: relay_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U relay_ci -d relay_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://relay_ci:relay_ci_password@127.0.0.1:5432/relay_test
+      EVENT_HASH_SECRET: relay-ci-event-secret-at-least-thirty-two-characters
+      NEXT_PUBLIC_APP_ENV: CI
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3100
+      NEXT_PUBLIC_DATABASE_LABEL: relay_test
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+      PAYLOAD_SECRET: relay-ci-payload-secret-at-least-thirty-two-characters
+      PUBLIC_LINK_BASE_URL: http://127.0.0.1:3100
+      RELAY_EDITION: community
+      SEED_ADMIN_EMAIL: admin@relay.test
+      SEED_ADMIN_PASSWORD: relay-ci-private-password
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Enforce dependency advisory policy
+        run: |
+          npm audit --audit-level=critical
+          npm audit --omit=dev --audit-level=high
+
+      - name: Apply migrations to the disposable CI database
+        run: npm run migrate
+
+      - name: Seed browser-test fixtures
+        run: npm run seed
+
+      - name: Verify architecture, lint, types, integration tests, and build
+        run: npm run verify
+
+      - name: Build migration and runtime containers
+        run: |
+          docker build --target migrator --tag relay-migrator-ci .
+          docker build --target runner --tag relay-runner-ci .
+
+      - name: Verify containerized maintenance and runtime health
+        shell: bash
+        run: |
+          set -euo pipefail
+          common_environment=(
+            --env DATABASE_URL="$DATABASE_URL"
+            --env EVENT_HASH_SECRET="$EVENT_HASH_SECRET"
+            --env NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000
+            --env PAYLOAD_SECRET="$PAYLOAD_SECRET"
+            --env PUBLIC_LINK_BASE_URL=http://127.0.0.1:3000
+            --env RELAY_EDITION=community
+          )
+
+          docker run --rm --network host "${common_environment[@]}" \
+            relay-migrator-ci npm run migrate:status
+          docker run --rm --network host "${common_environment[@]}" \
+            relay-migrator-ci npm run analytics:prune -- --allow-test-database
+
+          container_name=relay-runtime-smoke
+          cleanup() {
+            docker rm --force "$container_name" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          docker run --detach --name "$container_name" --network host --read-only \
+            --tmpfs /app/.next/cache:rw,noexec,nosuid,size=64m,uid=1001,gid=1001,mode=0750 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m,uid=1001,gid=1001,mode=0700 \
+            "${common_environment[@]}" relay-runner-ci
+
+          ready=false
+          for _ in {1..30}; do
+            if curl --fail --silent --show-error \
+              http://127.0.0.1:3000/api/health/ready >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [[ "$ready" != true ]]; then
+            docker logs "$container_name"
+            exit 1
+          fi
+
+          curl --fail --silent --show-error \
+            http://127.0.0.1:3000/api/health/live >/dev/null
+          curl --fail --silent --show-error \
+            http://127.0.0.1:3000/.well-known/apple-app-site-association >/dev/null
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run desktop and mobile browser tests
+        run: npm run test:e2e

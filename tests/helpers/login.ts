@@ -1,31 +1,25 @@
 import type { Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 
+import { getSeedAdminCredentials, type SeedAdminCredentials } from './relay-fixtures'
+
 export interface LoginOptions {
   page: Page
-  serverURL?: string
-  user: {
-    email: string
-    password: string
-  }
+  credentials?: SeedAdminCredentials
 }
 
-/**
- * Logs the user into the admin panel via the login page.
- */
 export async function login({
   page,
-  serverURL = 'http://localhost:3000',
-  user,
+  credentials = getSeedAdminCredentials(),
 }: LoginOptions): Promise<void> {
-  await page.goto(`${serverURL}/admin/login`)
+  await page.goto('/admin/login')
 
-  await page.fill('#field-email', user.email)
-  await page.fill('#field-password', user.password)
-  await page.click('button[type="submit"]')
+  await page.getByLabel('Work email').fill(credentials.email)
+  await page.getByLabel('Password').fill(credentials.password)
+  await Promise.all([
+    page.waitForURL((url) => url.pathname === '/admin'),
+    page.getByRole('button', { name: 'Sign in' }).click(),
+  ])
 
-  await page.waitForURL(`${serverURL}/admin`)
-
-  const dashboardArtifact = page.locator('span[title="Dashboard"]')
-  await expect(dashboardArtifact).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Primary navigation' })).toBeVisible()
 }

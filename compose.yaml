@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready --username "$$POSTGRES_USER" --dbname "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    volumes:
+      - relay-postgres-data:/var/lib/postgresql/data
+    networks:
+      - relay-internal
+
+  migrate:
+    build:
+      context: .
+      target: migrator
+    restart: 'no'
+    env_file:
+      - ${RELAY_ENV_FILE:-.env.community}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - relay-internal
+    security_opt:
+      - no-new-privileges:true
+
+  relay:
+    build:
+      context: .
+      target: runner
+      args:
+        NEXT_PUBLIC_APP_ENV: ${NEXT_PUBLIC_APP_ENV:-Community}
+        NEXT_PUBLIC_DATABASE_LABEL: ${NEXT_PUBLIC_DATABASE_LABEL:-relay}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://127.0.0.1:3100}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - ${RELAY_ENV_FILE:-.env.community}
+    environment:
+      RELAY_EDITION: ${RELAY_EDITION:-community}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - '${RELAY_BIND_ADDRESS:-127.0.0.1}:${RELAY_PORT:-3100}:3000'
+    read_only: true
+    tmpfs:
+      - /app/.next/cache:size=64m,uid=1001,gid=1001,mode=0750
+      - /tmp:size=64m,uid=1001,gid=1001,mode=0700
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 20s
+    networks:
+      - relay-internal
+      - relay-edge
+
+volumes:
+  relay-postgres-data:
+
+networks:
+  relay-internal:
+    internal: true
+  relay-edge:
