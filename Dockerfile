@@ -1,4 +1,4 @@
-FROM node:22.17.0-alpine AS base
+FROM node:26.5.0-alpine AS base
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
