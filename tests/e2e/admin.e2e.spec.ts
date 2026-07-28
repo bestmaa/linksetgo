@@ -13,13 +13,13 @@ const destinations = [
   { heading: /Good (morning|afternoon|evening)/, label: 'Overview', path: '/admin' },
 ] as const
 
-test.describe('Relay admin console', () => {
+test.describe('LinksetGo admin console', () => {
   test.beforeEach(async ({ page }) => {
     await login({ page })
   })
 
   test('shows the seeded workspace on the overview', async ({ page }) => {
-    await expect(page).toHaveTitle(/Relay/)
+    await expect(page).toHaveTitle(/LinksetGo/)
     await expect(page.getByLabel('Active workspace')).not.toHaveValue('')
     await expect(page.getByText(seededLink.name, { exact: true })).toBeVisible()
     await expect(page.getByText(seededApp.name, { exact: true })).toBeVisible()
@@ -99,7 +99,7 @@ test.describe('Relay admin console', () => {
     const downloadPromise = page.waitForEvent('download')
     await page.getByRole('button', { name: 'Download PNG' }).click()
     const download = await downloadPromise
-    expect(download.suggestedFilename()).toBe(`relay-${seededApp.slug}-${seededLink.slug}.png`)
+    expect(download.suggestedFilename()).toBe(`linksetgo-${seededApp.slug}-${seededLink.slug}.png`)
 
     await page.getByRole('button', { name: 'Run both platforms' }).click()
     await expect(page.getByText('iOS association', { exact: true })).toBeVisible()

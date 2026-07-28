@@ -127,7 +127,7 @@ create_environment() {
     echo "SPONSOR_URL="
     echo "SOURCE_CODE_URL=${SOURCE_CODE_URL}"
     echo "NEXT_PUBLIC_APP_ENV=Community"
-    echo "NEXT_PUBLIC_DATABASE_LABEL=relay"
+    echo "NEXT_PUBLIC_DATABASE_LABEL=linksetgo"
   } >"${temp_file}"
 
   chmod 600 "${temp_file}"
@@ -220,6 +220,6 @@ RELAY_ENV_FILE="${ENV_FILE}" docker compose --env-file "${ENV_FILE}" up --build 
 
 echo
 CONFIGURED_PUBLIC_ORIGIN="$(environment_value PUBLIC_LINK_BASE_URL)"
-echo "Relay Community is starting at ${CONFIGURED_PUBLIC_ORIGIN}."
+echo "LinksetGo Community is starting at ${CONFIGURED_PUBLIC_ORIGIN}."
 echo "On a new installation, create the first owner at ${CONFIGURED_PUBLIC_ORIGIN}/cms/create-first-user."
 echo "Check status with: docker compose --env-file ${ENV_FILE} ps"

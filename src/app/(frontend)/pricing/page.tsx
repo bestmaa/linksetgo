@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { MarketingConnector } from '@/features/marketing/marketing.connector'
 
 export const metadata: Metadata = {
-  description: 'Self-host Relay for free or choose simple managed cloud plans.',
+  description: 'Self-host LinksetGo for free or choose simple managed cloud plans.',
   title: 'Pricing',
 }
 

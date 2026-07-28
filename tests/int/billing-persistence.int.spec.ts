@@ -4,6 +4,7 @@ import { buildFallbackOriginInstructions } from '@/lib/domain/fallback-origin'
 import config from '@/payload.config'
 import type { App, Organization, Subscription, User, Workspace } from '@/payload-types'
 import type { BillingProvider } from '@/lib/application/billing-provider'
+import { planCatalog } from '@/lib/domain/plan-catalog'
 import type { SubscriptionEvent } from '@/lib/domain/subscription-state'
 import { processBillingWebhook } from '@/lib/server/billing-webhook'
 import {
@@ -108,6 +109,22 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
             })
       const appIDs = apps.docs.map(({ id }) => id)
       if (appIDs.length > 0) {
+        const links = await payload.find({
+          collection: 'deep-links',
+          depth: 0,
+          limit: 1_000,
+          overrideAccess: true,
+          pagination: false,
+          where: { app: { in: appIDs } },
+        })
+        const linkIDs = links.docs.map(({ id }) => id)
+        if (linkIDs.length > 0) {
+          await payload.delete({
+            collection: 'link-events',
+            overrideAccess: true,
+            where: { link: { in: linkIDs } },
+          })
+        }
         await payload.delete({
           collection: 'deep-links',
           overrideAccess: true,
@@ -304,14 +321,14 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
 
   it('resolves Community, Free, Starter, and Pro from server-owned state', async () => {
     await expect(resolveOrganizationPlan(payload, free.organization.id)).resolves.toMatchObject({
-      plan: { key: 'free', limits: { apps: 1, monthlyResolutions: 5_000 } },
+      plan: { key: 'free', limits: { apps: 1, monthlyResolutions: 15_000 } },
       source: 'subscription',
     })
     await expect(resolveOrganizationPlan(payload, starter.organization.id)).resolves.toMatchObject({
-      plan: { key: 'starter', limits: { apps: 3, monthlyResolutions: 25_000 } },
+      plan: { key: 'starter', limits: { apps: 5, monthlyResolutions: 150_000 } },
     })
     await expect(resolveOrganizationPlan(payload, pro.organization.id)).resolves.toMatchObject({
-      plan: { key: 'pro', limits: { apps: 10, monthlyResolutions: 100_000 } },
+      plan: { key: 'pro', limits: { apps: 20, monthlyResolutions: 1_000_000 } },
     })
     await expect(
       resolveOrganizationPlan(payload, free.organization.id, { edition: 'community' }),
@@ -492,7 +509,7 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
       }),
     ).rejects.toMatchObject({ status: 402 })
 
-    for (let index = 0; index < 25; index += 1) {
+    for (let index = 0; index < planCatalog.free.limits.activeLinks; index += 1) {
       await payload.create({
         collection: 'deep-links',
         data: {
@@ -621,7 +638,7 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
     ).rejects.toMatchObject({ status: 400 })
   }, 60_000)
 
-  it('blocks Starter custom domains and permits only one on Pro', async () => {
+  it('permits one Starter custom domain and five on Pro', async () => {
     await expect(
       payload.create({
         collection: 'domains',
@@ -634,29 +651,45 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
         },
         overrideAccess: true,
       }),
-    ).rejects.toMatchObject({ status: 402 })
+    ).resolves.toBeTruthy()
 
     await expect(
       payload.create({
         collection: 'domains',
         data: {
-          hostname: 'billing-pro-custom.example.net',
+          hostname: 'billing-starter-second.example.net',
           status: 'pending-dns',
           type: 'custom',
-          verificationToken: 'billing-pro-domain-verification-token',
-          workspace: pro.workspace.id,
+          verificationToken: 'billing-starter-second-verification-token',
+          workspace: starter.workspace.id,
         },
         overrideAccess: true,
       }),
-    ).resolves.toBeTruthy()
+    ).rejects.toMatchObject({ status: 402 })
+
+    for (let index = 0; index < planCatalog.pro.limits.customDomains; index += 1) {
+      await expect(
+        payload.create({
+          collection: 'domains',
+          data: {
+            hostname: `billing-pro-${index}.example.net`,
+            status: 'pending-dns',
+            type: 'custom',
+            verificationToken: `billing-pro-domain-verification-token-${index}`,
+            workspace: pro.workspace.id,
+          },
+          overrideAccess: true,
+        }),
+      ).resolves.toBeTruthy()
+    }
     await expect(
       payload.create({
         collection: 'domains',
         data: {
-          hostname: 'billing-pro-second.example.net',
+          hostname: 'billing-pro-blocked.example.net',
           status: 'pending-dns',
           type: 'custom',
-          verificationToken: 'billing-pro-second-verification-token',
+          verificationToken: 'billing-pro-blocked-verification-token',
           workspace: pro.workspace.id,
         },
         overrideAccess: true,
@@ -885,17 +918,18 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
     })
     expect(resolverEventsAfter.totalDocs).toBe(resolverEventsBefore.totalDocs + 2)
 
+    const freeResolutionLimit = planCatalog.free.limits.monthlyResolutions
     await payload.update({
       collection: 'usage-counters',
       id: usage.docs[0]!.id,
-      data: { count: 4_999 },
+      data: { count: freeResolutionLimit - 1 },
       overrideAccess: true,
     })
     const exhaustion = await meterResolvedApp(payload, freeApp.id, now)
     expect(exhaustion).toMatchObject({
       allowDetailedAnalytics: true,
-      count: 5_000,
-      limit: 5_000,
+      count: freeResolutionLimit,
+      limit: freeResolutionLimit,
     })
     const boundaryLinks = await payload.find({
       collection: 'deep-links',
@@ -932,8 +966,8 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
     const overage = await meterResolvedApp(payload, freeApp.id, now)
     expect(overage).toMatchObject({
       allowDetailedAnalytics: false,
-      count: 5_001,
-      limit: 5_000,
+      count: freeResolutionLimit + 1,
+      limit: freeResolutionLimit,
     })
     await Promise.all(Array.from({ length: 8 }, () => meterResolvedApp(payload, freeApp.id, now)))
     const capped = await payload.findByID({
@@ -942,7 +976,7 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
       depth: 0,
       overrideAccess: true,
     })
-    expect(capped.count).toBe(5_001)
+    expect(capped.count).toBe(freeResolutionLimit + 1)
     await expect(canRecordDetailedAnalytics(payload, freeApp.id, now)).resolves.toBe(false)
 
     const links = await payload.find({

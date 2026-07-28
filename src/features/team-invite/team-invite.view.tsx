@@ -13,7 +13,7 @@ export function TeamInviteView(props: TeamInviteViewProps) {
           <div className="auth-brand">
             <BrandMark />
             <span>
-              <span className="brand-name">Relay</span>
+              <span className="brand-name">LinksetGo</span>
               <span className="brand-caption" style={{ color: '#667085' }}>
                 TEAM INVITATION
               </span>
@@ -26,7 +26,7 @@ export function TeamInviteView(props: TeamInviteViewProps) {
                 ↻
               </span>
               <h1>Checking your invitation</h1>
-              <p>Relay is validating this one-time link.</p>
+              <p>LinksetGo is validating this one-time link.</p>
             </div>
           ) : props.state.status === 'error' ? (
             <div className="auth-result">
@@ -47,7 +47,7 @@ export function TeamInviteView(props: TeamInviteViewProps) {
                 {props.state.signInRequired ? ' Sign in with your new account.' : ''}
               </p>
               <Button onClick={props.onOpenRelay}>
-                {props.state.signInRequired ? 'Sign in to Relay' : 'Open Relay'}
+                {props.state.signInRequired ? 'Sign in to LinksetGo' : 'Open LinksetGo'}
               </Button>
             </div>
           ) : ready ? (
@@ -104,8 +104,8 @@ export function TeamInviteView(props: TeamInviteViewProps) {
               ) : (
                 <div className="auth-result team-invite-action">
                   <p>
-                    This Relay installation cannot create the invited account automatically. Ask its
-                    administrator to create your matching account, then reopen this link.
+                    This LinksetGo installation cannot create the invited account automatically. Ask
+                    its administrator to create your matching account, then reopen this link.
                   </p>
                 </div>
               )}
@@ -113,7 +113,7 @@ export function TeamInviteView(props: TeamInviteViewProps) {
           ) : null}
         </div>
       </section>
-      <aside className="auth-visual" aria-label="Secure Relay team access">
+      <aside className="auth-visual" aria-label="Secure LinksetGo team access">
         <div className="auth-message">
           <span aria-hidden="true" className="auth-message-symbol">
             ↗

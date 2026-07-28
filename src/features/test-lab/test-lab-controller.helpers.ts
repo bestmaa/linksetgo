@@ -45,7 +45,7 @@ export function platformsFor(platform: TestPlatform): readonly ('ios' | 'android
 
 export function pendingChecks(platform: TestPlatform): CheckResult[] {
   return [
-    { detail: 'Checking the public URL format', label: 'Valid Relay URL', status: 'pending' },
+    { detail: 'Checking the public URL format', label: 'Valid LinksetGo URL', status: 'pending' },
     { detail: 'Looking up the saved record', label: 'Link record resolves', status: 'pending' },
     { detail: 'Inspecting the in-app route', label: 'Destination is valid', status: 'pending' },
     ...platformsFor(platform).map((target): CheckResult => ({
@@ -111,8 +111,8 @@ export function qrDownloadBaseName(url: string): string {
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '')
       .toLowerCase()
-    return `relay-${path || 'deep-link'}`.slice(0, 96)
+    return `linksetgo-${path || 'deep-link'}`.slice(0, 96)
   } catch {
-    return 'relay-deep-link'
+    return 'linksetgo-deep-link'
   }
 }

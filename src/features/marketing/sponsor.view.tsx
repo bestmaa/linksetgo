@@ -5,7 +5,7 @@ export function SponsorView({ sponsorURL }: { sponsorURL: string | null }) {
     <main className="marketing-inner">
       <section className="marketing-inner-hero">
         <div className="marketing-container">
-          <div className="marketing-pill">Support Relay</div>
+          <div className="marketing-pill">Support LinksetGo</div>
           <h1>Help keep open deep-link infrastructure maintained.</h1>
           <p>
             Sponsorship supports security updates, documentation, release engineering and the
@@ -19,7 +19,7 @@ export function SponsorView({ sponsorURL }: { sponsorURL: string | null }) {
                 rel="noreferrer"
                 target="_blank"
               >
-                Sponsor Relay
+                Sponsor LinksetGo
               </a>
             ) : (
               <span className="marketing-sponsor-pending">

@@ -386,7 +386,7 @@ export async function createCloudSignup(
   if (!gate.ok) {
     throw new CloudSignupError(
       'SIGNUP_UNAVAILABLE',
-      'Self-service signup is available only when Relay Cloud explicitly enables it.',
+      'Self-service signup is available only when LinksetGo Cloud explicitly enables it.',
     )
   }
 
@@ -440,7 +440,7 @@ export async function createCloudSignup(
     if (platformAdmins.docs.length === 0) {
       throw new CloudSignupError(
         'SETUP_REQUIRED',
-        'Relay Cloud must be bootstrapped by its platform owner before public signup.',
+        'LinksetGo Cloud must be bootstrapped by its platform owner before public signup.',
       )
     }
 
@@ -772,7 +772,7 @@ export async function verifyCloudSignupEmail(
   if (process.env.RELAY_EDITION?.trim().toLowerCase() !== 'cloud') {
     throw new CloudSignupError(
       'VERIFICATION_FAILED',
-      'Email verification is available only in Relay Cloud.',
+      'Email verification is available only in LinksetGo Cloud.',
     )
   }
   if (!isCloudVerificationToken(token)) {

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 import { login } from '../helpers/login'
 
-test.describe('Relay team management', () => {
+test.describe('LinksetGo team management', () => {
   test.beforeEach(async ({ page }) => {
     await login({ page })
   })
@@ -33,7 +33,7 @@ test.describe('Relay team management', () => {
     await member.getByRole('button', { name: 'Cancel' }).click()
   })
 
-  test('routes Settings team management to the Relay console', async ({ page }) => {
+  test('routes Settings team management to the LinksetGo console', async ({ page }) => {
     await page.goto('/admin/settings')
     await page.getByRole('button', { name: 'Team & access' }).click()
 

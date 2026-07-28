@@ -95,7 +95,7 @@ describe('fallback-origin console view', () => {
       ),
     )
 
-    expect(screen.getByText('Not required in Relay Community')).toBeTruthy()
+    expect(screen.getByText('Not required in LinksetGo Community')).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Register origin' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Verify TXT record' })).toBeNull()
   })

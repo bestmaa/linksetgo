@@ -131,7 +131,7 @@ export async function registerConsoleCustomDomain(
     return {
       code: 'REGISTRATION_REJECTED',
       message:
-        'Relay could not register this hostname. It may already be in use or unavailable to this workspace.',
+        'LinksetGo could not register this hostname. It may already be in use or unavailable to this workspace.',
       ok: false,
       status: 409,
     }
@@ -183,7 +183,7 @@ export async function getConsoleDomainInstructions(
   if (!instructions) {
     return {
       code: 'NOT_READY',
-      message: 'Custom-domain ingress is not configured for this Relay installation.',
+      message: 'Custom-domain ingress is not configured for this LinksetGo installation.',
       ok: false,
       status: 503,
     }

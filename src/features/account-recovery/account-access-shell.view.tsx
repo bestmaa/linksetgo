@@ -18,7 +18,7 @@ export function AccountAccessShellView(props: AccountAccessShellProps) {
           <div className="auth-brand">
             <BrandMark />
             <span>
-              <span className="brand-name">Relay</span>
+              <span className="brand-name">LinksetGo</span>
               <span className="brand-caption" style={{ color: '#667085' }}>
                 CLOUD
               </span>

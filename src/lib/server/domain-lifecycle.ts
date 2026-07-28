@@ -82,7 +82,7 @@ export async function beginDomainVerification(
     return {
       ok: false,
       code: 'INGRESS_NOT_CONFIGURED',
-      message: 'The Relay ingress CNAME target is not configured.',
+      message: 'The LinksetGo ingress CNAME target is not configured.',
       domain,
     }
   }
@@ -123,7 +123,7 @@ export async function recordDomainDNSEvidence(
     return {
       ok: false,
       code: 'INGRESS_NOT_CONFIGURED',
-      message: 'The Relay ingress CNAME target is not configured.',
+      message: 'The LinksetGo ingress CNAME target is not configured.',
       domain,
     }
   }

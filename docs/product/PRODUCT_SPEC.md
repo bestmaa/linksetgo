@@ -1,8 +1,8 @@
-# Relay product contract
+# LinksetGo product contract
 
 Status: implementation baseline for the Community release and managed Cloud beta.
 
-Relay is an open-source deep-link control plane. It creates durable HTTPS links,
+LinksetGo is an open-source deep-link control plane. It creates durable HTTPS links,
 publishes the iOS and Android association files those links require, resolves a
 saved app destination, and sends users without the app to an allowlisted web or
 store fallback.
@@ -11,8 +11,8 @@ store fallback.
 
 ### Community
 
-- Self-hosted as one Relay deployment plus PostgreSQL.
-- No application, link, resolution, member, or retention quotas imposed by Relay.
+- Self-hosted as one LinksetGo deployment plus PostgreSQL.
+- No application, link, resolution, member, or retention quotas imposed by LinksetGo.
 - Includes apps, links, safe fallbacks, QR handoff, Test Lab, AASA, and Android
   Asset Links.
 - Operators own upgrades, backups, email delivery, TLS, monitoring, and abuse
@@ -22,7 +22,7 @@ store fallback.
 
 ### Cloud
 
-- Multi-tenant Relay deployment operated by the Relay service.
+- Multi-tenant LinksetGo deployment operated by the LinksetGo service.
 - Each organization owns one or more workspaces.
 - Each workspace receives an isolated managed subdomain.
 - Plans limit creation and analytics retention; an exhausted quota does not
@@ -47,7 +47,7 @@ https://{workspace}.{MANAGED_LINK_ROOT_DOMAIN}/l/{appKey}/{linkSlug}
 Documentation example, using the reserved `.example` domain:
 
 ```text
-https://oberoi.links.relay.example/l/mall/offer
+https://oberoi.linksetgo.example/l/mall/offer
 ```
 
 Paid custom domains keep the same path:
@@ -75,7 +75,7 @@ paste its custom-scheme URL:
 oberoi://rewards-detail?SlabName=Gold&SlabPromo=10OFF
 ```
 
-Relay stores the public, scheme-independent route:
+LinksetGo stores the public, scheme-independent route:
 
 ```text
 path: /rewards-detail
@@ -84,7 +84,7 @@ parameters:
   SlabPromo: 10OFF
 ```
 
-The mobile app owns the scheme and navigation implementation. Relay never asks
+The mobile app owns the scheme and navigation implementation. LinksetGo never asks
 for Apple private keys, Android keystores, store passwords, or signing secrets.
 
 ## App onboarding data
@@ -150,11 +150,11 @@ forwarded host headers.
    a managed hostname.
 3. User registers an app with guided platform-specific fields.
 4. User pastes a native route or enters a destination and parameters.
-5. Relay creates a link, shows its public URL and QR code, and opens Test Lab.
+5. LinksetGo creates a link, shows its public URL and QR code, and opens Test Lab.
 6. Test Lab checks resolution, fallback, AASA, and Asset Links for each platform.
 7. Owners invite members, inspect plan usage, and manage billing.
 8. Pro owners verify and activate a custom domain without breaking shared links.
-9. Community operators install, upgrade, back up, restore, and monitor Relay from
+9. Community operators install, upgrade, back up, restore, and monitor LinksetGo from
    published documentation.
 
 ## Release gates

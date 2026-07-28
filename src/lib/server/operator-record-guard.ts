@@ -5,7 +5,7 @@ import { isPlatformSuperAdmin } from './tenant-context'
 
 export const enforcePlatformOperatorOnly: CollectionBeforeValidateHook = ({ data, req }) => {
   if (req.user && !isPlatformSuperAdmin(req)) {
-    throw new APIError('This record is restricted to Relay platform operators.', 403)
+    throw new APIError('This record is restricted to LinksetGo platform operators.', 403)
   }
   return data
 }

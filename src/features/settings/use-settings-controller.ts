@@ -151,7 +151,7 @@ export function useSettingsController() {
     billingSummary,
     canCheckout,
     checkoutError,
-    databaseLabel: process.env.NEXT_PUBLIC_DATABASE_LABEL ?? 'relay',
+    databaseLabel: process.env.NEXT_PUBLIC_DATABASE_LABEL ?? 'linksetgo',
     domain,
     environment: process.env.NEXT_PUBLIC_APP_ENV ?? 'Development',
     isBillingLoading,

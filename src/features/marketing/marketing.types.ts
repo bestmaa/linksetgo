@@ -13,14 +13,21 @@ export type MarketingPage =
   | 'status'
   | 'terms'
 
+export type MarketingActionViewModel = {
+  href: string
+  label: string
+}
+
 export type MarketingViewProps = {
+  headerPrimaryAction: MarketingActionViewModel
   isMenuOpen: boolean
+  landingPrimaryAction: MarketingActionViewModel
   onCloseMenu: () => void
   onToggleMenu: () => void
   page: MarketingPage
   pricingPlans: readonly PricingPlanViewModel[]
   serviceStatus: ServiceStatusViewModel
-  signupAvailable: boolean
+  signInURL: string
   sourceCodeURL: string | null
   sponsorURL: string | null
 }

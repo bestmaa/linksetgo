@@ -86,7 +86,7 @@ export function evaluateDomainDNSEvidence(
     return {
       ok: false,
       code: 'CNAME_MISMATCH',
-      message: 'The domain CNAME does not point to the configured Relay ingress.',
+      message: 'The domain CNAME does not point to the configured LinksetGo ingress.',
     }
   }
 

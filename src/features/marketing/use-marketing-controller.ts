@@ -10,6 +10,7 @@ export function useMarketingController(
   sourceCodeURL: string | null,
   sponsorURL: string | null,
   signupAvailable: boolean,
+  appBaseURL: string,
 ) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [serviceStatus, setServiceStatus] = useState<ServiceStatusViewModel>({
@@ -61,14 +62,24 @@ export function useMarketingController(
     return () => controller.abort()
   }, [page])
 
+  const withAppPath = (path: '/admin/login' | '/signup'): string =>
+    appBaseURL ? `${appBaseURL.replace(/\/+$/, '')}${path}` : path
+  const signInURL = withAppPath('/admin/login')
+
   return {
+    headerPrimaryAction: signupAvailable
+      ? { href: withAppPath('/signup'), label: 'Create workspace' }
+      : { href: '/docs', label: 'Self-host free' },
     isMenuOpen,
+    landingPrimaryAction: signupAvailable
+      ? { href: withAppPath('/signup'), label: 'Create a free workspace' }
+      : { href: signInURL, label: 'Open the console' },
     onCloseMenu: () => setIsMenuOpen(false),
     onToggleMenu: () => setIsMenuOpen((current) => !current),
     page,
-    pricingPlans: presentPricingPlans(signupAvailable),
+    pricingPlans: presentPricingPlans(signupAvailable, appBaseURL),
     serviceStatus,
-    signupAvailable,
+    signInURL,
     sourceCodeURL,
     sponsorURL,
   }

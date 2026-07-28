@@ -24,12 +24,12 @@ import { Users } from './collections/Users'
 import { VerificationRuns } from './collections/VerificationRuns'
 import { Workspaces } from './collections/Workspaces'
 import { getServerEnvironment } from './lib/server/env'
-import { getCanonicalSiteURL } from './lib/server/site-url'
+import { getApplicationSiteURL } from './lib/server/site-url'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const environment = getServerEnvironment()
-const applicationOrigin = getCanonicalSiteURL().origin
+const applicationOrigin = getApplicationSiteURL().origin
 const isProduction = process.env.NODE_ENV === 'production'
 
 export default buildConfig({

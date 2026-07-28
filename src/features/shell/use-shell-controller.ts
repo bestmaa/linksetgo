@@ -27,8 +27,8 @@ function getPageName(pathname: string) {
 }
 
 function getUserName(user: UserDTO | null) {
-  if (!user) return 'Relay admin'
-  return user.name?.trim() || user.email.split('@')[0] || 'Relay admin'
+  if (!user) return 'LinksetGo admin'
+  return user.name?.trim() || user.email.split('@')[0] || 'LinksetGo admin'
 }
 
 function getInitials(name: string) {

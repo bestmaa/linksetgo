@@ -186,7 +186,7 @@ function rejected(error: unknown): LinkConsoleResult<never> {
     message:
       error instanceof Error && safeStatus !== 409
         ? error.message
-        : 'Relay could not save this link in the selected workspace.',
+        : 'LinksetGo could not save this link in the selected workspace.',
     ok: false,
     status: safeStatus,
   }

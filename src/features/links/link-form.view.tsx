@@ -53,8 +53,8 @@ export function LinkFormView(props: LinkFormProps) {
                 React Native URL <span className="optional-label">Optional</span>
               </label>
               <p className="form-help">
-                Paste the custom-scheme URL your mobile team supplied. Relay will split its route
-                and query values into the fields below.
+                Paste the custom-scheme URL your mobile team supplied. LinksetGo will split its
+                route and query values into the fields below.
                 {props.nativeScheme
                   ? ` The selected app accepts ${props.nativeScheme}:// URLs.`
                   : ' Configure a native scheme on the selected app first.'}

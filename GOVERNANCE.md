@@ -1,6 +1,6 @@
-# Relay governance
+# LinksetGo governance
 
-Relay is currently in its pre-1.0, founder-led stage.
+LinksetGo is currently in its pre-1.0, founder-led stage.
 
 ## Decision model
 

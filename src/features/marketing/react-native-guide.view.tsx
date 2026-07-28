@@ -17,8 +17,8 @@ export function ReactNativeGuideView() {
           <div className="marketing-pill">React Native guide</div>
           <h1>Turn the routes your mobile team already has into durable HTTPS links.</h1>
           <p>
-            Relay accepts a custom-scheme destination, stores its path and scalar parameters, then
-            produces a shareable link for Universal Links and Android App Links.
+            LinksetGo accepts a custom-scheme destination, stores its path and scalar parameters,
+            then produces a shareable link for Universal Links and Android App Links.
           </p>
         </div>
       </section>
@@ -36,8 +36,8 @@ export function ReactNativeGuideView() {
             <p className="marketing-docs-eyebrow">THE CONTRACT</p>
             <h2>Native destinations and public links are different.</h2>
             <p>
-              A React Native URL names a screen inside an installed app. A Relay HTTPS URL is the
-              campaign-safe link a customer receives.
+              A React Native URL names a screen inside an installed app. A LinksetGo HTTPS URL is
+              the campaign-safe link a customer receives.
             </p>
             <div className="marketing-code-pair">
               <div>
@@ -45,8 +45,8 @@ export function ReactNativeGuideView() {
                 <code>oberoi://offer</code>
               </div>
               <div>
-                <small>RELAY PUBLISHES</small>
-                <code>https://oberoi.links.relay.example/l/mall/offer</code>
+                <small>LINKSETGO PUBLISHES</small>
+                <code>https://oberoi.linksetgo.com/l/mall/offer</code>
               </div>
             </div>
           </section>
@@ -71,7 +71,7 @@ export function ReactNativeGuideView() {
               </span>
             </div>
             <p>
-              The app still validates parameters and owns navigation. Relay rejects credentials,
+              The app still validates parameters and owns navigation. LinksetGo rejects credentials,
               dangerous protocols, malformed paths and unsupported nested values.
             </p>
           </section>
@@ -80,7 +80,7 @@ export function ReactNativeGuideView() {
             <h2>Resolve the campaign slug, then navigate.</h2>
             <p>
               iOS and Android open the public <code>/l/app/campaign</code> path. Your app calls
-              Relay&apos;s host-scoped public resolver, validates the returned destination and
+              LinksetGo&apos;s host-scoped public resolver, validates the returned destination and
               scalar parameters, then passes that app-known route to React Navigation.
             </p>
             <pre>
@@ -110,17 +110,17 @@ export function ReactNativeGuideView() {
               ))}
             </div>
             <p>
-              Relay never needs an Apple private key, Android keystore, signing password or store
-              account credential.
+              LinksetGo never needs an Apple private key, Android keystore, signing password or
+              store account credential.
             </p>
           </section>
           <section id="verify">
             <p className="marketing-docs-eyebrow">BEFORE CAMPAIGN LAUNCH</p>
             <h2>Configuration checks are the start of testing.</h2>
             <p>
-              Run Relay Test Lab, inspect the host-specific AASA and Asset Links files, scan the QR
-              code, then test release-signed builds on physical iOS and Android devices with the app
-              installed and removed.
+              Run LinksetGo Test Lab, inspect the host-specific AASA and Asset Links files, scan the
+              QR code, then test release-signed builds on physical iOS and Android devices with the
+              app installed and removed.
             </p>
             <Link className="marketing-cta" href="/admin/test-lab">
               Open Test Lab

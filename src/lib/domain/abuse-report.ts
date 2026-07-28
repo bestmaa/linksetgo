@@ -50,14 +50,14 @@ export function parseAbuseReportInput(value: unknown): AbuseReportParseResult {
   }
 
   if (typeof value.targetURL !== 'string' || value.targetURL.length > 2_048) {
-    return { ok: false, message: 'Enter the Relay link you are reporting.' }
+    return { ok: false, message: 'Enter the LinksetGo link you are reporting.' }
   }
 
   let targetURL: URL
   try {
     targetURL = new URL(value.targetURL)
   } catch {
-    return { ok: false, message: 'Enter a valid absolute Relay HTTPS URL.' }
+    return { ok: false, message: 'Enter a valid absolute LinksetGo HTTPS URL.' }
   }
   if (
     targetURL.protocol !== 'https:' ||
@@ -67,7 +67,7 @@ export function parseAbuseReportInput(value: unknown): AbuseReportParseResult {
     !targetURL.hostname ||
     targetURL.pathname.length > 512
   ) {
-    return { ok: false, message: 'Enter a valid absolute Relay HTTPS URL.' }
+    return { ok: false, message: 'Enter a valid absolute LinksetGo HTTPS URL.' }
   }
 
   const honeypot = value.website

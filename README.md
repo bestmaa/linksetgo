@@ -1,23 +1,26 @@
-# Relay
+# LinksetGo
 
-Relay is a self-service deep-link operations console built with Payload 3, Next.js,
+LinksetGo is a self-service deep-link operations console built with Payload 3, Next.js,
 React, TypeScript, and PostgreSQL. Teams register an app once, create managed links,
 copy or scan the generated shared URL, and verify the public resolver plus the iOS
 and Android association files from one app-like admin interface.
 
 ## Community quick start
 
-Relay Community is self-hostable under the
+LinksetGo Community is self-hostable under the
 [GNU Affero General Public License v3 or later](./LICENSE). A new Docker Compose
 installation needs Docker Compose v2 and OpenSSL:
 
 ```bash
-git clone <your-fork-or-release-url> relay
-cd relay
+git clone https://github.com/bestmaa/linksetgo.git
+cd linksetgo
 RELAY_PUBLIC_URL=https://links.example.com \
-RELAY_SOURCE_URL=https://github.com/your-org/relay \
+RELAY_SOURCE_URL=https://github.com/bestmaa/linksetgo \
   ./scripts/setup-community.sh
 ```
+
+Fork operators should replace `RELAY_SOURCE_URL` with the exact public fork or
+release archive containing the code they deploy.
 
 For local-only evaluation, omit `RELAY_PUBLIC_URL` and open
 `http://127.0.0.1:3100`. On a new database, create the first owner at
@@ -25,7 +28,7 @@ For local-only evaluation, omit `RELAY_PUBLIC_URL` and open
 
 Internet-facing AGPL installations must set `RELAY_SOURCE_URL` to the exact
 public repository or archive containing the Corresponding Source for the deployed
-version. Relay exposes it as `SOURCE_CODE_URL` on the public open-source page.
+version. LinksetGo exposes it as `SOURCE_CODE_URL` on the public open-source page.
 
 The portable stack includes private PostgreSQL networking, a one-shot migration
 service, a non-root/read-only application container, generated secrets, and
@@ -36,7 +39,7 @@ public proxy is enabled.
 
 ## Local URLs
 
-- Relay admin: `http://127.0.0.1:3100/admin`
+- LinksetGo admin: `http://127.0.0.1:3100/admin`
 - Payload emergency CMS: `http://127.0.0.1:3100/cms` (super-admin only)
 - Seeded link: `http://127.0.0.1:3100/l/relay-demo/welcome-offer`
 - Apple association: `http://127.0.0.1:3100/.well-known/apple-app-site-association`
@@ -50,7 +53,8 @@ by Git and restricted to the current WSL user.
 Requirements: WSL, Docker, Node.js 22, npm, and OpenSSL.
 
 ```bash
-cd /home/beste/project/daynmic-deeplinking
+git clone https://github.com/bestmaa/linksetgo.git
+cd linksetgo
 ./scripts/setup-local.sh
 npm run dev
 ```
@@ -157,7 +161,7 @@ installed Chrome.
 
 ## React Native and production contract
 
-Relay can generate the web records, but the mobile apps still must opt into the
+LinksetGo can generate the web records, but the mobile apps still must opt into the
 shared HTTPS domain:
 
 - iOS: add the Associated Domains entitlement
@@ -185,6 +189,12 @@ runtime API; a tenant domain is never baked into the image. Provide `DATABASE_UR
 The builder placeholders are deliberately unusable, and the build sanitizer
 removes every `.env*` file from standalone output before the runner is assembled.
 
+Managed production can serve the product website, authenticated application,
+workspace link subdomains, and verified customer domains from the same runner
+without sharing their browser surfaces. The exact environment, Dokploy/Traefik,
+Cloudflare certificate, custom-domain and migration order is documented in the
+[LinksetGo production deployment guide](./docs/operations/LINKSETGO_PRODUCTION.md).
+
 ## Contributing and security
 
 Read [CONTRIBUTING.md](./CONTRIBUTING.md) before submitting a change and report
@@ -197,11 +207,14 @@ Community help is described in [SUPPORT.md](./SUPPORT.md), project decisions in
 Operators should also read the
 [analytics retention](./docs/operations/ANALYTICS_RETENTION.md) and
 [team invitation delivery](./docs/operations/TEAM_INVITATIONS.md) contracts.
+Managed-service operators should additionally read the
+[split-host production guide](./docs/operations/LINKSETGO_PRODUCTION.md) and
+[domain ingress contract](./docs/operations/DOMAIN_INGRESS.md).
 
 The optional `SPONSOR_URL` setting enables a trusted external sponsorship action
 without hardcoding a payment account. It is disabled by default.
 
-The Community v0.1 license and the provisional Relay name/brand still require final
+The Community v0.1 license and the provisional LinksetGo name/brand still require final
 owner legal and trademark approval before a public launch. The software license
 does not grant rights to project names, logos, or service marks; see
 [TRADEMARKS.md](./TRADEMARKS.md).

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { errorMessage, payloadClient } from '@/lib/client/payload-client'
 import type { PublicLinkResponse } from '@/lib/client/payload-types'
 
-export function useFallbackController(appSlug: string, linkSlug: string) {
+export function useFallbackController(appSlug: string, linkSlug: string, marketingURL: string) {
   const [resolvedLink, setResolvedLink] = useState<PublicLinkResponse | null>(null)
   const [state, setState] = useState<'loading' | 'ready' | 'unavailable' | 'error'>('loading')
   const [message, setMessage] = useState('Finding the right destination…')
@@ -70,7 +70,7 @@ export function useFallbackController(appSlug: string, linkSlug: string) {
       : window.location.href
 
   return {
-    appName: app?.name ?? 'Relay',
+    appName: app?.name ?? 'LinksetGo',
     destination: resolvedLink?.link.destinationPath ?? '',
     fallbackHref: resolvedLink?.link.fallbackUrl || app?.fallbackUrl || null,
     isLoading: state === 'loading',
@@ -89,6 +89,7 @@ export function useFallbackController(appSlug: string, linkSlug: string) {
         .writeText(currentUrl)
         .then(() => setToast('Link copied to clipboard.')),
     reportHref: `/report-abuse?target=${encodeURIComponent(currentUrl)}`,
+    sourceHref: new URL('/open-source', marketingURL).toString(),
     state,
     storeLinks,
     toast,

@@ -133,7 +133,7 @@ export async function registerConsoleFallbackOrigin(input: {
   if (getRelayEdition() !== 'cloud') {
     return {
       code: 'NOT_REQUIRED',
-      message: 'Relay Community does not require fallback-origin verification.',
+      message: 'LinksetGo Community does not require fallback-origin verification.',
       ok: false,
       status: 404,
     }
@@ -167,7 +167,7 @@ export async function registerConsoleFallbackOrigin(input: {
       return {
         code: 'FORBIDDEN',
         message:
-          'Relay could not register this fallback hostname. It may already be in use or unavailable to this workspace.',
+          'LinksetGo could not register this fallback hostname. It may already be in use or unavailable to this workspace.',
         ok: false,
         status: 403,
       }
@@ -190,7 +190,7 @@ export async function registerConsoleFallbackOrigin(input: {
     return {
       code: 'REGISTRATION_REJECTED',
       message:
-        'Relay could not register this fallback hostname. It may already be in use or unavailable to this workspace.',
+        'LinksetGo could not register this fallback hostname. It may already be in use or unavailable to this workspace.',
       ok: false,
       status: 409,
     }
@@ -232,7 +232,7 @@ export async function getConsoleFallbackOriginInstructions(input: {
   if (getRelayEdition() !== 'cloud') {
     return {
       code: 'NOT_REQUIRED',
-      message: 'Relay Community does not require fallback-origin verification.',
+      message: 'LinksetGo Community does not require fallback-origin verification.',
       ok: false,
       status: 404,
     }
@@ -289,7 +289,7 @@ export async function runConsoleFallbackOriginAction(input: {
   if (getRelayEdition() !== 'cloud') {
     return {
       code: 'NOT_REQUIRED',
-      message: 'Relay Community does not require fallback-origin verification.',
+      message: 'LinksetGo Community does not require fallback-origin verification.',
       ok: false,
       status: 404,
     }

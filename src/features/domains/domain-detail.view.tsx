@@ -84,7 +84,7 @@ export function DomainDetailView({ domain }: { domain: SelectedDomainViewModel }
             <p>
               {domain.status === 'association-incomplete'
                 ? 'An organization owner must confirm that released mobile builds contain this hostname.'
-                : 'Relay checks the fixed DNS records and asks the configured ingress provider for TLS state.'}
+                : 'LinksetGo checks the fixed DNS records and asks the configured ingress provider for TLS state.'}
             </p>
           </div>
           <Button
@@ -117,13 +117,13 @@ export function DomainDetailView({ domain }: { domain: SelectedDomainViewModel }
               ))
             : null}
           <p className="domain-dns-note">
-            Use the DNS provider’s default TTL. Relay does not query arbitrary URLs from this
+            Use the DNS provider’s default TTL. LinksetGo does not query arbitrary URLs from this
             screen; trusted operator automation records DNS and certificate evidence.
           </p>
         </section>
       ) : (
         <section className="domain-managed-note">
-          <strong>Managed by Relay</strong>
+          <strong>Managed by LinksetGo</strong>
           <p>
             The operator provisions DNS and TLS for this hostname. No ownership TXT record is
             required from your team.

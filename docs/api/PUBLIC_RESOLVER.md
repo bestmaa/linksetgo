@@ -1,16 +1,16 @@
 # Public resolver API
 
-Relay exposes a narrow, unauthenticated JSON projection for app clients and its
+LinksetGo exposes a narrow, unauthenticated JSON projection for app clients and its
 fallback page. Private collection APIs remain authenticated.
 
 ## Resolve a link
 
 ```http
 GET /api/public/links/{appKey}/{linkSlug}
-Host: oberoi.links.relay.example
+Host: oberoi.linksetgo.example
 ```
 
-The request hostname is part of the tenant key. Relay exact-matches it to an active
+The request hostname is part of the tenant key. LinksetGo exact-matches it to an active
 workspace domain before looking up the app and link. Unknown hosts fail closed and
 never fall back to another workspace.
 
@@ -23,7 +23,7 @@ Successful response:
 ```json
 {
   "status": "active",
-  "publicUrl": "https://oberoi.links.relay.example/l/mall/gold-reward",
+  "publicUrl": "https://oberoi.linksetgo.example/l/mall/gold-reward",
   "app": {
     "name": "Oberoi Mall",
     "slug": "mall",
@@ -46,7 +46,7 @@ Successful response:
 }
 ```
 
-Only scalar link parameters are public. Relay accepts at most 20 entries, safe
+Only scalar link parameters are public. LinksetGo accepts at most 20 entries, safe
 1–64-character keys, 512-character string values, and a 4 KB combined size.
 Nested values and oversized legacy data are not projected.
 
@@ -79,7 +79,7 @@ code. They must not infer whether a resource exists across another hostname.
 
 ## Public event acknowledgement
 
-The Relay fallback page can submit one of:
+The LinksetGo fallback page can submit one of:
 
 ```text
 fallback-viewed
@@ -102,7 +102,7 @@ Content-Type: application/json
 }
 ```
 
-The body is limited to 4 KB. Slugs are canonical and bounded. Relay uses a
+The body is limited to 4 KB. Slugs are canonical and bounded. LinksetGo uses a
 secret-keyed HMAC for deduplication and does not store raw client IP addresses or
 new raw user-agent strings in application event data. A `202` acknowledges
 ingestion. The mobile app may send `app-opened` only after it accepts the resolved

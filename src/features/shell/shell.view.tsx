@@ -39,8 +39,8 @@ export function ShellView(props: ShellViewProps) {
         <Link className="brand" href="/admin">
           <BrandMark />
           <span className="brand-copy">
-            <span className="brand-name">Relay</span>
-            <span className="brand-caption">DEEP LINK OPERATIONS</span>
+            <span className="brand-name">LinksetGo</span>
+            <span className="brand-caption">DEEP LINKS, DONE RIGHT</span>
           </span>
         </Link>
         <p className="nav-label">Workspace</p>
@@ -98,7 +98,7 @@ export function ShellView(props: ShellViewProps) {
             <Icon name="menu" />
           </button>
           <div className="breadcrumb">
-            Relay&nbsp; / &nbsp;<strong>{props.currentPage}</strong>
+            LinksetGo&nbsp; / &nbsp;<strong>{props.currentPage}</strong>
           </div>
           <div className="workspace-picker">
             <label className="sr-only" htmlFor="workspace-selector">

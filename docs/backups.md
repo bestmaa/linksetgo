@@ -15,8 +15,8 @@ timestamped custom-format dump under `backups/`. Override the destinations witho
 editing the script:
 
 ```bash
-RELAY_ENV_FILE=/srv/relay/.env.community \
-RELAY_BACKUP_DIR=/srv/relay-backups \
+RELAY_ENV_FILE=/srv/linksetgo/.env.community \
+RELAY_BACKUP_DIR=/srv/linksetgo-backups \
   ./scripts/community-backup.sh
 ```
 
@@ -33,28 +33,28 @@ production database:
 docker run --rm \
   -e POSTGRES_PASSWORD=temporary-restore-password \
   -p 127.0.0.1:55432:5432 \
-  --name relay-restore-check \
+  --name linksetgo-restore-check \
   -d postgres:16-alpine
 
-docker exec relay-restore-check \
-  createdb --username postgres relay_restore
+docker exec linksetgo-restore-check \
+  createdb --username postgres linksetgo_restore
 
-docker exec -i relay-restore-check \
-  pg_restore --username postgres --dbname relay_restore --exit-on-error \
-  < backups/relay-YYYYMMDDTHHMMSSZ.dump
+docker exec -i linksetgo-restore-check \
+  pg_restore --username postgres --dbname linksetgo_restore --exit-on-error \
+  < backups/linksetgo-YYYYMMDDTHHMMSSZ.dump
 ```
 
-Inspect row counts and launch a disposable Relay instance against the restored
+Inspect row counts and launch a disposable LinksetGo instance against the restored
 database before declaring the backup verified. Remove only the explicitly named
 test container when finished:
 
 ```bash
-docker rm --force relay-restore-check
+docker rm --force linksetgo-restore-check
 ```
 
 ## Production restore
 
-A production restore replaces data and requires planned downtime. Stop Relay,
+A production restore replaces data and requires planned downtime. Stop LinksetGo,
 retain the failed database and its volume, restore into a new database or new
 volume, run the release's migrations, validate readiness and representative links,
 then switch traffic. Do not use `pg_restore --clean` against the only copy of a

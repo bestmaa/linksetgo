@@ -9,7 +9,7 @@ export function ResetPasswordView(props: ResetPasswordViewProps) {
   const waiting = props.state.status === 'checking' || props.state.status === 'submitting'
   return (
     <AccountAccessShellView
-      asideLabel="Relay Cloud secure password reset"
+      asideLabel="LinksetGo Cloud secure password reset"
       asideMessage="The reset token is removed from the browser address before your password is submitted."
       asideTitle="A fresh password. The same protected workspace."
       symbol="🔒"
@@ -22,7 +22,7 @@ export function ResetPasswordView(props: ResetPasswordViewProps) {
           <h1>Password updated</h1>
           <p>Your one-time reset link has been consumed. Sign in with your new password.</p>
           <Link className="button button-primary" href="/admin/login">
-            Sign in to Relay
+            Sign in to LinksetGo
           </Link>
         </div>
       ) : props.state.status === 'checking' ? (
@@ -31,7 +31,7 @@ export function ResetPasswordView(props: ResetPasswordViewProps) {
             ↻
           </span>
           <h1>Checking reset link</h1>
-          <p>Relay is preparing the secure password form.</p>
+          <p>LinksetGo is preparing the secure password form.</p>
         </div>
       ) : props.state.status === 'invalid' ? (
         <div className="auth-result">

@@ -7,7 +7,7 @@ export function ForgotPasswordConnector(props: { available: boolean }) {
   return (
     <AccountEmailActionView
       {...useForgotPasswordController(props.available)}
-      asideLabel="Relay Cloud account recovery"
+      asideLabel="LinksetGo Cloud account recovery"
       asideMessage="Reset links are short-lived and can be used only once."
       asideTitle="Secure access without support tickets."
       description="Enter your account email. If it matches an active account, we will send a reset link."

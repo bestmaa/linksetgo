@@ -57,7 +57,7 @@ export function DestinationsStepView(props: DestinationsStepProps) {
         <div className="onboarding-form-span">
           <OnboardingTextField
             error={props.errors.fallbackUrl}
-            help="Relay automatically allowlists this hostname for the app. Per-link fallbacks must stay on an approved hostname."
+            help="LinksetGo automatically allowlists this hostname for the app. Per-link fallbacks must stay on an approved hostname."
             id="fallback-url"
             label="Default web fallback"
             onBlur={() => props.onFieldBlur('fallbackUrl')}
@@ -75,7 +75,7 @@ export function DestinationsStepView(props: DestinationsStepProps) {
         <div>
           <strong>No open redirects</strong>
           <p>
-            Relay records the fallback hostname on this app. A future link cannot silently send
+            LinksetGo records the fallback hostname on this app. A future link cannot silently send
             visitors to an unrelated domain.
           </p>
         </div>

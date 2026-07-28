@@ -110,7 +110,7 @@ export const enforceDomainLifecycle: CollectionBeforeValidateHook = async ({
   const managedRoot = environment.managedLinkRootDomain ?? provisioningRoot
   if (type === 'managed') {
     if (req.user && !isPlatformSuperAdmin(req)) {
-      throw new APIError('Only the Relay platform can register a managed domain.', 403)
+      throw new APIError('Only the LinksetGo platform can register a managed domain.', 403)
     }
     if (!managedRoot) {
       throw new APIError('MANAGED_LINK_ROOT_DOMAIN is required for managed domains.', 400)
@@ -121,7 +121,7 @@ export const enforceDomainLifecycle: CollectionBeforeValidateHook = async ({
       provisioningRoot !== environment.managedLinkRootDomain
     ) {
       throw new APIError(
-        'Managed domain provisioning root does not match Relay configuration.',
+        'Managed domain provisioning root does not match LinksetGo configuration.',
         400,
       )
     }
@@ -141,7 +141,7 @@ export const enforceDomainLifecycle: CollectionBeforeValidateHook = async ({
       throw new APIError(`Managed hostname must be "${expectedHostname ?? 'unavailable'}".`, 400)
     }
   } else if (managedRoot && (hostname === managedRoot || hostname.endsWith(`.${managedRoot}`))) {
-    throw new APIError('Managed Relay hostnames cannot be registered as custom domains.', 400)
+    throw new APIError('Managed LinksetGo hostnames cannot be registered as custom domains.', 400)
   }
 
   const previousStatus = isDomainStatus(previous.status) ? previous.status : null

@@ -2,6 +2,8 @@ import Link from 'next/link'
 
 import { Icon } from '@/components/ui/icon'
 
+import type { MarketingActionViewModel } from './marketing.types'
+
 const capabilities = [
   {
     eyebrow: 'Own the route',
@@ -30,7 +32,7 @@ const capabilities = [
   },
   {
     eyebrow: 'Choose your operation',
-    title: 'Self-host or let Relay run it',
+    title: 'Self-host or let LinksetGo run it',
     copy: 'Use the open Community product on your infrastructure. Managed hosting stays gated until the Cloud beta is operationally ready.',
   },
 ] as const
@@ -41,7 +43,7 @@ const steps = [
   ['03', 'Validate and share', 'Run checks, scan the QR code and publish with confidence.'],
 ] as const
 
-export function LandingView({ signupAvailable }: { signupAvailable: boolean }) {
+export function LandingView({ primaryAction }: { primaryAction: MarketingActionViewModel }) {
   return (
     <main>
       <section className="marketing-hero">
@@ -53,16 +55,12 @@ export function LandingView({ signupAvailable }: { signupAvailable: boolean }) {
             </div>
             <h1>Every mobile link, under your control.</h1>
             <p>
-              Relay gives product and mobile teams one clear place to create, validate and operate
-              Universal Links and Android App Links.
+              LinksetGo gives product and mobile teams one clear place to create, validate and
+              operate Universal Links and Android App Links.
             </p>
             <div className="marketing-actions">
-              <Link
-                className="marketing-cta marketing-cta-large"
-                href={signupAvailable ? '/signup' : '/admin/login'}
-              >
-                {signupAvailable ? 'Create a free workspace' : 'Open the console'}{' '}
-                <Icon name="arrow" />
+              <Link className="marketing-cta marketing-cta-large" href={primaryAction.href}>
+                {primaryAction.label} <Icon name="arrow" />
               </Link>
               <Link className="marketing-secondary" href="/docs">
                 Read the self-hosting guide
@@ -83,7 +81,7 @@ export function LandingView({ signupAvailable }: { signupAvailable: boolean }) {
               </span>
             </div>
           </div>
-          <div aria-label="Relay link resolution preview" className="marketing-product-visual">
+          <div aria-label="LinksetGo link resolution preview" className="marketing-product-visual">
             <div className="visual-glow" />
             <div className="visual-window">
               <div className="visual-window-bar">
@@ -92,10 +90,10 @@ export function LandingView({ signupAvailable }: { signupAvailable: boolean }) {
                   <i />
                   <i />
                 </span>
-                <span>Relay resolver</span>
+                <span>LinksetGo resolver</span>
                 <span className="visual-status">Live</span>
               </div>
-              <div className="visual-url">oberoi.links.relay.example/l/mall/summer-offer</div>
+              <div className="visual-url">oberoi.linksetgo.com/l/mall/summer-offer</div>
               <div className="visual-flow">
                 <div className="visual-source">
                   <small>INCOMING</small>
@@ -204,13 +202,13 @@ export function LandingView({ signupAvailable }: { signupAvailable: boolean }) {
             <p>OPEN BY DESIGN</p>
             <h2>Your links should outlive any vendor.</h2>
             <span>
-              Run Relay Community on your own PostgreSQL infrastructure. Relay Cloud is the managed
-              path once its operational and legal launch gates are complete.
+              Run LinksetGo Community on your own PostgreSQL infrastructure. LinksetGo Cloud is the
+              managed path once its operational and legal launch gates are complete.
             </span>
           </div>
           <div className="marketing-open-actions">
             <Link className="marketing-cta marketing-cta-light" href="/docs">
-              Self-host Relay <Icon name="arrow" />
+              Self-host LinksetGo <Icon name="arrow" />
             </Link>
             <Link className="marketing-secondary marketing-secondary-dark" href="/pricing">
               Compare plans

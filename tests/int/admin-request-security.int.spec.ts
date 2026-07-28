@@ -1,7 +1,21 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { isExactObject } from '@/lib/domain/exact-object'
 import { isSameOriginMutation } from '@/lib/server/same-origin-mutation'
+
+const originalApplicationEnvironment = {
+  CLOUD_APP_BASE_URL: process.env.CLOUD_APP_BASE_URL,
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  PUBLIC_LINK_BASE_URL: process.env.PUBLIC_LINK_BASE_URL,
+  RELAY_EDITION: process.env.RELAY_EDITION,
+}
+
+afterEach(() => {
+  for (const [name, value] of Object.entries(originalApplicationEnvironment)) {
+    if (value === undefined) delete process.env[name]
+    else process.env[name] = value
+  }
+})
 
 describe('authenticated mutation request boundaries', () => {
   it('accepts only the configured exact browser origin', () => {
@@ -22,6 +36,30 @@ describe('authenticated mutation request boundaries', () => {
 
     expect(isSameOriginMutation(sameOrigin, 'https://relay.example')).toBe(true)
     expect(isSameOriginMutation(crossOrigin, 'https://relay.example')).toBe(false)
+  })
+
+  it('uses the application origin instead of the separate Cloud marketing origin', () => {
+    process.env.RELAY_EDITION = 'cloud'
+    process.env.CLOUD_APP_BASE_URL = 'https://app.linksetgo.com'
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://linksetgo.com'
+
+    const appRequest = new Request('https://app.linksetgo.com/api/admin/domains', {
+      headers: {
+        origin: 'https://app.linksetgo.com',
+        'sec-fetch-site': 'same-origin',
+      },
+      method: 'POST',
+    })
+    const marketingRequest = new Request('https://app.linksetgo.com/api/admin/domains', {
+      headers: {
+        origin: 'https://linksetgo.com',
+        'sec-fetch-site': 'same-origin',
+      },
+      method: 'POST',
+    })
+
+    expect(isSameOriginMutation(appRequest)).toBe(true)
+    expect(isSameOriginMutation(marketingRequest)).toBe(false)
   })
 
   it('rejects missing, null, same-site, and malformed origin evidence', () => {

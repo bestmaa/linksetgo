@@ -1,7 +1,7 @@
 # Association-file capacity
 
 Apple AASA and Android Asset Links documents are public trust files, not
-unbounded app catalogs. Relay loads active apps in stable, paginated order so it
+unbounded app catalogs. LinksetGo loads active apps in stable, paginated order so it
 never silently publishes only the first database page. It then serializes the
 platform-specific projection and refuses documents larger than 128 KiB with a
 non-cacheable 503 response.

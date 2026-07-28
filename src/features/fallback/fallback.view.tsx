@@ -8,7 +8,7 @@ export function FallbackView(props: FallbackViewProps) {
     <main className="fallback-page">
       <section aria-live="polite" className="fallback-card">
         <span aria-hidden="true" className="brand-mark" style={{ margin: '0 auto' }}>
-          {props.state === 'ready' ? props.appName.charAt(0).toUpperCase() : 'R'}
+          {props.state === 'ready' ? props.appName.charAt(0).toUpperCase() : 'L'}
         </span>
         <h1>
           {props.isLoading
@@ -51,7 +51,7 @@ export function FallbackView(props: FallbackViewProps) {
           If the app is installed, your phone normally opens it before this page appears.
         </p>
         <p className="fallback-powered">
-          Deep-link delivery by Relay · <a href="/open-source">Open source</a> ·{' '}
+          Deep-link delivery by LinksetGo · <a href={props.sourceHref}>Open source</a> ·{' '}
           <a href={props.reportHref}>Report abuse</a>
         </p>
       </section>

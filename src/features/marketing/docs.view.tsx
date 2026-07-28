@@ -38,17 +38,17 @@ export function DocsView() {
     <main className="marketing-inner">
       <section className="marketing-inner-hero marketing-docs-hero">
         <div className="marketing-container">
-          <div className="marketing-pill">Relay documentation</div>
+          <div className="marketing-pill">LinksetGo documentation</div>
           <h1>Understand the contract before you publish the first link.</h1>
           <p>
-            Relay coordinates a public HTTPS domain with app-owned routing. Your mobile team keeps
-            every private signing credential.
+            LinksetGo coordinates a public HTTPS domain with app-owned routing. Your mobile team
+            keeps every private signing credential.
           </p>
         </div>
       </section>
       <div className="marketing-container marketing-docs-layout">
         <aside className="marketing-docs-nav">
-          <a href="#concept">How Relay works</a>
+          <a href="#concept">How LinksetGo works</a>
           <a href="#requirements">What teams provide</a>
           <a href="#self-host">Self-hosting</a>
           <a href="#production">Production checklist</a>
@@ -58,7 +58,7 @@ export function DocsView() {
             <p className="marketing-docs-eyebrow">CONCEPT</p>
             <h2>Public link in. Typed destination out.</h2>
             <p>
-              A shared Relay URL identifies an app and saved link. The public resolver returns a
+              A shared LinksetGo URL identifies an app and saved link. The public resolver returns a
               safe projection containing the native destination, parameters, store URLs and web
               fallback. Draft, paused, expired or unknown links remain unavailable.
             </p>
@@ -68,7 +68,7 @@ export function DocsView() {
             <div className="marketing-doc-flow">
               <span>HTTPS link</span>
               <b>→</b>
-              <span>Relay resolver</span>
+              <span>LinksetGo resolver</span>
               <b>→</b>
               <span>App route or fallback</span>
             </div>
@@ -77,7 +77,7 @@ export function DocsView() {
             <p className="marketing-docs-eyebrow">ONBOARDING</p>
             <h2>What the mobile team provides</h2>
             <p>
-              These are public app identifiers used for platform verification. Relay never needs
+              These are public app identifiers used for platform verification. LinksetGo never needs
               private keys, keystore files or account passwords.
             </p>
             <div className="marketing-requirements">
@@ -93,7 +93,7 @@ export function DocsView() {
             <p className="marketing-docs-eyebrow">COMMUNITY EDITION</p>
             <h2>Self-host with PostgreSQL</h2>
             <p>
-              Relay runs as one Next.js and Payload deployment backed by a project-specific
+              LinksetGo runs as one Next.js and Payload deployment backed by a project-specific
               PostgreSQL role. Development can use the guided local setup; production should use
               committed migrations, HTTPS, backups and a reverse proxy or CDN.
             </p>

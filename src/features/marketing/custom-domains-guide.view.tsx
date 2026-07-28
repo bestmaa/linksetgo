@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 const lifecycle = [
-  ['Pending DNS', 'Relay has issued exact CNAME and TXT records.'],
+  ['Pending DNS', 'LinksetGo has issued exact CNAME and TXT records.'],
   ['Verifying', 'Trusted infrastructure is evaluating DNS evidence.'],
   ['Certificate ready', 'The managed ingress confirms HTTPS certificate readiness.'],
   ['Association incomplete', 'AASA and Asset Links are published for mobile validation.'],
@@ -16,8 +16,8 @@ export function CustomDomainsGuideView() {
           <div className="marketing-pill">Custom-domain guide</div>
           <h1>Verify ownership, TLS and mobile trust before changing a public hostname.</h1>
           <p>
-            Relay keeps the managed workspace URL alive while a Pro workspace proves control of its
-            own subdomain and ships the required mobile configuration.
+            LinksetGo keeps the managed workspace URL alive while a Pro workspace proves control of
+            its own subdomain and ships the required mobile configuration.
           </p>
         </div>
       </section>
@@ -32,20 +32,20 @@ export function CustomDomainsGuideView() {
         <article className="marketing-docs-content">
           <section id="records">
             <p className="marketing-docs-eyebrow">DOMAIN OWNERSHIP</p>
-            <h2>Relay issues exact records for one hostname.</h2>
+            <h2>LinksetGo issues exact records for one hostname.</h2>
             <p>
               A custom hostname such as <code>links.oberoimall.com</code> receives a unique TXT
-              ownership challenge and a CNAME target configured by the Relay Cloud ingress.
+              ownership challenge and a CNAME target configured by the LinksetGo Cloud ingress.
             </p>
             <pre>
               <code>_relay-verification.links.oberoimall.com TXT relay-domain-verification=…</code>
             </pre>
             <pre>
-              <code>links.oberoimall.com CNAME ingress.relay.example</code>
+              <code>links.oberoimall.com CNAME ingress.linksetgo.com</code>
             </pre>
             <p>
               After publishing both records, use <strong>Check DNS &amp; TLS</strong> in the Domains
-              console. Relay sends only the normalized hostname to its trusted operator adapter,
+              console. LinksetGo sends only the normalized hostname to its trusted operator adapter,
               validates returned evidence against the server-issued challenge, and never fetches a
               customer-supplied URL.
             </p>
@@ -71,7 +71,7 @@ export function CustomDomainsGuideView() {
             <p>
               The iOS team adds <code>applinks:links.oberoimall.com</code> to Associated Domains.
               The Android team adds the same exact host to an auto-verified intent filter. Test
-              release-signed builds before Relay activates the domain.
+              release-signed builds before LinksetGo activates the domain.
             </p>
             <p>
               Existing app versions that do not trust the custom hostname will use the safe web
@@ -86,7 +86,7 @@ export function CustomDomainsGuideView() {
             <p className="marketing-docs-eyebrow">FAIL CLOSED</p>
             <h2>Unknown hosts never inherit another workspace.</h2>
             <p>
-              Relay exact-matches an active domain to one workspace. Host-scoped AASA and Asset
+              LinksetGo exact-matches an active domain to one workspace. Host-scoped AASA and Asset
               Links responses contain only that workspace’s apps. Forwarded hosts are ignored unless
               the deployment explicitly trusts a sanitizing ingress.
             </p>

@@ -16,7 +16,7 @@ export function TeamView(props: TeamViewProps) {
           <p className="eyebrow">Organization access</p>
           <h1 className="page-title">Team</h1>
           <p className="page-copy">
-            Manage access to every workspace in {props.organizationName}. Relay enforces owner
+            Manage access to every workspace in {props.organizationName}. LinksetGo enforces owner
             safety and plan limits on the server.
           </p>
         </div>

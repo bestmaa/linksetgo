@@ -51,7 +51,7 @@ export function TeamInviteDialogView(props: Props) {
           {dialog.manualUrl ? (
             <div className="team-manual-link">
               <strong>Copy this one-time invitation now</strong>
-              <p>Relay stores only its SHA-256 hash. This URL is not shown again.</p>
+              <p>LinksetGo stores only its SHA-256 hash. This URL is not shown again.</p>
               <div className="team-copy-row">
                 <input
                   aria-label="Manual invitation URL"

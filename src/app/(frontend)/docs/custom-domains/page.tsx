@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { MarketingConnector } from '@/features/marketing/marketing.connector'
 
 export const metadata: Metadata = {
-  description: 'Verify DNS ownership, TLS and mobile associations for a Relay custom domain.',
+  description: 'Verify DNS ownership, TLS and mobile associations for a LinksetGo custom domain.',
   title: 'Custom domains',
 }
 

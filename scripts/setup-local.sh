@@ -123,5 +123,5 @@ cd "${PROJECT_ROOT}"
 npm install
 npm run seed
 
-echo "Relay local setup is ready. Start it with: npm run dev"
+echo "LinksetGo local setup is ready. Start it with: npm run dev"
 echo "Local admin credentials are stored in ${ENV_FILE}."

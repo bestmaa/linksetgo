@@ -39,7 +39,7 @@ export function TestLabView(props: TestLabViewProps) {
                   ))}
                 </select>
                 <span className="form-help">
-                  Choose a recent saved link or paste any Relay URL.
+                  Choose a recent saved link or paste any LinksetGo URL.
                 </span>
               </label>
               <label className="form-group">

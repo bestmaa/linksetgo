@@ -6,7 +6,7 @@ export function StatusView({ status }: { status: ServiceStatusViewModel }) {
       <section className="marketing-inner-hero">
         <div className="marketing-container">
           <div className="marketing-pill">Current service status</div>
-          <h1>Relay health without invented uptime claims.</h1>
+          <h1>LinksetGo health without invented uptime claims.</h1>
           <p>
             This page checks the current process and database readiness. Historical uptime will
             appear only after an independent monitor is connected.

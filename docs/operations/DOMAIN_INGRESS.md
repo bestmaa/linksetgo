@@ -1,45 +1,48 @@
 # Domain ingress contract
 
-Relay stores domain ownership and lifecycle state and orchestrates a trusted
+LinksetGo stores domain ownership and lifecycle state and orchestrates a trusted
 operator adapter. The application never resolves arbitrary customer URLs and
 does not embed a DNS or certificate-controller credential in the browser.
+The concrete apex, application, wildcard, Dokploy and certificate topology for
+the managed service is documented in
+[LinksetGo production deployment](./LINKSETGO_PRODUCTION.md).
 
 ## Configuration
 
 ```dotenv
-MANAGED_LINK_ROOT_DOMAIN=links.relay.example
-MANAGED_INGRESS_CNAME_TARGET=ingress.relay.example
+MANAGED_LINK_ROOT_DOMAIN=linksetgo.example
+MANAGED_INGRESS_CNAME_TARGET=ingress.linksetgo.example
 TRUST_PROXY_HOST_HEADER=false
 
 # Optional. Configure both or neither.
-DOMAIN_PROVISIONING_WEBHOOK_URL=https://provisioner.internal.example/relay/domain
+DOMAIN_PROVISIONING_WEBHOOK_URL=https://provisioner.internal.example/linksetgo/domain
 DOMAIN_PROVISIONING_WEBHOOK_SECRET=replace-with-at-least-32-random-characters
 ```
 
 `MANAGED_LINK_ROOT_DOMAIN` reserves workspace hostnames such as
-`oberoi.links.relay.example`. `MANAGED_INGRESS_CNAME_TARGET` is the exact CNAME
+`oberoi.linksetgo.example`. `MANAGED_INGRESS_CNAME_TARGET` is the exact CNAME
 target shown during custom-domain verification.
 
 Keep `TRUST_PROXY_HOST_HEADER=false` when Next.js receives the public `Host`
 header unchanged. Enable it only when the deployment has one trusted ingress
 that:
 
-1. rejects direct access to the Relay application;
+1. rejects direct access to the LinksetGo application;
 2. removes every client-supplied `X-Forwarded-Host` header; and
 3. writes one normalized public hostname into `X-Forwarded-Host`.
 
-Relay rejects multiple forwarded host values. An unknown hostname never falls
+LinksetGo rejects multiple forwarded host values. An unknown hostname never falls
 back to the legacy global resolver.
 
 `DOMAIN_PROVISIONING_WEBHOOK_URL` must be one HTTPS URL without credentials or a
-fragment. Relay sends its secret as a bearer token, follows no redirects, uses
+fragment. LinksetGo sends its secret as a bearer token, follows no redirects, uses
 an eight-second timeout, and accepts at most 16 KiB of JSON. Leaving both
 webhook values empty keeps automatic checks disabled, which is the Community
 default. A partial or unsafe configuration fails closed.
 
 ## Lifecycle ownership
 
-Relay enforces this sequence:
+LinksetGo enforces this sequence:
 
 ```text
 pending-dns -> verifying -> certificate-ready -> association-incomplete -> active
@@ -50,7 +53,7 @@ rate-limited, serialized with a PostgreSQL advisory transaction lock, and
 subject to a persistent retry cooldown. The application asks the configured
 adapter to inspect:
 
-- TXT `_relay-verification.{hostname}` with the exact Relay challenge; and
+- TXT `_relay-verification.{hostname}` with the exact LinksetGo challenge; and
 - the customer hostname CNAME with the exact configured ingress target.
 
 The adapter receives only the action and normalized hostname:
@@ -65,13 +68,13 @@ It returns already-observed evidence:
 {
   "kind": "success",
   "value": {
-    "cnameTargets": ["ingress.relay.example"],
+    "cnameTargets": ["ingress.linksetgo.example"],
     "txtValues": ["relay-domain-verification=server-issued-token"]
   }
 }
 ```
 
-Relay compares that evidence with its own server-issued challenge and configured
+LinksetGo compares that evidence with its own server-issued challenge and configured
 ingress target. The adapter then receives:
 
 ```json
@@ -124,10 +127,10 @@ Its successful response contains the observation time and TXT strings:
 ```
 
 The application bounds and hashes this evidence before persistence. Supporting
-`lookup-txt` is required before Relay Cloud tenants can activate apps that use
+`lookup-txt` is required before LinksetGo Cloud tenants can activate apps that use
 customer-owned fallback hosts.
 
-After TLS readiness, Relay publishes host-scoped AASA and Android Asset Links
+After TLS readiness, LinksetGo publishes host-scoped AASA and Android Asset Links
 while routing remains gated. An organization owner must type the exact hostname
 and explicitly confirm that released, signed mobile builds trust it. Only then
 does the domain become `active`. Managed workspace links remain available

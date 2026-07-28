@@ -85,7 +85,7 @@ export function useTestLabController() {
       setChecks(
         pendingChecks(platform).map((check, index) =>
           index === 0
-            ? checkResult('Valid Relay URL', errorMessage(parseError), false, {
+            ? checkResult('Valid LinksetGo URL', errorMessage(parseError), false, {
                 remediation: 'Select a saved link or paste its exact generated public URL.',
               })
             : checkResult(check.label, 'Skipped until the URL is valid', false),
@@ -110,7 +110,7 @@ export function useTestLabController() {
     const resolved = lookup.data
     const fallback = resolved?.link.fallbackUrl || resolved?.app.fallbackUrl
     setChecks([
-      checkResult('Valid Relay URL', parsed.url, true),
+      checkResult('Valid LinksetGo URL', parsed.url, true),
       checkResult(
         'Link record resolves',
         resolved ? `${resolved.link.name} is ${resolved.status}` : (lookup.error ?? 'Unavailable'),
@@ -203,7 +203,7 @@ export function useTestLabController() {
     qrError:
       runtimeConfig.error ??
       (url.trim() && configuredOrigin && !openUrl
-        ? 'Use a valid URL from the configured Relay link domain to generate a QR code.'
+        ? 'Use a valid URL from the configured LinksetGo link domain to generate a QR code.'
         : qr.qrError),
     runLabel:
       platform === 'both'

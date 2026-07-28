@@ -73,7 +73,7 @@ export const POST = async (request: Request): Promise<NextResponse> => {
     return NextResponse.json(
       {
         status: 'unavailable',
-        error: { code: host.code, message: 'This Relay hostname is not active.' },
+        error: { code: host.code, message: 'This LinksetGo hostname is not active.' },
       },
       { status: host.httpStatus },
     )

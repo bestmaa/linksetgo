@@ -1,6 +1,6 @@
 # Changelog
 
-All notable Relay changes are recorded here. The project follows
+All notable LinksetGo changes are recorded here. The project follows
 [Semantic Versioning](https://semver.org/) after the first tagged release.
 
 ## [Unreleased]
@@ -8,7 +8,7 @@ All notable Relay changes are recorded here. The project follows
 ## [0.1.0-rc.1] - 2026-07-28
 
 First open-source Community release candidate. It includes the complete
-self-hosted product and provider-neutral Relay Cloud foundation. Production
+self-hosted product and provider-neutral LinksetGo Cloud foundation. Production
 operators must still supply their own domains, secrets, PostgreSQL database,
 email delivery, ingress automation, monitoring, backups, and legal identity.
 

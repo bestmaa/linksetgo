@@ -8,7 +8,7 @@ const resourceContent = {
   changelog: {
     eyebrow: 'CHANGELOG',
     intro:
-      'Relay is preparing its first Community release. Until versioned releases begin, this page records the product contract without pretending unfinished work has shipped.',
+      'LinksetGo is preparing its first Community release. Until versioned releases begin, this page records the product contract without pretending unfinished work has shipped.',
     sections: [
       {
         body: 'Portable self-hosting, health checks, committed migrations, release automation and community policy are implemented. The first tag remains gated on clean migration, container and browser verification plus owner legal approval.',
@@ -28,7 +28,7 @@ const resourceContent = {
   'open-source': {
     eyebrow: 'COMMUNITY EDITION',
     intro:
-      'Relay Community is designed to keep the resolver, dashboard and mobile association logic inspectable and portable. You bring PostgreSQL and an HTTPS domain; Relay provides the control plane.',
+      'LinksetGo Community is designed to keep the resolver, dashboard and mobile association logic inspectable and portable. You bring PostgreSQL and an HTTPS domain; LinksetGo provides the control plane.',
     sections: [
       {
         body: 'The Community code is distributed under AGPL-3.0-or-later, subject to final project-owner legal approval before the first public release.',
@@ -48,14 +48,14 @@ const resourceContent = {
   security: {
     eyebrow: 'SECURITY',
     intro:
-      'Deep links sit on a public trust boundary. Relay keeps private configuration authenticated, exposes narrow public projections and refuses arbitrary redirect targets.',
+      'Deep links sit on a public trust boundary. LinksetGo keeps private configuration authenticated, exposes narrow public projections and refuses arbitrary redirect targets.',
     sections: [
       {
         body: 'Fallback destinations must match app-owned allowlists. Cloud activation also requires exact hostname ownership verification; revocation fails closed at resolution time.',
         title: 'No open redirects',
       },
       {
-        body: 'Apple and Android association files expose only public app identifiers. Signing keys, keystores, passwords and store credentials do not belong in Relay.',
+        body: 'Apple and Android association files expose only public app identifiers. Signing keys, keystores, passwords and store credentials do not belong in LinksetGo.',
         title: 'Public identifiers only',
       },
       {

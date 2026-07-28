@@ -30,7 +30,7 @@ export function FallbackOriginDetailView(props: {
             ? 'This workspace may use HTTPS fallback URLs on this hostname.'
             : origin.status === 'revoked'
               ? 'This hostname is permanently revoked and Cloud fallback routing fails closed.'
-              : 'Publish the exact TXT record below, then ask Relay to verify it.'}
+              : 'Publish the exact TXT record below, then ask LinksetGo to verify it.'}
         </p>
         <small>Last trusted DNS check: {origin.lastCheckedLabel}</small>
       </div>
@@ -88,8 +88,8 @@ export function FallbackOriginDetailView(props: {
           </article>
         ) : null}
         <p className="domain-dns-note">
-          Relay asks only the trusted operator webhook for this fixed TXT name. It never fetches a
-          URL supplied by the tenant.
+          LinksetGo asks only the trusted operator webhook for this fixed TXT name. It never fetches
+          a URL supplied by the tenant.
         </p>
       </section>
 

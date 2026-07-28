@@ -1,8 +1,16 @@
 {
-  "name": "relay-deep-link-console",
+  "name": "linksetgo",
   "version": "0.1.0",
   "private": true,
-  "description": "A self-service deep-link operations console powered by Payload and PostgreSQL.",
+  "description": "Open-source deep-link infrastructure for mobile apps, QR routing, safe fallbacks, workspaces, and custom domains.",
+  "homepage": "https://linksetgo.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bestmaa/linksetgo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bestmaa/linksetgo/issues"
+  },
   "license": "AGPL-3.0-or-later",
   "keywords": [
     "app-links",

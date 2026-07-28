@@ -7,7 +7,7 @@ export function ResendVerificationConnector(props: { available: boolean }) {
   return (
     <AccountEmailActionView
       {...useResendVerificationController(props.available)}
-      asideLabel="Relay Cloud email verification"
+      asideLabel="LinksetGo Cloud email verification"
       asideMessage="A fresh one-time link replaces the previous link for the pending account."
       asideTitle="Confirm ownership. Activate safely."
       description="Enter the email used at signup. For privacy, the response is the same for every address."

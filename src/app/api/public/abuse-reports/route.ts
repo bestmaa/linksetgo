@@ -20,7 +20,7 @@ const accepted = (): NextResponse =>
   response(
     {
       accepted: true,
-      message: 'If this report matches a Relay resource, our trust team will review it.',
+      message: 'If this report matches a LinksetGo resource, our trust team will review it.',
     },
     202,
   )

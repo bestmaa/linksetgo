@@ -1,7 +1,7 @@
 # React Native integration
 
-This guide shows the contract between Relay and a React Native app. The examples
-use the reserved documentation host `oberoi.links.relay.example`; replace it with
+This guide shows the contract between LinksetGo and a React Native app. The examples
+use the reserved documentation host `oberoi.linksetgo.example`; replace it with
 the workspace's real managed or custom hostname.
 
 ## Two kinds of URL
@@ -18,22 +18,22 @@ oberoi://brand-details?Brand_Id=123
 These URLs describe screens inside the installed app. They are not the campaign
 links sent to customers.
 
-Relay creates durable HTTPS links:
+LinksetGo creates durable HTTPS links:
 
 ```text
-https://oberoi.links.relay.example/l/mall/home
-https://oberoi.links.relay.example/l/mall/gold-reward
+https://oberoi.linksetgo.example/l/mall/home
+https://oberoi.linksetgo.example/l/mall/gold-reward
 ```
 
 iOS Universal Links and Android App Links open the app directly when the released
-app trusts that hostname. If the app cannot open, Relay shows an allowlisted web
+app trusts that hostname. If the app cannot open, LinksetGo shows an allowlisted web
 or store fallback.
 
 ## Register the app
 
 Ask the mobile team for:
 
-| Relay field          | Mobile-team value                        | Example                          |
+| LinksetGo field      | Mobile-team value                        | Example                          |
 | -------------------- | ---------------------------------------- | -------------------------------- |
 | Native scheme        | React Native linking scheme              | `oberoi`                         |
 | iOS Bundle ID        | Xcode target bundle identifier           | `com.oberoi.mall`                |
@@ -44,18 +44,18 @@ Ask the mobile team for:
 | Default web fallback | Customer-owned HTTPS page                | `https://www.oberoimall.com/app` |
 
 Apple Team ID, Bundle ID, Android package, and SHA-256 certificate fingerprints
-are public association identifiers. Relay does **not** need Apple private keys,
+are public association identifiers. LinksetGo does **not** need Apple private keys,
 Android keystores, signing passwords, or store-account credentials.
 
 ## Import destinations
 
-Paste a custom-scheme URL into Relay's native URL field:
+Paste a custom-scheme URL into LinksetGo's native URL field:
 
 ```text
 oberoi://rewards-detail?SlabName=Gold&SlabPromo=10OFF
 ```
 
-Relay previews and saves:
+LinksetGo previews and saves:
 
 ```text
 Destination path: /rewards-detail
@@ -71,7 +71,7 @@ non-scalar parameters, oversized values, and dangerous protocols are rejected.
 The operating system delivers the public campaign path, for example
 `/l/mall/gold-reward`. It does **not** rewrite that path to the saved
 `/rewards-detail` destination. The app must resolve the campaign slug against the
-same Relay hostname, validate the returned public projection, and then hand the
+same LinksetGo hostname, validate the returned public projection, and then hand the
 destination to React Navigation.
 
 A small integration can follow this shape:
@@ -79,11 +79,11 @@ A small integration can follow this shape:
 ```ts
 import { Linking } from 'react-native'
 
-const relayHosts = new Set(['oberoi.links.relay.example'])
+const linksetGoHosts = new Set(['oberoi.linksetgo.example'])
 
 async function toNavigationURL(incoming: string): Promise<string> {
   const url = new URL(incoming)
-  if (url.protocol !== 'https:' || !relayHosts.has(url.hostname)) return incoming
+  if (url.protocol !== 'https:' || !linksetGoHosts.has(url.hostname)) return incoming
 
   const match = /^\/l\/([a-z0-9-]+)\/([a-z0-9-]+)$/.exec(url.pathname)
   if (!match) return incoming
@@ -93,7 +93,7 @@ async function toNavigationURL(incoming: string): Promise<string> {
     url.origin,
   )
   const response = await fetch(endpoint)
-  if (!response.ok) throw new Error('This Relay link is unavailable.')
+  if (!response.ok) throw new Error('This LinksetGo link is unavailable.')
 
   const resolution: unknown = await response.json()
   // Parse `resolution` with your runtime schema before reading it.
@@ -103,7 +103,7 @@ async function toNavigationURL(incoming: string): Promise<string> {
     }
   ).link
   if (!/^\/[A-Za-z0-9/_-]+$/.test(link.destinationPath)) {
-    throw new Error('Relay returned an unsupported app route.')
+    throw new Error('LinksetGo returned an unsupported app route.')
   }
 
   const query = new URLSearchParams()
@@ -115,7 +115,7 @@ async function toNavigationURL(incoming: string): Promise<string> {
 }
 
 const linking = {
-  prefixes: ['oberoi://', 'https://oberoi.links.relay.example'],
+  prefixes: ['oberoi://', 'https://oberoi.linksetgo.example'],
   async getInitialURL() {
     const incoming = await Linking.getInitialURL()
     return incoming ? toNavigationURL(incoming) : null
@@ -153,7 +153,7 @@ destination from the campaign slug.
 ## Acknowledge a handled route
 
 After the app validates the response and successfully hands the known screen to
-navigation, it can send a best-effort acknowledgement to the same Relay origin:
+navigation, it can send a best-effort acknowledgement to the same LinksetGo origin:
 
 ```ts
 void fetch(new URL('/api/public/link-events', url.origin), {
@@ -178,16 +178,16 @@ approximate and not proof that a real person opened the screen.
 Add the exact production hostname to the app's Associated Domains entitlement:
 
 ```text
-applinks:oberoi.links.relay.example
+applinks:oberoi.linksetgo.example
 ```
 
-Relay publishes:
+LinksetGo publishes:
 
 ```text
-https://oberoi.links.relay.example/.well-known/apple-app-site-association
+https://oberoi.linksetgo.example/.well-known/apple-app-site-association
 ```
 
-The response identifies the configured `TEAM_ID.BUNDLE_ID` and allowed Relay
+The response identifies the configured `TEAM_ID.BUNDLE_ID` and allowed LinksetGo
 paths. Serve it over HTTPS without a redirect and with JSON content type.
 
 ## Android association
@@ -200,16 +200,16 @@ Add an auto-verified HTTPS intent filter for the exact hostname:
   <category android:name="android.intent.category.DEFAULT" />
   <category android:name="android.intent.category.BROWSABLE" />
   <data
-    android:host="oberoi.links.relay.example"
+    android:host="oberoi.linksetgo.example"
     android:pathPrefix="/l/mall/"
     android:scheme="https" />
 </intent-filter>
 ```
 
-Relay publishes:
+LinksetGo publishes:
 
 ```text
-https://oberoi.links.relay.example/.well-known/assetlinks.json
+https://oberoi.linksetgo.example/.well-known/assetlinks.json
 ```
 
 Use the Play App Signing SHA-256 certificate, including separate fingerprints
@@ -217,7 +217,7 @@ when production and internal builds are signed differently.
 
 ## Test before sharing
 
-1. Save the Relay link and open Test Lab.
+1. Save the LinksetGo link and open Test Lab.
 2. Run resolution, fallback, AASA, and Asset Links checks.
 3. Download or scan the QR code.
 4. Test a release-signed build on physical iOS and Android devices.

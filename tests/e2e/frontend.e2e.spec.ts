@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 import { seededApp, seededLink } from '../helpers/relay-fixtures'
 
-test.describe('Relay public surface', () => {
+test.describe('LinksetGo public surface', () => {
   test('presents the open-source product before sign in', async ({ page }) => {
     await page.goto('/')
 
@@ -16,8 +16,11 @@ test.describe('Relay public surface', () => {
       'href',
       '/admin/login',
     )
-    await expect(page).toHaveTitle(/Open-source deep links.*Relay/)
-    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/og\.png$/)
+    await expect(page).toHaveTitle(/Deep links, done right.*LinksetGo/)
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      'content',
+      /\/og-linksetgo\.png$/,
+    )
   })
 
   test('publishes transparent Community and Cloud pricing', async ({ page }) => {
@@ -49,7 +52,7 @@ test.describe('Relay public surface', () => {
     ).toBeVisible()
   })
 
-  test('explains how a React Native custom URL becomes a Relay route', async ({ page }) => {
+  test('explains how a React Native custom URL becomes a LinksetGo route', async ({ page }) => {
     await page.goto('/docs/react-native')
 
     await expect(
@@ -76,7 +79,7 @@ test.describe('Relay public surface', () => {
     await expect(
       page.getByText('Sponsorship is not configured for this installation yet.'),
     ).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Sponsor Relay' })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'Sponsor LinksetGo' })).toHaveCount(0)
   })
 
   test('reports current process and database readiness without uptime claims', async ({ page }) => {
@@ -85,7 +88,7 @@ test.describe('Relay public surface', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'Relay health without invented uptime claims.',
+        name: 'LinksetGo health without invented uptime claims.',
       }),
     ).toBeVisible()
     await expect(

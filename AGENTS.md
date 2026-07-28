@@ -1,4 +1,4 @@
-# Relay engineering rules
+# LinksetGo engineering rules
 
 These rules apply to the entire repository.
 

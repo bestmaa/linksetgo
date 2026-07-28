@@ -21,7 +21,7 @@ export class DisabledDomainProvisioningProvider implements DomainProvisioningPro
   async inspectDNS(_hostname: string): Promise<DomainProvisioningResult<DomainDNSEvidence>> {
     return {
       kind: 'disabled',
-      message: 'Automatic DNS inspection is disabled for this Relay deployment.',
+      message: 'Automatic DNS inspection is disabled for this LinksetGo deployment.',
     }
   }
 
@@ -30,7 +30,7 @@ export class DisabledDomainProvisioningProvider implements DomainProvisioningPro
   ): Promise<DomainProvisioningResult<CertificateProvisioningStatus>> {
     return {
       kind: 'disabled',
-      message: 'Automatic certificate provisioning is disabled for this Relay deployment.',
+      message: 'Automatic certificate provisioning is disabled for this LinksetGo deployment.',
     }
   }
 }

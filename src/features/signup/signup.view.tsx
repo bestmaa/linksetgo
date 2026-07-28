@@ -19,7 +19,7 @@ export function SignupView(props: SignupViewProps) {
           <div className="auth-brand">
             <BrandMark />
             <span>
-              <span className="brand-name">Relay</span>
+              <span className="brand-name">LinksetGo</span>
               <span className="brand-caption" style={{ color: '#667085' }}>
                 CLOUD
               </span>
@@ -68,7 +68,7 @@ export function SignupView(props: SignupViewProps) {
                   help={
                     props.managedLinkRootDomain
                       ? `${props.workspaceSlug || 'your-workspace'}.${props.managedLinkRootDomain}`
-                      : 'This becomes your Relay Cloud URL.'
+                      : 'This becomes your LinksetGo Cloud URL.'
                   }
                   id="signup-workspace"
                   label="Workspace URL"
@@ -132,7 +132,7 @@ export function SignupView(props: SignupViewProps) {
           )}
         </div>
       </section>
-      <aside className="auth-visual" aria-label="Relay Cloud workspace introduction">
+      <aside className="auth-visual" aria-label="LinksetGo Cloud workspace introduction">
         <div className="auth-message">
           <span aria-hidden="true" className="auth-message-symbol">
             ↗
@@ -224,7 +224,7 @@ function UnavailableSignup() {
         Go to sign in
       </Link>
       <Link className="auth-secondary-link" href="/open-source">
-        Self-host Relay Community
+        Self-host LinksetGo Community
       </Link>
     </div>
   )

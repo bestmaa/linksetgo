@@ -21,7 +21,7 @@ export function AppOnboardingSuccessView(props: AppOnboardingSuccessProps) {
           {props.app.name} is safely offline
         </h1>
         <p>
-          Relay saved <code>{props.app.slug}</code> for {props.app.platformLabel}. Public links
+          LinksetGo saved <code>{props.app.slug}</code> for {props.app.platformLabel}. Public links
           remain unavailable while the app is Draft.
         </p>
 
@@ -33,7 +33,8 @@ export function AppOnboardingSuccessView(props: AppOnboardingSuccessProps) {
               <div>
                 <strong>Review and activate the draft</strong>
                 <p>
-                  Activation publishes this app in Relay’s Apple and Android association records.
+                  Activation publishes this app in LinksetGo’s Apple and Android association
+                  records.
                 </p>
               </div>
             </li>

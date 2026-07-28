@@ -12,7 +12,7 @@ export function PricingView({ plans }: { plans: readonly PricingPlanViewModel[] 
           <div className="marketing-pill">Simple, sustainable pricing</div>
           <h1>Own the code. Pay only when you want the operations handled.</h1>
           <p>
-            Relay Community stays self-hostable. These Cloud beta limits are published for
+            LinksetGo Community stays self-hostable. These Cloud beta limits are published for
             evaluation; paid service stays closed until its provider, operations and legal gates
             pass.
           </p>
@@ -44,7 +44,7 @@ export function PricingView({ plans }: { plans: readonly PricingPlanViewModel[] 
       <section className="marketing-container marketing-pricing-note">
         <strong>No link lock-in.</strong>
         <p>
-          Relay Community uses documented PostgreSQL storage and a published URL contract. A
+          LinksetGo Community uses documented PostgreSQL storage and a published URL contract. A
           verified Cloud export-and-migration path is a launch gate. Usage limits protect the shared
           service from abuse; they never limit the Community edition you operate yourself.
         </p>

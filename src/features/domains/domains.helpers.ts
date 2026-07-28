@@ -26,12 +26,12 @@ const statusPresentation: Record<
     tone: 'neutral',
   },
   suspended: {
-    description: 'Routing is disabled by the Relay operator. Contact your workspace owner.',
+    description: 'Routing is disabled by the LinksetGo operator. Contact your workspace owner.',
     label: 'Suspended',
     tone: 'danger',
   },
   verifying: {
-    description: 'Relay is processing trusted DNS evidence supplied by the operator.',
+    description: 'LinksetGo is processing trusted DNS evidence supplied by the operator.',
     label: 'Verifying',
     tone: 'blue',
   },

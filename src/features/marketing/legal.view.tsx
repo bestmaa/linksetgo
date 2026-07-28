@@ -8,11 +8,11 @@ const legalContent = {
       'This pre-launch notice documents what the current code stores. A Cloud operator must add its legal entity, contact, subprocessors, regions and exact retention schedule before public registration.',
     sections: [
       {
-        body: 'Relay stores account name and email, organization and app configuration, saved destinations, verification results and authenticated audit-relevant timestamps in the operator’s PostgreSQL database.',
+        body: 'LinksetGo stores account name and email, organization and app configuration, saved destinations, verification results and authenticated audit-relevant timestamps in the operator’s PostgreSQL database.',
         title: 'Account and configuration data',
       },
       {
-        body: 'Link events can store platform, referrer origin and a secret-keyed HMAC session identifier. New events do not persist raw client IP addresses or raw user-agent strings in Relay application data.',
+        body: 'Link events can store platform, referrer origin and a secret-keyed HMAC session identifier. New events do not persist raw client IP addresses or raw user-agent strings in LinksetGo application data.',
         title: 'Resolution analytics',
       },
       {
@@ -20,7 +20,7 @@ const legalContent = {
         title: 'Operator responsibility and retention',
       },
       {
-        body: 'Relay does not include third-party advertising trackers. Infrastructure providers may process network metadata; a hosted operator must disclose those subprocessors before launch.',
+        body: 'LinksetGo does not include third-party advertising trackers. Infrastructure providers may process network metadata; a hosted operator must disclose those subprocessors before launch.',
         title: 'External processing',
       },
     ],
@@ -35,7 +35,7 @@ const legalContent = {
         title: 'Community software',
       },
       {
-        body: 'Customers must control the apps, domains, store listings and fallback destinations they configure. Relay may suspend phishing, malware, impersonation or unlawful use.',
+        body: 'Customers must control the apps, domains, store listings and fallback destinations they configure. LinksetGo may suspend phishing, malware, impersonation or unlawful use.',
         title: 'Acceptable use',
       },
       {

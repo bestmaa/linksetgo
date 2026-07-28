@@ -26,7 +26,7 @@ export const GET = async (request: Request, context: RouteContext): Promise<Next
           message:
             host.code === 'INVALID_HOST'
               ? 'The request host is invalid.'
-              : 'This Relay hostname is not active.',
+              : 'This LinksetGo hostname is not active.',
         },
       },
       {

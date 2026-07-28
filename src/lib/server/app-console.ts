@@ -236,7 +236,7 @@ export async function mutateConsoleApp(
       message:
         error instanceof Error && status !== 409
           ? error.message
-          : 'Relay could not save this app in the selected workspace.',
+          : 'LinksetGo could not save this app in the selected workspace.',
       ok: false,
       status,
     }

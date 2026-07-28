@@ -69,7 +69,7 @@ export function projectTeamInvitation(
     email: invitation.emailNormalized,
     expiresAt: invitation.expiresAt,
     id: invitation.id,
-    invitedByName: inviter?.name?.trim() || inviter?.email || 'Relay administrator',
+    invitedByName: inviter?.name?.trim() || inviter?.email || 'LinksetGo administrator',
     role: invitation.role,
     status: invitationStatus(invitation, now),
   }
@@ -161,7 +161,7 @@ export async function mutateTeamMember(input: {
   if (!ownsTransaction) {
     return {
       code: 'UNAVAILABLE',
-      message: 'Relay could not start an atomic team update.',
+      message: 'LinksetGo could not start an atomic team update.',
       ok: false,
       status: 503,
     }
@@ -246,7 +246,7 @@ export async function mutateTeamMember(input: {
       ? apiErrorResult(error)
       : {
           code: 'UNAVAILABLE',
-          message: 'Relay could not update this team member.',
+          message: 'LinksetGo could not update this team member.',
           ok: false,
           status: 500,
         }

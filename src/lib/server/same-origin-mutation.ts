@@ -1,10 +1,10 @@
 import 'server-only'
 
-import { getCanonicalSiteURL } from './site-url'
+import { getApplicationSiteURL } from './site-url'
 
 export function isSameOriginMutation(
   request: Request,
-  expectedOrigin: string = getCanonicalSiteURL().origin,
+  expectedOrigin: string = getApplicationSiteURL().origin,
 ): boolean {
   const fetchSite = request.headers.get('sec-fetch-site')?.trim().toLowerCase()
   if (fetchSite && fetchSite !== 'same-origin') return false

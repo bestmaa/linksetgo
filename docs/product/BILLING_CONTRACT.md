@@ -1,6 +1,6 @@
-# Relay Cloud billing contract
+# LinksetGo Cloud billing contract
 
-Relay Cloud billing is provider-neutral. The domain model stores plan and
+LinksetGo Cloud billing is provider-neutral. The domain model stores plan and
 subscription state; a replaceable provider adapter owns checkout, customer portal,
 signature verification, and webhook parsing.
 

@@ -1,16 +1,16 @@
 # Fallback-origin ownership and abuse operations
 
-Relay treats a fallback URL as a security boundary. A link can redirect a user
+LinksetGo treats a fallback URL as a security boundary. A link can redirect a user
 to that URL when the native app is unavailable, so an unverified fallback host
 would otherwise become an open-redirect primitive.
 
 ## Cloud fallback origins
 
-Relay Cloud stores customer-owned hosts in the private `fallback-origins`
+LinksetGo Cloud stores customer-owned hosts in the private `fallback-origins`
 collection. A hostname:
 
 - is one exact public DNS hostname, not a URL, wildcard, IP address, loopback
-  address, Relay installation hostname, or managed link hostname;
+  address, LinksetGo installation hostname, or managed link hostname;
 - belongs permanently to one workspace;
 - begins in `pending`;
 - publishes the generated
@@ -21,7 +21,7 @@ collection. A hostname:
 
 Verification calls the provider-neutral
 `DNSOwnershipEvidenceProvider.lookupTXT(recordName)` boundary. The caller
-supplies only Relay's generated record name. Relay does not fetch an arbitrary
+supplies only LinksetGo's generated record name. LinksetGo does not fetch an arbitrary
 customer URL. Evidence is bounded before evaluation, and the database retains
 SHA-256 hashes of observed TXT values rather than the raw values.
 
@@ -44,7 +44,7 @@ activation requires both workspace ownership proof and that app-level policy.
 
 The default provider reuses the trusted domain-provisioning webhook configured
 by `DOMAIN_PROVISIONING_WEBHOOK_URL` and
-`DOMAIN_PROVISIONING_WEBHOOK_SECRET`. Relay sends only:
+`DOMAIN_PROVISIONING_WEBHOOK_SECRET`. LinksetGo sends only:
 
 ```json
 {
@@ -65,7 +65,7 @@ The adapter returns already-observed, bounded evidence:
 }
 ```
 
-Relay follows no redirect, times out after eight seconds, accepts at most 16
+LinksetGo follows no redirect, times out after eight seconds, accepts at most 16
 KiB, and validates that `recordName` is exactly the generated fallback TXT
 name before contacting the adapter. Network or malformed-evidence failures
 return the origin to `pending`, so a provider outage never leaves a tenant
@@ -76,7 +76,7 @@ An active Cloud app requires its default fallback host and every
 resolution repeats the verification check so revocation fails closed without
 requiring an app edit or redeploy.
 
-In Community edition, Relay does not require the Cloud ownership registry.
+In Community edition, LinksetGo does not require the Cloud ownership registry.
 The app-specific fallback allowlist is an explicit operator policy: only
 trusted workspace owners/admins should be allowed to change app or link
 fallbacks. Self-hosters are responsible for their membership policy and for
@@ -85,7 +85,7 @@ confirming ownership of allowlisted hosts.
 ## Abuse intake
 
 `POST /api/public/abuse-reports` accepts a small JSON report containing a
-category, description, and credential-free HTTPS Relay URL. The route:
+category, description, and credential-free HTTPS LinksetGo URL. The route:
 
 - reads at most 8 KiB and requires JSON;
 - strips query strings and fragments from retained target evidence;

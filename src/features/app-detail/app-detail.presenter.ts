@@ -145,7 +145,7 @@ export function presentAppDetail(
   const canActivate = ios.complete || android.complete
   return {
     activationHelp: canActivate
-      ? 'Platform identity is complete. Relay will also validate fallback safety on activation.'
+      ? 'Platform identity is complete. LinksetGo will also validate fallback safety on activation.'
       : 'Complete either iOS or Android before activation.',
     android,
     appKey: detail.app.slug,
