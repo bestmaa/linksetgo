@@ -5,6 +5,13 @@ All notable Relay changes are recorded here. The project follows
 
 ## [Unreleased]
 
+## [0.1.0-rc.1] - 2026-07-28
+
+First open-source Community release candidate. It includes the complete
+self-hosted product and provider-neutral Relay Cloud foundation. Production
+operators must still supply their own domains, secrets, PostgreSQL database,
+email delivery, ingress automation, monitoring, backups, and legal identity.
+
 ### Added
 
 - Public product, pricing, documentation, open-source, security, status,
@@ -25,8 +32,9 @@ All notable Relay changes are recorded here. The project follows
   user-agent strings.
 - Public fallback pages no longer expose internal destination paths.
 
-## [0.1.0] - Unreleased
+### Verification
 
-First Community release candidate. The public tag remains blocked on final
-license/trademark review, clean migration and container tests, restore drill, and
-desktop/mobile Chrome QA.
+- 57 integration files and 244 integration tests.
+- 42 desktop/mobile browser flows.
+- Clean migration rehearsal, production build, and non-root container smoke.
+- Repository format, architecture, lint, and strict TypeScript checks.
