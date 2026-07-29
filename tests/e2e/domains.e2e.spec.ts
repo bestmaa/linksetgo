@@ -88,7 +88,7 @@ test.describe('workspace domain console', () => {
     ).toBeVisible()
     await expect(
       domainList.getByRole('button', {
-        name: /workspace\.links\.relay\.example.*active/i,
+        name: /workspace\.links\.linksetgo\.example.*active/i,
       }),
     ).toBeVisible()
     await expect(page.getByText('ingress.linksetgo.example', { exact: true })).toBeVisible()
