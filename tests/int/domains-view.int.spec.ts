@@ -8,7 +8,7 @@ import type { DomainsViewProps } from '@/features/domains/domains.types'
 function viewProps(overrides: Partial<DomainsViewProps> = {}): DomainsViewProps {
   const onSelect = vi.fn()
   const baseDomain = {
-    hostname: 'links.company.com',
+    hostname: 'links.example.com',
     id: '41',
     isSelected: true,
     lastCheckedLabel: 'Not checked yet',
@@ -52,14 +52,14 @@ function viewProps(overrides: Partial<DomainsViewProps> = {}): DomainsViewProps 
       actionLabel: 'Check DNS & TLS',
       instructions: [
         {
-          name: 'links.company.com',
+          name: 'links.example.com',
           onCopyName: vi.fn(),
           onCopyValue: vi.fn(),
           type: 'CNAME',
           value: 'ingress.linksetgo.example',
         },
         {
-          name: '_linksetgo-verification.links.company.com',
+          name: '_linksetgo-verification.links.example.com',
           onCopyName: vi.fn(),
           onCopyValue: vi.fn(),
           type: 'TXT',
@@ -119,7 +119,7 @@ describe('domain console view', () => {
         releaseConfirmation: {
           ...props.releaseConfirmation,
           isOpen: true,
-          targetHostname: 'links.company.com',
+          targetHostname: 'links.example.com',
         },
       }),
     )

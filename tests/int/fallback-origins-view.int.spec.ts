@@ -9,7 +9,7 @@ afterEach(cleanup)
 
 function viewProps(overrides: Partial<FallbackOriginsViewProps> = {}): FallbackOriginsViewProps {
   const row = {
-    hostname: 'fallback.company.com',
+    hostname: 'fallback.example.com',
     id: '41',
     isSelected: true,
     lastCheckedLabel: 'Not checked yet',
@@ -51,7 +51,7 @@ function viewProps(overrides: Partial<FallbackOriginsViewProps> = {}): FallbackO
       onRequestRevoke: vi.fn(),
       onVerify: vi.fn(),
       record: {
-        name: '_linksetgo-fallback.fallback.company.com',
+        name: '_linksetgo-fallback.fallback.example.com',
         onCopyName: vi.fn(),
         onCopyValue: vi.fn(),
         value: 'linksetgo-fallback-verification=server-generated-token',
@@ -72,7 +72,7 @@ describe('fallback-origin console view', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Fallback origins' })).toBeTruthy()
     expect(
-      screen.getByText('_linksetgo-fallback.fallback.company.com', { exact: true }),
+      screen.getByText('_linksetgo-fallback.fallback.example.com', { exact: true }),
     ).toBeTruthy()
     expect(
       screen.getByText('linksetgo-fallback-verification=server-generated-token', { exact: true }),
@@ -110,7 +110,7 @@ describe('fallback-origin console view', () => {
         registration: { ...props.registration, isOpen: true },
         revocation: {
           ...props.revocation,
-          hostname: 'fallback.company.com',
+          hostname: 'fallback.example.com',
           isOpen: true,
         },
       }),

@@ -59,7 +59,7 @@ adapter to inspect:
 The adapter receives only the action and normalized hostname:
 
 ```json
-{ "action": "inspect-dns", "hostname": "links.company.com" }
+{ "action": "inspect-dns", "hostname": "links.example.com" }
 ```
 
 It returns already-observed evidence:
@@ -78,7 +78,7 @@ LinksetGo compares that evidence with its own server-issued challenge and config
 ingress target. The adapter then receives:
 
 ```json
-{ "action": "request-certificate", "hostname": "links.company.com" }
+{ "action": "request-certificate", "hostname": "links.example.com" }
 ```
 
 Valid TLS responses are:
@@ -110,7 +110,7 @@ tenant URL:
 ```json
 {
   "action": "lookup-txt",
-  "recordName": "_linksetgo-fallback.www.company.com"
+  "recordName": "_linksetgo-fallback.www.example.com"
 }
 ```
 

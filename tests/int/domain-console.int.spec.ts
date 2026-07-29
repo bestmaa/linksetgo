@@ -28,15 +28,15 @@ const activeUser: User = {
 
 describe('custom-domain console boundary', () => {
   it('accepts one hostname but rejects URLs, IPs, wildcards, and paths', () => {
-    expect(normalizeCustomHostnameDraft('Links.Company.com.')).toBe('links.company.com')
-    expect(normalizeCustomDomainHostname('Links.Company.com.')).toBe('links.company.com')
+    expect(normalizeCustomHostnameDraft('Links.Example.com.')).toBe('links.example.com')
+    expect(normalizeCustomDomainHostname('Links.Example.com.')).toBe('links.example.com')
 
     for (const unsafe of [
-      'https://links.company.com',
+      'https://links.example.com',
       '127.0.0.1',
-      '*.company.com',
-      'links.company.com/path',
-      'links.company.com:443',
+      '*.example.com',
+      'links.example.com/path',
+      'links.example.com:443',
     ]) {
       expect(normalizeCustomHostnameDraft(unsafe)).toBeNull()
       expect(normalizeCustomDomainHostname(unsafe)).toBeNull()
@@ -63,7 +63,7 @@ describe('custom-domain console boundary', () => {
 
     const untrustedInput = {
       activatedAt: '2026-07-27T00:00:00.000Z',
-      hostname: 'Links.Company.com',
+      hostname: 'Links.Example.com',
       status: 'active',
       type: 'managed',
       verificationToken: 'attacker-selected-token',
@@ -73,7 +73,7 @@ describe('custom-domain console boundary', () => {
 
     expect(result.ok).toBe(true)
     expect(capturedData).toMatchObject({
-      hostname: 'links.company.com',
+      hostname: 'links.example.com',
       status: 'pending-dns',
       type: 'custom',
       workspace: 12,
@@ -93,7 +93,7 @@ describe('custom-domain console boundary', () => {
     let findOptions: Record<string, unknown> = {}
     const domain: Domain = {
       createdAt: '2026-07-27T00:00:00.000Z',
-      hostname: 'links.company.com',
+      hostname: 'links.example.com',
       id: 41,
       status: 'active',
       type: 'custom',
@@ -112,7 +112,7 @@ describe('custom-domain console boundary', () => {
 
     expect(result).toMatchObject({
       ok: true,
-      value: { docs: [{ hostname: 'links.company.com' }] },
+      value: { docs: [{ hostname: 'links.example.com' }] },
     })
     expect(findOptions).toMatchObject({
       collection: 'domains',
@@ -141,14 +141,14 @@ describe('custom-domain console boundary', () => {
 describe('bounded console JSON requests', () => {
   it('accepts a small JSON body', async () => {
     const request = new Request('https://linksetgo.test/api/admin/domains', {
-      body: JSON.stringify({ hostname: 'links.company.com', workspaceId: '12' }),
+      body: JSON.stringify({ hostname: 'links.example.com', workspaceId: '12' }),
       headers: { 'content-type': 'application/json' },
       method: 'POST',
     })
 
     await expect(readBoundedJSON(request, 2048)).resolves.toMatchObject({
       ok: true,
-      value: { hostname: 'links.company.com', workspaceId: '12' },
+      value: { hostname: 'links.example.com', workspaceId: '12' },
     })
   })
 

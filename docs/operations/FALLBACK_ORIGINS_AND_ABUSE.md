@@ -49,7 +49,7 @@ by `DOMAIN_PROVISIONING_WEBHOOK_URL` and
 ```json
 {
   "action": "lookup-txt",
-  "recordName": "_linksetgo-fallback.www.company.com"
+  "recordName": "_linksetgo-fallback.www.example.com"
 }
 ```
 
