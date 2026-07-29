@@ -48,4 +48,15 @@ describe.sequential('request host surface proxy', () => {
 
     expect(response.status).toBe(400)
   })
+
+  it('allows the Docker readiness probe through the loopback host', () => {
+    const response = proxy(
+      new NextRequest('http://127.0.0.1:3000/api/health/ready', {
+        headers: { host: '127.0.0.1:3000' },
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('x-middleware-next')).toBe('1')
+  })
 })
