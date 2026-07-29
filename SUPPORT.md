@@ -1,9 +1,9 @@
-# Relay support
+# LinksetGo support
 
 ## Community Edition
 
 Use the repository issue templates for reproducible bugs and focused feature
-requests. Include the Relay version, deployment mode, database version, browser or
+requests. Include the LinksetGo version, deployment mode, database version, browser or
 device, expected behavior, and sanitized reproduction steps.
 
 Community support is best-effort. Do not post credentials, private app identifiers,
@@ -22,9 +22,9 @@ For installation and operations, start with:
 Suspected vulnerabilities must use the private process in
 [SECURITY.md](./SECURITY.md), never a public support issue.
 
-## Relay Cloud
+## LinksetGo Cloud
 
-Relay Cloud remains pre-launch and invite-only until the security and operations
+LinksetGo Cloud remains pre-launch and invite-only until the security and operations
 gates in [the product contract](./docs/product/PRODUCT_SPEC.md) pass. Paid support
 response times and service-level commitments must not be advertised until final
 service terms are published.

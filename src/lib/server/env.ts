@@ -27,7 +27,13 @@ const validateSecret = (name: string, value: string): string => {
 }
 
 const validateDatabaseURL = (value: string): string => {
-  const url = new URL(value)
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    throw new Error('DATABASE_URL must be a valid PostgreSQL URL.')
+  }
+
   if (url.protocol !== 'postgres:' && url.protocol !== 'postgresql:') {
     throw new Error('DATABASE_URL must use the postgres protocol.')
   }

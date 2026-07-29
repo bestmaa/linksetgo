@@ -54,7 +54,7 @@ export function getDomainProvisioningProviderConfiguration(): DomainProviderConf
         configured: false,
         key: 'disabled',
         message:
-          'Automatic domain checks are disabled. Ask the Relay operator to verify this hostname.',
+          'Automatic domain checks are disabled. Ask the LinksetGo operator to verify this hostname.',
         provider,
       }
 }

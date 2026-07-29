@@ -20,7 +20,7 @@ const readBatchSize = (arguments_: string[]): number => {
 
 const main = async (): Promise<void> => {
   if (process.env.RELAY_EDITION?.trim().toLowerCase() !== 'cloud') {
-    throw new Error('Pending Cloud signup pruning is available only in Relay Cloud.')
+    throw new Error('Pending Cloud signup pruning is available only in LinksetGo Cloud.')
   }
   const managedLinkRootDomain = normalizeHostname(process.env.MANAGED_LINK_ROOT_DOMAIN)
   if (!managedLinkRootDomain) {

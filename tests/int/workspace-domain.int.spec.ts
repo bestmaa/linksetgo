@@ -10,16 +10,16 @@ import {
 
 describe('workspace domain contract', () => {
   it('builds the documented managed URL without a global app-key requirement', () => {
-    const hostname = buildManagedWorkspaceHostname('Oberoi', 'links.relay.example')
+    const hostname = buildManagedWorkspaceHostname('Oberoi', 'linksetgo.com')
 
-    expect(hostname).toBe('oberoi.links.relay.example')
+    expect(hostname).toBe('oberoi.linksetgo.com')
     expect(
       buildWorkspacePublicLinkURL({
         appKey: 'mall',
         hostname: hostname ?? '',
         linkSlug: 'summer-offer',
       }),
-    ).toBe('https://oberoi.links.relay.example/l/mall/summer-offer')
+    ).toBe('https://oberoi.linksetgo.com/l/mall/summer-offer')
   })
 
   it('normalizes DNS names but rejects URLs, ports, wildcards, and malformed labels', () => {
@@ -33,6 +33,8 @@ describe('workspace domain contract', () => {
   it('reserves infrastructure workspace slugs', () => {
     expect(normalizeWorkspaceSlug('oberoi-mall')).toBe('oberoi-mall')
     expect(normalizeWorkspaceSlug('API')).toBeNull()
+    expect(normalizeWorkspaceSlug('ingress')).toBeNull()
+    expect(normalizeWorkspaceSlug('linksetgo')).toBeNull()
     expect(normalizeWorkspaceSlug('bad_slug')).toBeNull()
   })
 

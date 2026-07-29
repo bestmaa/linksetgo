@@ -111,7 +111,7 @@ const beginAtomicRequest = async (
   if (!(await initTransaction(req))) {
     throw new TeamInvitationError(
       'ATOMIC_OPERATION_UNAVAILABLE',
-      'Relay could not start an atomic team operation.',
+      'LinksetGo could not start an atomic team operation.',
       503,
     )
   }
@@ -381,7 +381,7 @@ export async function createOrganizationInvitation(
     }
     throw new TeamInvitationError(
       'INVITATION_UNAVAILABLE',
-      'Relay could not create this invitation.',
+      'LinksetGo could not create this invitation.',
       503,
     )
   }
@@ -452,7 +452,7 @@ export async function revokeOrganizationInvitation(input: {
     if (error instanceof TeamInvitationError) throw error
     throw new TeamInvitationError(
       'INVITATION_UNAVAILABLE',
-      'Relay could not revoke this invitation.',
+      'LinksetGo could not revoke this invitation.',
       503,
     )
   }

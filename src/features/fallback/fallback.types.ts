@@ -7,6 +7,7 @@ export type FallbackViewProps = {
   openAppAction: { href: string; onClick: () => void } | null
   onCopy: () => void
   reportHref: string
+  sourceHref: string
   state: 'loading' | 'ready' | 'unavailable' | 'error'
   storeLinks: readonly { href: string; label: string; onClick: () => void }[]
   toast: string | null

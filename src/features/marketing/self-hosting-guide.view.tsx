@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 const productionChecks = [
-  'HTTPS reverse proxy or CDN in front of Relay',
+  'HTTPS reverse proxy or CDN in front of LinksetGo',
   'Private PostgreSQL network and project-specific role',
   'Daily encrypted off-host backups and a restore drill',
   'Readiness, disk, certificate-expiry and real-link monitoring',
@@ -15,7 +15,7 @@ export function SelfHostingGuideView() {
       <section className="marketing-inner-hero marketing-docs-hero">
         <div className="marketing-container">
           <div className="marketing-pill">Community self-hosting</div>
-          <h1>Run Relay and PostgreSQL with generated secrets and committed migrations.</h1>
+          <h1>Run LinksetGo and PostgreSQL with generated secrets and committed migrations.</h1>
           <p>
             The Community stack builds from source, migrates once, runs as a non-root read-only
             container and keeps PostgreSQL on an internal network.
@@ -40,7 +40,7 @@ export function SelfHostingGuideView() {
             <p>
               The helper requires Docker Compose v2 and OpenSSL. It creates a private
               <code> .env.community</code>, generates independent database, Payload and event HMAC
-              secrets, validates Compose, applies migrations and starts Relay.
+              secrets, validates Compose, applies migrations and starts LinksetGo.
             </p>
             <p>
               For local evaluation, omit <code>RELAY_PUBLIC_URL</code> and use
@@ -66,7 +66,7 @@ export function SelfHostingGuideView() {
             </ul>
             <p>
               Preserve the original Host header. Trust a forwarded host only when a known ingress
-              overwrites it and the Relay setting is explicitly enabled.
+              overwrites it and the LinksetGo setting is explicitly enabled.
             </p>
           </section>
           <section id="backup">

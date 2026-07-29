@@ -10,6 +10,6 @@ export function requireCloudEdition(
   configuredValue: string | undefined = process.env.RELAY_EDITION,
 ): void {
   if (getRelayEdition(configuredValue) !== 'cloud') {
-    throw new Error('This operation is available only in Relay Cloud mode.')
+    throw new Error('This operation is available only in LinksetGo Cloud mode.')
   }
 }

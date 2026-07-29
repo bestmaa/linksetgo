@@ -50,8 +50,8 @@ export function TeamMemberDialogView(props: Props) {
             <aside className="team-danger-zone">
               <strong>Remove this member?</strong>
               <p>
-                Their organization and workspace access ends immediately. Relay will never remove
-                the last active owner.
+                Their organization and workspace access ends immediately. LinksetGo will never
+                remove the last active owner.
               </p>
               <div className="team-danger-actions">
                 <Button
@@ -111,7 +111,7 @@ export function TeamMemberDialogView(props: Props) {
           )}
           {member.isSelf ? (
             <p className="form-help">
-              Relay blocks changes that would remove your own management access.
+              LinksetGo blocks changes that would remove your own management access.
             </p>
           ) : null}
           {props.memberDialog.error ? (

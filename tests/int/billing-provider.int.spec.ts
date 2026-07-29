@@ -16,7 +16,7 @@ describe('Community billing provider', () => {
       }),
     ).resolves.toEqual({
       kind: 'disabled',
-      message: 'Billing is disabled for this Relay deployment.',
+      message: 'Billing is disabled for this LinksetGo deployment.',
     })
   })
 })

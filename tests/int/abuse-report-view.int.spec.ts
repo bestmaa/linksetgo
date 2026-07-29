@@ -30,13 +30,14 @@ describe('public abuse-report experience', () => {
         },
         isAccepted: false,
         isSubmitting: false,
+        marketingURL: 'https://linksetgo.com',
         onFieldChange: vi.fn(),
         onSubmit: vi.fn(),
       }),
     )
 
     expect(screen.getByRole('heading', { level: 1, name: /Send the exact link/ })).toBeTruthy()
-    expect(screen.getByLabelText('Relay HTTPS link')).toBeTruthy()
+    expect(screen.getByLabelText('LinksetGo HTTPS link')).toBeTruthy()
     expect(screen.getByLabelText('Category')).toBeTruthy()
     expect(screen.getByLabelText('What happened?')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Submit report' })).toBeTruthy()

@@ -115,7 +115,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return json(
       {
         status: 'verification-required',
-        message: 'Check your email to verify your Relay Cloud account.',
+        message: 'Check your email to verify your LinksetGo Cloud account.',
       },
       202,
     )
@@ -137,7 +137,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         return json(
           {
             status: 'verification-required',
-            message: 'Check your email to continue with Relay Cloud.',
+            message: 'Check your email to continue with LinksetGo Cloud.',
           },
           202,
         )

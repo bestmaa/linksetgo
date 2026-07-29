@@ -21,8 +21,8 @@ export function BasicsStepView(props: BasicsStepProps) {
           Name the mobile product
         </h1>
         <p>
-          Start with the details your team and customers will recognize. Relay generates the app key
-          from the name, and you can adjust it before creation.
+          Start with the details your team and customers will recognize. LinksetGo generates the app
+          key from the name, and you can adjust it before creation.
         </p>
       </div>
       <div className="onboarding-form-grid">

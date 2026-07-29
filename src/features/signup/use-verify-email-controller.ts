@@ -44,7 +44,7 @@ export function useVerifyEmailController() {
             status: 'error',
             message:
               response.status >= 500
-                ? 'Relay Cloud could not verify this link right now. Please try again.'
+                ? 'LinksetGo Cloud could not verify this link right now. Please try again.'
                 : 'This verification link is invalid, expired, or already used.',
           })
           return
@@ -53,7 +53,7 @@ export function useVerifyEmailController() {
       } catch {
         setState({
           status: 'error',
-          message: 'Relay Cloud could not verify this link. Please try again.',
+          message: 'LinksetGo Cloud could not verify this link. Please try again.',
         })
       }
     }

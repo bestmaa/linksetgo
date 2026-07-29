@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { MarketingConnector } from '@/features/marketing/marketing.connector'
 
 export const metadata: Metadata = {
-  description: 'Track Relay Community releases and managed Cloud milestones.',
+  description: 'Track LinksetGo Community releases and managed Cloud milestones.',
   title: 'Changelog',
 }
 

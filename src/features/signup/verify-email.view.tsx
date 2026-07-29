@@ -12,7 +12,7 @@ export function VerifyEmailView(props: VerifyEmailViewProps) {
           <div className="auth-brand">
             <BrandMark />
             <span>
-              <span className="brand-name">Relay</span>
+              <span className="brand-name">LinksetGo</span>
               <span className="brand-caption" style={{ color: '#667085' }}>
                 CLOUD
               </span>
@@ -25,7 +25,7 @@ export function VerifyEmailView(props: VerifyEmailViewProps) {
                   ↻
                 </span>
                 <h1>Verifying your email</h1>
-                <p>Hold on while Relay activates your workspace.</p>
+                <p>Hold on while LinksetGo activates your workspace.</p>
               </>
             ) : props.state.status === 'verified' ? (
               <>
@@ -37,7 +37,7 @@ export function VerifyEmailView(props: VerifyEmailViewProps) {
                   <strong>{props.state.email}</strong> is verified. You can now sign in.
                 </p>
                 <Link className="button button-primary" href="/admin/login">
-                  Sign in to Relay
+                  Sign in to LinksetGo
                 </Link>
               </>
             ) : (
@@ -55,7 +55,7 @@ export function VerifyEmailView(props: VerifyEmailViewProps) {
           </div>
         </div>
       </section>
-      <aside className="auth-visual" aria-label="Relay Cloud verification">
+      <aside className="auth-visual" aria-label="LinksetGo Cloud verification">
         <div className="auth-message">
           <span aria-hidden="true" className="auth-message-symbol">
             ✓

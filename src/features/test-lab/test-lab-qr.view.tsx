@@ -34,7 +34,7 @@ export function TestLabQrView(props: TestLabQrViewProps) {
               QR
             </span>
           )}
-          <strong>Open with Relay</strong>
+          <strong>Open with LinksetGo</strong>
           <span className="status-detail test-qr-caption">
             {props.qrError ?? 'Scan to test this URL'}
           </span>
@@ -68,8 +68,9 @@ export function TestLabQrView(props: TestLabQrViewProps) {
         </Button>
       </div>
       <p className="test-caveat">
-        Relay validates the web and association configuration. It cannot prove that the installed
-        app opened the intended native screen; confirm that final step on a physical device.
+        LinksetGo validates the web and association configuration. It cannot prove that the
+        installed app opened the intended native screen; confirm that final step on a physical
+        device.
       </p>
     </aside>
   )

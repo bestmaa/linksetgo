@@ -176,8 +176,8 @@ export function SettingsView(props: SettingsViewProps) {
             <section className="setting-section">
               <h3>Team & access</h3>
               <p>
-                Invite teammates, assign organization roles, and revoke access from the Relay team
-                console.
+                Invite teammates, assign organization roles, and revoke access from the LinksetGo
+                team console.
               </p>
               <div className="status-row">
                 <span className="status-copy">

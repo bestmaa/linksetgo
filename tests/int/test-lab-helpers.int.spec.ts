@@ -34,7 +34,7 @@ afterEach(() => {
 })
 
 describe('Test Lab controller helpers', () => {
-  it('accepts only the configured canonical Relay URL shape', () => {
+  it('accepts only the configured canonical LinksetGo URL shape', () => {
     expect(parseRelayUrl(`${origin}/l/example-shop/welcome-offer`, origin)).toEqual({
       appSlug: 'example-shop',
       linkSlug: 'welcome-offer',
@@ -79,7 +79,7 @@ describe('Test Lab controller helpers', () => {
     expect(platformsFor('both')).toEqual(['ios', 'android'])
     expect(platformsFor('ios')).toEqual(['ios'])
     expect(qrDownloadBaseName(`${origin}/l/example-shop/welcome-offer`)).toBe(
-      'relay-example-shop-welcome-offer',
+      'linksetgo-example-shop-welcome-offer',
     )
   })
 

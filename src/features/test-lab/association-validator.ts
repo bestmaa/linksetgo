@@ -39,7 +39,7 @@ function validateAppleDocument(value: unknown, app: AppDTO): AssociationValidati
   const expectedEntry = JSON.stringify(
     {
       appID: expectedAppID,
-      components: [{ '/': expectedPath, comment: 'Relay deep links' }],
+      components: [{ '/': expectedPath, comment: 'LinksetGo deep links' }],
     },
     null,
     2,

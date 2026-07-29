@@ -31,7 +31,7 @@ export function ReviewStepView(props: ReviewStepProps) {
           Create a safe draft
         </h1>
         <p>
-          Confirm the public identifiers before Relay saves this app. It will stay offline as a
+          Confirm the public identifiers before LinksetGo saves this app. It will stay offline as a
           draft until you intentionally activate it.
         </p>
       </div>
@@ -87,7 +87,7 @@ export function ReviewStepView(props: ReviewStepProps) {
       <aside className="onboarding-activation-note">
         <strong>Draft first, public only when you decide</strong>
         <ol>
-          <li>Relay saves the app as Draft, so no new public link can resolve yet.</li>
+          <li>LinksetGo saves the app as Draft, so no new public link can resolve yet.</li>
           <li>Review the generated association records, then activate the app.</li>
           <li>Run Test Lab on iOS and Android before sharing the first link.</li>
         </ol>

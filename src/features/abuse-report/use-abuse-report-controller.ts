@@ -16,7 +16,7 @@ const initialForm = (target: string): AbuseReportForm => ({
   website: '',
 })
 
-export function useAbuseReportController(): AbuseReportViewProps {
+export function useAbuseReportController(marketingURL: string): AbuseReportViewProps {
   const searchParams = useSearchParams()
   const [form, setForm] = useState<AbuseReportForm>(() =>
     initialForm(normalizeAbuseTarget(searchParams.get('target'))),
@@ -37,7 +37,7 @@ export function useAbuseReportController(): AbuseReportViewProps {
     const targetURL = normalizeAbuseTarget(form.targetURL)
     const details = form.details.trim()
     if (!targetURL || details.length < 10 || details.length > 4_000) {
-      setError('Enter a valid Relay HTTPS link and a description of 10–4,000 characters.')
+      setError('Enter a valid LinksetGo HTTPS link and a description of 10–4,000 characters.')
       return
     }
     if (!validOptionalContact(form.reporterContact)) {
@@ -80,6 +80,7 @@ export function useAbuseReportController(): AbuseReportViewProps {
     form,
     isAccepted,
     isSubmitting,
+    marketingURL,
     onFieldChange,
     onSubmit,
   }

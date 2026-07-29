@@ -8,7 +8,7 @@ import { isActiveConsoleUser } from '@/lib/server/domain-console'
 import { getRelayEdition } from '@/lib/server/deployment-edition'
 import { getPayloadClient } from '@/lib/server/payload-client'
 import { isSameOriginMutation } from '@/lib/server/same-origin-mutation'
-import { getCanonicalSiteURL } from '@/lib/server/site-url'
+import { getApplicationSiteURL } from '@/lib/server/site-url'
 
 const noStoreHeaders = { 'Cache-Control': 'private, no-store' }
 
@@ -53,7 +53,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const outcome = await createOrganizationCheckout({
-    appBaseURL: getCanonicalSiteURL().origin,
+    appBaseURL: getApplicationSiteURL().origin,
     payload,
     plan,
     provider: configuration.provider,

@@ -10,7 +10,7 @@ access it.
 For a migration-managed installation:
 
 1. Take and verify a PostgreSQL backup.
-2. Confirm the initial Relay migration is recorded in `payload_migrations`.
+2. Confirm the initial LinksetGo migration is recorded in `payload_migrations`.
    Do not run the initial migration over a database that was created by schema
    push; baseline that database first.
 3. Run `20260727_054612_tenant_foundation` in staging.

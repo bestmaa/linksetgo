@@ -38,7 +38,7 @@ COPY . .
 
 ARG NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000
 ARG NEXT_PUBLIC_APP_ENV=Production
-ARG NEXT_PUBLIC_DATABASE_LABEL=relay
+ARG NEXT_PUBLIC_DATABASE_LABEL=linksetgo
 
 # Payload evaluates its config during `next build`. These deliberately unusable,
 # non-secret values only satisfy build validation and never enter the runner.

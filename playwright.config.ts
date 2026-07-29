@@ -5,8 +5,12 @@ const baseURL =
   process.env.E2E_BASE_URL?.trim() ||
   process.env.NEXT_PUBLIC_APP_URL?.trim() ||
   'http://127.0.0.1:3100'
+const configuredSuite = process.env.E2E_SUITE?.trim()
+const e2eSuite = configuredSuite === 'marketing' ? 'marketing' : 'community'
+const marketingSpec = /marketing\.e2e\.spec\.ts/
 
 export default defineConfig({
+  ...(e2eSuite === 'marketing' ? { testMatch: marketingSpec } : { testIgnore: marketingSpec }),
   expect: {
     timeout: 10_000,
   },
@@ -36,7 +40,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run dev',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env.CI && !configuredSuite,
     timeout: 120_000,
     url: baseURL,
   },

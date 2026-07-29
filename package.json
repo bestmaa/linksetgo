@@ -1,8 +1,16 @@
 {
-  "name": "relay-deep-link-console",
+  "name": "linksetgo",
   "version": "0.1.0",
   "private": true,
-  "description": "A self-service deep-link operations console powered by Payload and PostgreSQL.",
+  "description": "Open-source deep-link infrastructure for mobile apps, QR routing, safe fallbacks, workspaces, and custom domains.",
+  "homepage": "https://linksetgo.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bestmaa/linksetgo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bestmaa/linksetgo/issues"
+  },
   "license": "AGPL-3.0-or-later",
   "keywords": [
     "app-links",
@@ -29,8 +37,9 @@
     "prune:pending-signups": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/prune-pending-signups.ts",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed.ts",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start --port 3100",
-    "test": "npm run test:int && npm run test:e2e",
-    "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
+    "test": "npm run test:int && npm run test:e2e && npm run test:e2e:marketing",
+    "test:e2e": "cross-env E2E_SUITE=community E2E_BASE_URL=http://127.0.0.1:3100 RELAY_EDITION=community NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
+    "test:e2e:marketing": "cross-env E2E_SUITE=marketing E2E_BASE_URL=http://127.0.0.1:3100 RELAY_EDITION=cloud CLOUD_APP_BASE_URL=http://localhost:3100 MARKETING_SITE_URL=http://127.0.0.1:3100 PUBLIC_LINK_BASE_URL=http://localhost:3100 NEXT_PUBLIC_APP_URL=http://localhost:3100 NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3100 NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation DOTENV_CONFIG_PATH=.env.test.local vitest run --config ./vitest.config.mts",
     "typecheck": "tsc --noEmit",
     "verify": "npm run format:check && npm run check:architecture && npm run lint && npm run typecheck && npm run test:int && npm run build"

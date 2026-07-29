@@ -79,7 +79,7 @@ export function useSignupController(props: SignupConnectorProps) {
     } catch {
       setState({
         status: 'error',
-        message: 'Relay Cloud could not be reached. Check your connection and try again.',
+        message: 'LinksetGo Cloud could not be reached. Check your connection and try again.',
       })
     }
   }

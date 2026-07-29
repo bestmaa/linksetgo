@@ -13,9 +13,9 @@ export function LoginView(props: LoginViewProps) {
           <div className="auth-brand">
             <BrandMark />
             <span>
-              <span className="brand-name">Relay</span>
+              <span className="brand-name">LinksetGo</span>
               <span className="brand-caption" style={{ color: '#667085' }}>
-                DEEP LINK OPERATIONS
+                DEEP LINKS, DONE RIGHT
               </span>
             </span>
           </div>
@@ -64,12 +64,12 @@ export function LoginView(props: LoginViewProps) {
           </form>
           {props.signupAvailable ? (
             <p className="auth-footer">
-              New to Relay Cloud? <Link href="/signup">Create a workspace</Link>
+              New to LinksetGo Cloud? <Link href="/signup">Create a workspace</Link>
             </p>
           ) : null}
         </div>
       </section>
-      <aside className="auth-visual" aria-label="Relay product introduction">
+      <aside className="auth-visual" aria-label="LinksetGo product introduction">
         <div className="auth-message">
           <span aria-hidden="true" className="auth-message-symbol">
             ↗

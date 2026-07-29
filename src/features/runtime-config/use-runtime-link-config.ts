@@ -28,7 +28,7 @@ async function readError(response: Response): Promise<string> {
     // The bounded fallback below avoids exposing an upstream response body.
   }
 
-  return 'Relay could not load this workspace link domain.'
+  return 'LinksetGo could not load this workspace link domain.'
 }
 
 export function useRuntimeLinkConfig(workspaceID: string | null) {
@@ -51,7 +51,7 @@ export function useRuntimeLinkConfig(workspaceID: string | null) {
           if (!response.ok) throw new Error(await readError(response))
           const config = parseRuntimeLinkConfig((await response.json()) as unknown)
           if (!config || config.workspaceId !== workspaceID) {
-            throw new Error('Relay returned an invalid workspace link domain.')
+            throw new Error('LinksetGo returned an invalid workspace link domain.')
           }
           setState({ config, kind: 'ready' })
         })

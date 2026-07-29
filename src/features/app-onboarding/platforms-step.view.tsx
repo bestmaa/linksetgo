@@ -35,7 +35,7 @@ export function PlatformsStepView(props: PlatformsStepProps) {
         </h1>
         <p>
           These public identifiers let Apple and Android prove that your HTTPS links belong to the
-          installed app. Relay never needs your signing keys.
+          installed app. LinksetGo never needs your signing keys.
         </p>
       </div>
 

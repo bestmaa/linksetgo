@@ -15,6 +15,7 @@ export type AbuseReportViewProps = {
   form: AbuseReportForm
   isAccepted: boolean
   isSubmitting: boolean
+  marketingURL: string
   onFieldChange: <Key extends keyof AbuseReportForm>(
     field: Key,
     value: AbuseReportForm[Key],

@@ -3,8 +3,10 @@ import type { Metadata } from 'next'
 import { MarketingConnector } from '@/features/marketing/marketing.connector'
 
 export const metadata: Metadata = {
-  description: 'Open-source mobile deep-link infrastructure with managed hosting when you need it.',
-  title: 'Open-source deep links that stay under your control · Relay',
+  description: 'Create, validate and operate mobile deep links with LinksetGo.',
+  title: {
+    absolute: 'LinksetGo — Deep links, done right',
+  },
 }
 
 export default function HomePage() {

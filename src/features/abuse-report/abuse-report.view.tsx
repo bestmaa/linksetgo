@@ -8,21 +8,21 @@ export function AbuseReportView(props: AbuseReportViewProps) {
   return (
     <main className="marketing-inner abuse-report-page">
       <section className="marketing-container abuse-report-shell">
-        <Link className="marketing-brand" href="/">
+        <Link className="marketing-brand" href={props.marketingURL}>
           <BrandMark className="marketing-brand-mark" />
           <span>
-            <strong>Relay</strong>
+            <strong>LinksetGo</strong>
             <small>TRUST &amp; SAFETY</small>
           </span>
         </Link>
 
         <div className="abuse-report-card">
           <header>
-            <div className="marketing-pill">Report a harmful Relay link</div>
+            <div className="marketing-pill">Report a harmful LinksetGo link</div>
             <h1>Send the exact link for private review.</h1>
             <p>
-              Use this form for phishing, malware, spam or impersonation on a Relay-operated link.
-              Do not include passwords, payment details or other secrets.
+              Use this form for phishing, malware, spam or impersonation on a LinksetGo-operated
+              link. Do not include passwords, payment details or other secrets.
             </p>
           </header>
 
@@ -30,23 +30,23 @@ export function AbuseReportView(props: AbuseReportViewProps) {
             <section aria-live="polite" className="abuse-report-accepted">
               <h2>Report received</h2>
               <p>
-                If the URL matches a Relay resource, the operator&apos;s trust team can review it.
-                This response does not confirm whether the target exists.
+                If the URL matches a LinksetGo resource, the operator&apos;s trust team can review
+                it. This response does not confirm whether the target exists.
               </p>
-              <Link className="marketing-secondary" href="/">
-                Return to Relay
+              <Link className="marketing-secondary" href={props.marketingURL}>
+                Return to LinksetGo
               </Link>
             </section>
           ) : (
             <form className="abuse-report-form" onSubmit={props.onSubmit}>
               <label htmlFor="abuse-target">
-                Relay HTTPS link
+                LinksetGo HTTPS link
                 <input
                   autoComplete="url"
                   id="abuse-target"
                   maxLength={2048}
                   onChange={(event) => props.onFieldChange('targetURL', event.currentTarget.value)}
-                  placeholder="https://links.example.com/l/app/link"
+                  placeholder="https://oberoi.linksetgo.com/l/mall/offer"
                   required
                   type="url"
                   value={props.form.targetURL}
@@ -116,7 +116,8 @@ export function AbuseReportView(props: AbuseReportViewProps) {
                 {props.isSubmitting ? 'Sending report…' : 'Submit report'}
               </button>
               <p className="abuse-report-privacy">
-                Relay stores a privacy-safe request hash, not a raw client IP, in application data.
+                LinksetGo stores a privacy-safe request hash, not a raw client IP, in application
+                data.
               </p>
             </form>
           )}

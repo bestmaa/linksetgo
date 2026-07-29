@@ -36,10 +36,10 @@ export function FallbackOriginsView(props: FallbackOriginsViewProps) {
         <section className="card fallback-origin-community">
           <span aria-hidden="true">✓</span>
           <div>
-            <h2>Not required in Relay Community</h2>
+            <h2>Not required in LinksetGo Community</h2>
             <p>
               Community installations trust the operator&apos;s app fallback allowlist directly. DNS
-              ownership verification is a Relay Cloud activation gate.
+              ownership verification is a LinksetGo Cloud activation gate.
             </p>
           </div>
         </section>

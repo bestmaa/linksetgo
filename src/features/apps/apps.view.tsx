@@ -46,7 +46,7 @@ export function AppsView(props: AppsViewProps) {
         <div className="card">
           <EmptyState
             actionLabel="Add your first app"
-            description="Connect an iOS app, Android app, or both. Relay will generate the association configuration."
+            description="Connect an iOS app, Android app, or both. LinksetGo will generate the association configuration."
             onAction={props.onCreate}
             symbol="▦"
             title={props.search ? 'No matching apps' : 'No apps connected'}

@@ -1,6 +1,6 @@
 # Community code of conduct
 
-Relay contributors and maintainers are expected to make participation welcoming,
+LinksetGo contributors and maintainers are expected to make participation welcoming,
 safe, and useful.
 
 ## Expected behavior
@@ -26,4 +26,4 @@ public launch, maintainers must publish a monitored conduct contact and a confli
 of-interest escalation path.
 
 This policy applies in repositories, issue trackers, reviews, community events, and
-other spaces officially associated with Relay.
+other spaces officially associated with LinksetGo.

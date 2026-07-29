@@ -7,34 +7,33 @@ import './styles.css'
 import './marketing.css'
 
 export const metadata: Metadata = {
-  description:
-    'Create, validate and operate reliable mobile deep links with open-source infrastructure.',
+  description: 'Create, validate and operate reliable mobile deep links with LinksetGo.',
   icons: {
-    icon: '/brand/relay-mark.svg',
+    icon: '/brand/linksetgo-mark.svg',
   },
   metadataBase: getCanonicalSiteURL(),
   openGraph: {
-    description: 'Create reliable iOS, Android and web routes with self-hosted Relay Community.',
+    description: 'Create reliable iOS, Android and web routes with LinksetGo.',
     images: [
       {
-        alt: 'Relay routes one public link to iOS, Android and web destinations.',
-        height: 909,
-        url: '/og.png',
-        width: 1731,
+        alt: 'LinksetGo routes every mobile link to the right destination.',
+        height: 630,
+        url: '/og-linksetgo.png',
+        width: 1200,
       },
     ],
-    title: 'Open-source deep-link infrastructure.',
+    title: 'LinksetGo — Deep links, done right',
     type: 'website',
   },
   title: {
-    default: 'Relay - Open-source deep-link infrastructure',
-    template: '%s · Relay',
+    default: 'LinksetGo — Deep links, done right',
+    template: '%s · LinksetGo',
   },
   twitter: {
     card: 'summary_large_image',
-    description: 'Create reliable iOS, Android and web routes with self-hosted Relay Community.',
-    images: ['/og.png'],
-    title: 'Open-source deep-link infrastructure.',
+    description: 'Create reliable iOS, Android and web routes with LinksetGo.',
+    images: ['/og-linksetgo.png'],
+    title: 'LinksetGo — Deep links, done right',
   },
 }
 

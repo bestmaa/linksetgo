@@ -10,7 +10,7 @@ critical findings. All five records represent one transitive toolchain path:
 
 The underlying advisory is
 [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99), which
-affects an esbuild development server. Relay never starts that server. Drizzle Kit
+affects an esbuild development server. LinksetGo never starts that server. Drizzle Kit
 is used by Payload's controlled database toolchain, and the production Next.js
 standalone runner does not contain Drizzle Kit, `@esbuild-kit`, or esbuild. The
 production-only migrator image contains the Payload toolchain, but executes only
@@ -31,7 +31,7 @@ acceptable release-only change; track the upstream plugin compatibility updates.
 Two reachable patch updates were applied during this review:
 
 - Vitest was updated from 4.0.18 to 4.1.10, removing
-  [GHSA-5xrq-8626-4rwp](https://github.com/advisories/GHSA-5xrq-8626-4rwp). Relay
+  [GHSA-5xrq-8626-4rwp](https://github.com/advisories/GHSA-5xrq-8626-4rwp). LinksetGo
   runs Vitest headlessly and never exposes its UI server, but the patched release
   removes the critical development-tool advisory completely.
 - DOMPurify is pinned to 3.4.12 through an npm override, removing the Payload/Monaco

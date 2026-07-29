@@ -30,7 +30,7 @@ export type DomainActionResult =
 
 export const unavailableDomainAction = (): DomainActionResult => ({
   code: 'UNAVAILABLE',
-  message: 'Relay could not complete this domain operation safely. Try again shortly.',
+  message: 'LinksetGo could not complete this domain operation safely. Try again shortly.',
   ok: false,
   retryable: true,
   retryAfterSeconds: 30,

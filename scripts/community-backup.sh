@@ -6,7 +6,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="${RELAY_ENV_FILE:-${PROJECT_ROOT}/.env.community}"
 BACKUP_DIR="${RELAY_BACKUP_DIR:-${PROJECT_ROOT}/backups}"
 TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-BACKUP_FILE="${BACKUP_DIR}/relay-${TIMESTAMP}.dump"
+BACKUP_FILE="${BACKUP_DIR}/linksetgo-${TIMESTAMP}.dump"
 TEMP_FILE=""
 
 cleanup() {
@@ -28,7 +28,7 @@ fi
 mkdir -p -- "${BACKUP_DIR}"
 chmod 700 "${BACKUP_DIR}"
 umask 077
-TEMP_FILE="$(mktemp "${BACKUP_DIR}/.relay-backup.XXXXXX")"
+TEMP_FILE="$(mktemp "${BACKUP_DIR}/.linksetgo-backup.XXXXXX")"
 trap cleanup EXIT
 
 cd "${PROJECT_ROOT}"

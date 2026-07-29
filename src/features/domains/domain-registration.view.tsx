@@ -69,8 +69,9 @@ export function DomainRegistrationView(props: RegistrationProps) {
           <aside className="domain-entitlement-note">
             <strong>Server policy is authoritative</strong>
             <p>
-              Submitting requests registration from this Relay installation. Any plan or operator
-              restriction is enforced by the server; this screen does not assume entitlement.
+              Submitting requests registration from this LinksetGo installation. Any plan or
+              operator restriction is enforced by the server; this screen does not assume
+              entitlement.
             </p>
           </aside>
           {props.submitError ? (

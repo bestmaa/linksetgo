@@ -98,7 +98,7 @@ export async function PATCH(request: Request, context: Context): Promise<NextRes
           {
             error: {
               code: 'INVITATION_UNAVAILABLE',
-              message: 'Relay could not revoke this invitation.',
+              message: 'LinksetGo could not revoke this invitation.',
             },
           },
           503,

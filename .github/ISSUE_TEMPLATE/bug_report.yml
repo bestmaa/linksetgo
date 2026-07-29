@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible Relay problem (not a security vulnerability).
+description: Report a reproducible LinksetGo problem (not a security vulnerability).
 title: '[Bug]: '
 labels:
   - bug
@@ -10,7 +10,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Relay version
+      label: LinksetGo version
       placeholder: Tag or commit SHA
     validations:
       required: true

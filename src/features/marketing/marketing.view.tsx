@@ -30,8 +30,8 @@ export function MarketingView(props: MarketingViewProps) {
           <Link className="marketing-brand" href="/" onClick={props.onCloseMenu}>
             <BrandMark className="marketing-brand-mark" />
             <span>
-              <strong>Relay</strong>
-              <small>OPEN DEEP LINKS</small>
+              <strong>LinksetGo</strong>
+              <small>DEEP LINKS, DONE RIGHT</small>
             </span>
           </Link>
           <button
@@ -52,22 +52,21 @@ export function MarketingView(props: MarketingViewProps) {
                 {item.label}
               </Link>
             ))}
-            <Link className="marketing-login" href="/admin/login" onClick={props.onCloseMenu}>
+            <Link className="marketing-login" href={props.signInURL} onClick={props.onCloseMenu}>
               Sign in
             </Link>
             <Link
               className="marketing-cta"
-              href={props.signupAvailable ? '/signup' : '/docs'}
+              href={props.headerPrimaryAction.href}
               onClick={props.onCloseMenu}
             >
-              {props.signupAvailable ? 'Create workspace' : 'Self-host free'}{' '}
-              <Icon name="arrow" size={15} />
+              {props.headerPrimaryAction.label} <Icon name="arrow" size={15} />
             </Link>
           </nav>
         </div>
       </header>
 
-      {props.page === 'home' ? <LandingView signupAvailable={props.signupAvailable} /> : null}
+      {props.page === 'home' ? <LandingView primaryAction={props.landingPrimaryAction} /> : null}
       {props.page === 'pricing' ? <PricingView plans={props.pricingPlans} /> : null}
       {props.page === 'docs' ? <DocsView /> : null}
       {props.page === 'custom-domains' ? <CustomDomainsGuideView /> : null}
@@ -86,8 +85,8 @@ export function MarketingView(props: MarketingViewProps) {
             <Link className="marketing-brand marketing-brand-footer" href="/">
               <BrandMark className="marketing-brand-mark" />
               <span>
-                <strong>Relay</strong>
-                <small>OPEN DEEP LINKS</small>
+                <strong>LinksetGo</strong>
+                <small>DEEP LINKS, DONE RIGHT</small>
               </span>
             </Link>
             <p>Reliable links for every app, campaign and device.</p>
@@ -95,7 +94,7 @@ export function MarketingView(props: MarketingViewProps) {
           <div className="marketing-footer-links">
             <Link href="/docs">Documentation</Link>
             <Link href="/pricing">Pricing</Link>
-            <Link href="/admin/login">Console</Link>
+            <Link href={props.signInURL}>Console</Link>
             <Link href="/open-source">Open source</Link>
             {props.sourceCodeURL ? (
               <a href={props.sourceCodeURL} rel="noreferrer" target="_blank">
@@ -110,7 +109,7 @@ export function MarketingView(props: MarketingViewProps) {
             <Link href="/privacy">Privacy</Link>
             <Link href="/terms">Terms</Link>
           </div>
-          <p className="marketing-copyright">Relay Community. Open source, self-hostable.</p>
+          <p className="marketing-copyright">LinksetGo Community. Open source, self-hostable.</p>
         </div>
       </footer>
     </div>

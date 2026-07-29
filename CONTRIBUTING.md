@@ -1,6 +1,6 @@
-# Contributing to Relay
+# Contributing to LinksetGo
 
-Thank you for improving Relay. Small, focused changes with tests and clear
+Thank you for improving LinksetGo. Small, focused changes with tests and clear
 migration notes are easiest to review.
 
 ## Before opening a pull request
@@ -13,7 +13,7 @@ migration notes are easiest to review.
 
 ## Development
 
-Relay uses Node.js 22, npm, Next.js, Payload, and PostgreSQL. The contributor setup
+LinksetGo uses Node.js 22, npm, Next.js, Payload, and PostgreSQL. The contributor setup
 in [README.md](./README.md) provisions isolated local and test databases. Never run
 integration cleanup or an unreconciled migration against production data.
 

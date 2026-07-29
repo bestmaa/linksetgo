@@ -102,7 +102,7 @@ function assertHostnameIsCustomerOwned(hostname: string): void {
 
   const managedRoot = environment.managedLinkRootDomain
   if (managedRoot && (hostname === managedRoot || hostname.endsWith(`.${managedRoot}`))) {
-    throw new APIError('Managed Relay link hostnames cannot be fallback origins.', 400)
+    throw new APIError('Managed LinksetGo hostnames cannot be fallback origins.', 400)
   }
 }
 

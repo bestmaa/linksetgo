@@ -93,7 +93,7 @@ export function LinksView(props: LinksViewProps) {
         {!props.isLoading && !props.error && props.links.length === 0 ? (
           <EmptyState
             actionLabel="Create a deep link"
-            description="Choose an app and destination, then Relay will generate a URL you can share."
+            description="Choose an app and destination, then LinksetGo will generate a URL you can share."
             onAction={props.onCreate}
             title={
               props.search || props.appFilter || props.statusFilter

@@ -24,6 +24,8 @@ const reservedWorkspaceSlugs = new Set([
   'docs',
   'domains',
   'help',
+  'ingress',
+  'linksetgo',
   'login',
   'mail',
   'open',

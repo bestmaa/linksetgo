@@ -18,7 +18,7 @@ import {
 } from '@/lib/server/team-invitation-service'
 import { isSameOriginMutation } from '@/lib/server/same-origin-mutation'
 import { isActiveTeamUser } from '@/lib/server/team-service-shared'
-import { getCanonicalSiteURL } from '@/lib/server/site-url'
+import { getApplicationSiteURL } from '@/lib/server/site-url'
 
 const headers = { 'cache-control': 'private, no-store' }
 const response = (body: unknown, status: number, extra?: HeadersInit): NextResponse =>
@@ -103,7 +103,8 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   try {
     const result = await createOrganizationInvitation(parsed.value, {
-      appBaseURL: delivery.status === 'ready' ? delivery.appBaseURL : getCanonicalSiteURL().origin,
+      appBaseURL:
+        delivery.status === 'ready' ? delivery.appBaseURL : getApplicationSiteURL().origin,
       payload,
       ...(delivery.status === 'ready' && parsed.value.delivery === 'webhook'
         ? {
@@ -124,7 +125,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       {
         error: {
           code: 'INVITATION_UNAVAILABLE',
-          message: 'Relay could not create this invitation.',
+          message: 'LinksetGo could not create this invitation.',
         },
       },
       503,

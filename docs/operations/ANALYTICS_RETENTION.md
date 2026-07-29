@@ -1,6 +1,6 @@
 # Analytics retention operations
 
-Relay records privacy-reduced link events for aggregate analytics. Retention is
+LinksetGo records privacy-reduced link events for aggregate analytics. Retention is
 enforced by an explicit maintenance command, not by a background timer inside the
 web process. An operator must schedule that command for the published retention
 policy to be true in practice.

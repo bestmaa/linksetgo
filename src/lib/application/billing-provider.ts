@@ -47,7 +47,7 @@ export class DisabledBillingProvider implements BillingProvider {
   ): Promise<BillingProviderResult<BillingSession>> {
     return {
       kind: 'disabled',
-      message: 'Billing is disabled for this Relay deployment.',
+      message: 'Billing is disabled for this LinksetGo deployment.',
     }
   }
 
@@ -56,7 +56,7 @@ export class DisabledBillingProvider implements BillingProvider {
   ): Promise<BillingProviderResult<BillingSession>> {
     return {
       kind: 'disabled',
-      message: 'Billing is disabled for this Relay deployment.',
+      message: 'Billing is disabled for this LinksetGo deployment.',
     }
   }
 
@@ -65,7 +65,7 @@ export class DisabledBillingProvider implements BillingProvider {
   ): Promise<BillingProviderResult<SubscriptionEvent>> {
     return {
       kind: 'disabled',
-      message: 'Billing is disabled for this Relay deployment.',
+      message: 'Billing is disabled for this LinksetGo deployment.',
     }
   }
 }
