@@ -111,9 +111,9 @@ describe('app management domain rules', () => {
     }
 
     expect(
-      presentAppDetail(detail, 'Main workspace', true, 'https://links.company.com').recentLinks[0]
+      presentAppDetail(detail, 'Main workspace', true, 'https://links.example.com').recentLinks[0]
         ?.publicUrl,
-    ).toBe('https://links.company.com/l/example-app/offer')
+    ).toBe('https://links.example.com/l/example-app/offer')
     expect(
       presentAppDetail(detail, 'Main workspace', true, null).recentLinks[0]?.publicUrl,
     ).toBeNull()

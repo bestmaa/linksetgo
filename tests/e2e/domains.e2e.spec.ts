@@ -22,7 +22,7 @@ test.describe('workspace domain console', () => {
 
   test('shows exact DNS instructions and submits only custom-domain intent', async ({ page }) => {
     const domains: MockDomain[] = [
-      { hostname: 'links.company.com', id: 11, status: 'pending-dns', type: 'custom' },
+      { hostname: 'links.example.com', id: 11, status: 'pending-dns', type: 'custom' },
       { hostname: 'workspace.links.linksetgo.example', id: 12, status: 'active', type: 'managed' },
     ]
     let submittedBody: Record<string, unknown> | null = null
@@ -84,7 +84,7 @@ test.describe('workspace domain console', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Domains' })).toBeVisible()
     const domainList = page.getByRole('region', { name: 'Workspace domains' })
     await expect(
-      domainList.getByRole('button', { name: /links\.company\.com.*pending-dns/i }),
+      domainList.getByRole('button', { name: /links\.example\.com.*pending-dns/i }),
     ).toBeVisible()
     await expect(
       domainList.getByRole('button', {
@@ -99,15 +99,15 @@ test.describe('workspace domain console', () => {
 
     await page.getByRole('button', { name: 'Add custom domain' }).click()
     const dialog = page.getByRole('dialog')
-    await dialog.getByLabel(/Public hostname/).fill('https://invalid.company.com/path')
+    await dialog.getByLabel(/Public hostname/).fill('https://invalid.example.com/path')
     await dialog.getByRole('button', { name: 'Register domain' }).click()
     await expect(dialog.getByText(/without a scheme, path, port, IP, or wildcard/)).toBeVisible()
 
-    await dialog.getByLabel(/Public hostname/).fill('go.company.com')
+    await dialog.getByLabel(/Public hostname/).fill('go.example.com')
     await dialog.getByRole('button', { name: 'Register domain' }).click()
-    await expect(page.getByRole('heading', { name: 'go.company.com' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'go.example.com' })).toBeVisible()
     expect(submittedBody).toEqual({
-      hostname: 'go.company.com',
+      hostname: 'go.example.com',
       workspaceId: expect.any(String),
     })
     expect(submittedBody).not.toHaveProperty('status')
