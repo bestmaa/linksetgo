@@ -144,6 +144,14 @@ export function decideDeploymentSurface(input: {
   const search = input.search ?? ''
   if (!hostname) return { kind: 'deny' }
 
+  if (
+    isLoopbackHostname(hostname) &&
+    isReadMethod(method) &&
+    matchesPrefix(pathname, '/api/health')
+  ) {
+    return { kind: 'allow' }
+  }
+
   if (config.edition === 'community') {
     const isApplicationHost = hostname === config.appHostname || isLoopbackHostname(hostname)
     if (!isApplicationHost) {

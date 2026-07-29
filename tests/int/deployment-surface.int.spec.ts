@@ -82,6 +82,23 @@ describe('deployment host surfaces', () => {
     ).toEqual({ kind: 'redirect', destination: '/admin/login' })
   })
 
+  it('allows container health probes on loopback without exposing the Cloud console', () => {
+    expect(
+      decideDeploymentSurface({
+        config: cloudConfig,
+        hostname: '127.0.0.1',
+        pathname: '/api/health/ready',
+      }),
+    ).toEqual({ kind: 'allow' })
+    expect(
+      decideDeploymentSurface({
+        config: cloudConfig,
+        hostname: '127.0.0.1',
+        pathname: '/admin',
+      }),
+    ).toEqual({ kind: 'deny' })
+  })
+
   it('allows only the exact public methods and paths on workspace and custom domains', () => {
     for (const hostname of ['oberoi.linksetgo.com', 'links.customer.com']) {
       expect(
