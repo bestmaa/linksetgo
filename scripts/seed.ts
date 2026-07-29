@@ -4,10 +4,10 @@ import { getPayload, type Payload } from 'payload'
 
 import config from '../src/payload.config'
 
-const SAMPLE_APP_SLUG = 'relay-demo'
+const SAMPLE_APP_SLUG = 'sample-app'
 const SAMPLE_LINK_SLUG = 'welcome-offer'
-const SAMPLE_APP_STORE_URL = 'https://apps.apple.com/in/app/relay-demo/id123456789'
-const SAMPLE_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.example.relaydemo'
+const SAMPLE_APP_STORE_URL = 'https://apps.apple.com/app/id123456789'
+const SAMPLE_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.example.sampleapp'
 
 const requiredEnvironment = (name: 'SEED_ADMIN_EMAIL' | 'SEED_ADMIN_PASSWORD'): string => {
   const value = process.env[name]?.trim()
@@ -34,7 +34,7 @@ const seedAdmin = async (payload: Payload, email: string, password: string): Pro
     overrideAccess: true,
     data: {
       email,
-      name: process.env.SEED_ADMIN_NAME?.trim() || 'Relay Administrator',
+      name: process.env.SEED_ADMIN_NAME?.trim() || 'LinksetGo Administrator',
       password,
       role: 'super-admin',
       status: 'active',
@@ -141,7 +141,7 @@ const seedSampleApp = async (payload: Payload, workspaceID: number): Promise<num
       workspace?: number
     } = {}
     if (!existingApp.appStoreUrl) missingDefaults.appStoreUrl = SAMPLE_APP_STORE_URL
-    if (!existingApp.nativeScheme) missingDefaults.nativeScheme = 'relaydemo'
+    if (!existingApp.nativeScheme) missingDefaults.nativeScheme = 'sampleapp'
     if (!existingApp.playStoreUrl) missingDefaults.playStoreUrl = SAMPLE_PLAY_STORE_URL
     if (!existingApp.workspace) missingDefaults.workspace = workspaceID
 
@@ -161,14 +161,14 @@ const seedSampleApp = async (payload: Payload, workspaceID: number): Promise<num
     collection: 'apps',
     overrideAccess: true,
     data: {
-      name: 'Relay Demo Shop',
-      nativeScheme: 'relaydemo',
+      name: 'Sample App',
+      nativeScheme: 'sampleapp',
       slug: SAMPLE_APP_SLUG,
       description: 'Sample app for local deep-link testing.',
       status: 'active',
-      iosBundleId: 'com.example.relaydemo',
+      iosBundleId: 'com.example.sampleapp',
       iosTeamId: 'DEMO123456',
-      androidPackageName: 'com.example.relaydemo',
+      androidPackageName: 'com.example.sampleapp',
       androidSha256CertFingerprints: [
         'AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99',
       ],
@@ -206,7 +206,7 @@ const seedSampleLink = async (payload: Payload, appID: number): Promise<void> =>
       app: appID,
       slug: SAMPLE_LINK_SLUG,
       destinationPath: '/offers/welcome',
-      parameters: { campaign: 'local-seed', source: 'relay-console' },
+      parameters: { campaign: 'local-seed', source: 'linksetgo-console' },
       fallbackUrl: 'https://example.com/',
       status: 'active',
     },

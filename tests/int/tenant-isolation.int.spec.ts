@@ -12,9 +12,9 @@ const FIXTURE = {
   linkB: 'tenant-beta-link',
   organizationA: 'tenant-alpha',
   organizationB: 'tenant-beta',
-  userA: 'tenant-alpha@relay.test',
-  userB: 'tenant-beta@relay.test',
-  platformUser: 'tenant-platform@relay.test',
+  userA: 'tenant-alpha@linksetgo.test',
+  userB: 'tenant-beta@linksetgo.test',
+  platformUser: 'tenant-platform@linksetgo.test',
   workspaceA: 'tenant-alpha-workspace',
   workspaceB: 'tenant-beta-workspace',
 } as const
@@ -186,7 +186,7 @@ describe.sequential('organization tenant isolation', () => {
       collection: 'apps',
       overrideAccess: true,
       data: {
-        fallbackUrl: 'https://alpha.relay.test',
+        fallbackUrl: 'https://alpha.linksetgo.test',
         iosBundleId: 'com.example.tenantalpha',
         iosTeamId: 'ALPHA12345',
         name: 'Tenant Alpha app',
@@ -200,7 +200,7 @@ describe.sequential('organization tenant isolation', () => {
       collection: 'apps',
       overrideAccess: true,
       data: {
-        fallbackUrl: 'https://beta.relay.test',
+        fallbackUrl: 'https://beta.linksetgo.test',
         iosBundleId: 'com.example.tenantbeta',
         iosTeamId: 'BETA123456',
         name: 'Tenant Beta app',
@@ -273,7 +273,7 @@ describe.sequential('organization tenant isolation', () => {
         overrideAccess: false,
         user: userA,
         data: {
-          fallbackUrl: 'https://blocked.relay.test',
+          fallbackUrl: 'https://blocked.linksetgo.test',
           name: 'Blocked cross-tenant app',
           nativeScheme: 'blockedtenant',
           slug: 'blocked-cross-tenant-app',
@@ -306,7 +306,7 @@ describe.sequential('organization tenant isolation', () => {
       overrideAccess: false,
       user: userA,
       data: {
-        fallbackUrl: 'https://alpha.relay.test/created',
+        fallbackUrl: 'https://alpha.linksetgo.test/created',
         iosBundleId: 'com.example.tenantcreated',
         iosTeamId: 'CREATE1234',
         name: 'Tenant Alpha created app',

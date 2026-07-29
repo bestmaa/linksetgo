@@ -10,7 +10,7 @@ describe('public fallback branding and cross-host navigation', () => {
   it('uses the fixed marketing origin instead of the customer hostname', () => {
     render(
       createElement(FallbackView, {
-        appName: 'Oberoi Mall',
+        appName: 'Example App',
         destination: '/offer',
         fallbackHref: null,
         isLoading: false,

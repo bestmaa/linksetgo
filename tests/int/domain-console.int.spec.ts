@@ -18,7 +18,7 @@ import type { Domain, User } from '@/payload-types'
 const activeUser: User = {
   collection: 'users',
   createdAt: '2026-07-27T00:00:00.000Z',
-  email: 'owner@relay.test',
+  email: 'owner@linksetgo.test',
   id: 7,
   name: 'Workspace owner',
   role: 'admin',
@@ -140,7 +140,7 @@ describe('custom-domain console boundary', () => {
 
 describe('bounded console JSON requests', () => {
   it('accepts a small JSON body', async () => {
-    const request = new Request('https://relay.test/api/admin/domains', {
+    const request = new Request('https://linksetgo.test/api/admin/domains', {
       body: JSON.stringify({ hostname: 'links.company.com', workspaceId: '12' }),
       headers: { 'content-type': 'application/json' },
       method: 'POST',
@@ -153,12 +153,12 @@ describe('bounded console JSON requests', () => {
   })
 
   it('rejects oversized declared and streamed bodies', async () => {
-    const declared = new Request('https://relay.test/api/admin/domains', {
+    const declared = new Request('https://linksetgo.test/api/admin/domains', {
       body: '{}',
       headers: { 'content-length': '2049', 'content-type': 'application/json' },
       method: 'POST',
     })
-    const streamed = new Request('https://relay.test/api/admin/domains', {
+    const streamed = new Request('https://linksetgo.test/api/admin/domains', {
       body: JSON.stringify({ hostname: 'x'.repeat(3000) }),
       headers: { 'content-type': 'application/json' },
       method: 'POST',
@@ -175,7 +175,7 @@ describe('bounded console JSON requests', () => {
   })
 
   it('rejects non-JSON media types before parsing', async () => {
-    const request = new Request('https://relay.test/api/admin/domains', {
+    const request = new Request('https://linksetgo.test/api/admin/domains', {
       body: '{}',
       headers: { 'content-type': 'text/plain' },
       method: 'POST',

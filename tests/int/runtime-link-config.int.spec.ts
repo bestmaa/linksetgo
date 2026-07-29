@@ -12,7 +12,7 @@ describe('runtime workspace link configuration', () => {
         { hostname: 'pending.brand.test', status: 'pending-dns', type: 'custom' },
       ],
       edition: 'cloud',
-      installationBaseURL: 'https://relay.example',
+      installationBaseURL: 'https://linksetgo.example',
       workspaceID: '12',
     })
 

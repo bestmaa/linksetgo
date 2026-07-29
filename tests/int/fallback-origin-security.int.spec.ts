@@ -21,8 +21,8 @@ const FIXTURE = {
   organization: 'fallback-origin-org',
   origin: 'verified-fallback.example',
   pendingOrigin: 'pending-fallback.example',
-  platformUser: 'fallback-platform@relay.test',
-  tenantUser: 'fallback-tenant@relay.test',
+  platformUser: 'fallback-platform@linksetgo.test',
+  tenantUser: 'fallback-tenant@linksetgo.test',
   workspace: 'fallback-origin-workspace',
 } as const
 
@@ -198,13 +198,13 @@ describe.sequential('Cloud fallback-origin ownership', () => {
       verificationToken: 'abcdefghijklmnopqrstuvwxyz123456',
     })
     expect(instructions).toEqual({
-      name: '_relay-fallback.verified-fallback.example',
+      name: '_linksetgo-fallback.verified-fallback.example',
       type: 'TXT',
-      value: 'relay-fallback-verification=abcdefghijklmnopqrstuvwxyz123456',
+      value: 'linksetgo-fallback-verification=abcdefghijklmnopqrstuvwxyz123456',
     })
     expect(
       evaluateFallbackOriginEvidence(instructions!, {
-        txtValues: ['relay-fallback-verification=copied-token'],
+        txtValues: ['linksetgo-fallback-verification=copied-token'],
       }),
     ).toMatchObject({ ok: false, code: 'OWNERSHIP_CHALLENGE_MISSING' })
   })
@@ -338,7 +338,7 @@ describe.sequential('Cloud fallback-origin ownership', () => {
     await expect(
       resolvePublicLink({
         appSlug: FIXTURE.app,
-        baseURL: 'https://links.relay.example',
+        baseURL: 'https://links.linksetgo.example',
         linkSlug: 'offer',
         workspaceID: String(workspaceID),
       }),
@@ -349,7 +349,7 @@ describe.sequential('Cloud fallback-origin ownership', () => {
     await expect(
       resolvePublicLink({
         appSlug: FIXTURE.app,
-        baseURL: 'https://links.relay.example',
+        baseURL: 'https://links.linksetgo.example',
         linkSlug: 'offer',
         workspaceID: String(workspaceID),
       }),

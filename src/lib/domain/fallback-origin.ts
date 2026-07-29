@@ -23,7 +23,7 @@ export type FallbackOriginEvidenceResult =
       message: string
     }
 
-const challengePrefix = 'relay-fallback-verification='
+const challengePrefix = 'linksetgo-fallback-verification='
 const transitions: Readonly<Record<FallbackOriginStatus, readonly FallbackOriginStatus[]>> = {
   pending: ['revoked', 'verifying'],
   revoked: [],
@@ -54,7 +54,7 @@ export function buildFallbackOriginInstructions(input: {
   if (!hostname || token.length < 24 || !/^[A-Za-z0-9_-]+$/.test(token)) return null
 
   return {
-    name: `_relay-fallback.${hostname}`,
+    name: `_linksetgo-fallback.${hostname}`,
     type: 'TXT',
     value: `${challengePrefix}${token}`,
   }

@@ -4,7 +4,7 @@ import type { Payload } from 'payload'
 
 import { selectRuntimeLinkConfig, type RuntimeLinkConfig } from '@/lib/domain/runtime-link-config'
 import type { User } from '@/payload-types'
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { getServerEnvironment } from './env'
 
 type RuntimeConfigResult =
@@ -86,7 +86,7 @@ export async function getRuntimeLinkConfig(
 
   const value = selectRuntimeLinkConfig({
     domains: domains.docs,
-    edition: getRelayEdition(),
+    edition: getLinksetGoEdition(),
     installationBaseURL: getServerEnvironment().publicLinkBaseURL,
     workspaceID,
   })

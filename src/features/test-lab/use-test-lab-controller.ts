@@ -11,10 +11,10 @@ import { validateAssociation } from './association-validator'
 import {
   checkResult,
   type CheckResult,
-  parseRelayUrl,
+  parseLinksetGoUrl,
   pendingChecks,
   platformsFor,
-  safeRelayUrl,
+  safeLinksetGoUrl,
   selectedSavedLinkId,
 } from './test-lab-controller.helpers'
 import { checkPublicLink, loadAppConfiguration } from './test-lab-requests'
@@ -34,7 +34,7 @@ export function useTestLabController() {
   const [isRunning, setIsRunning] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null)
   const runId = useRef(0)
-  const openUrl = configuredOrigin ? safeRelayUrl(url, configuredOrigin) : null
+  const openUrl = configuredOrigin ? safeLinksetGoUrl(url, configuredOrigin) : null
   const qr = useTestLabQr(openUrl)
   const savedLinks = useSavedLinkOptions(configuredOrigin, selectedWorkspaceId)
 
@@ -78,9 +78,9 @@ export function useTestLabController() {
       return
     }
 
-    let parsed: ReturnType<typeof parseRelayUrl>
+    let parsed: ReturnType<typeof parseLinksetGoUrl>
     try {
-      parsed = parseRelayUrl(url.trim(), configuredOrigin)
+      parsed = parseLinksetGoUrl(url.trim(), configuredOrigin)
     } catch (parseError) {
       setChecks(
         pendingChecks(platform).map((check, index) =>

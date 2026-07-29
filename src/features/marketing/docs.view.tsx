@@ -63,7 +63,7 @@ export function DocsView() {
               fallback. Draft, paused, expired or unknown links remain unavailable.
             </p>
             <pre>
-              <code>https://links.example.com/l/oberoi/offer</code>
+              <code>https://example.linksetgo.com/l/sample-app/welcome-offer</code>
             </pre>
             <div className="marketing-doc-flow">
               <span>HTTPS link</span>

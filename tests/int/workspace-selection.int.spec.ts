@@ -32,7 +32,7 @@ describe('workspace selection', () => {
         {
           id: 11,
           name: 'Retail',
-          organization: { id: 1, name: 'Oberoi', slug: 'oberoi' },
+          organization: { id: 1, name: 'Example', slug: 'example' },
           slug: 'retail',
           status: 'active',
         },
@@ -61,7 +61,7 @@ describe('workspace selection', () => {
         id: '11',
         name: 'Retail',
         organizationId: '1',
-        organizationName: 'Oberoi',
+        organizationName: 'Example',
         role: 'admin',
         slug: 'retail',
       },
@@ -99,7 +99,9 @@ describe('workspace-scoped Payload client queries', () => {
     await payloadClient.listDeepLinks({ appIds: [12, 'app-13'] })
     await payloadClient.listLinkEvents({ appIds: [12, 'app-13'] })
 
-    const urls = fetchMock.mock.calls.map(([input]) => new URL(String(input), 'https://relay.test'))
+    const urls = fetchMock.mock.calls.map(
+      ([input]) => new URL(String(input), 'https://linksetgo.test'),
+    )
     expect(urls[0]?.searchParams.get('where[workspace][equals]')).toBe('workspace-7')
     expect(urls[1]?.searchParams.get('where[app][in]')).toBe('12,app-13')
     expect(urls[2]?.searchParams.get('where[app][in]')).toBe('12,app-13')

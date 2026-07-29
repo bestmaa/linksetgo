@@ -46,7 +46,7 @@ export function AbuseReportView(props: AbuseReportViewProps) {
                   id="abuse-target"
                   maxLength={2048}
                   onChange={(event) => props.onFieldChange('targetURL', event.currentTarget.value)}
-                  placeholder="https://oberoi.linksetgo.com/l/mall/offer"
+                  placeholder="https://example.linksetgo.com/l/sample-app/welcome-offer"
                   required
                   type="url"
                   value={props.form.targetURL}

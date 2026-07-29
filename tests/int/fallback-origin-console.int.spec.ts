@@ -16,9 +16,9 @@ const FIXTURE = {
   hostname: 'console-fallback.example',
   organizationA: 'fallback-console-org-a',
   organizationB: 'fallback-console-org-b',
-  systemUser: 'fallback-console-system@relay.test',
-  userA: 'fallback-console-a@relay.test',
-  userB: 'fallback-console-b@relay.test',
+  systemUser: 'fallback-console-system@linksetgo.test',
+  userA: 'fallback-console-a@linksetgo.test',
+  userB: 'fallback-console-b@linksetgo.test',
   workspaceA: 'fallback-console-workspace-a',
   workspaceB: 'fallback-console-workspace-b',
 } as const
@@ -249,9 +249,9 @@ describe.sequential('workspace fallback-origin console', () => {
       ok: true,
       value: {
         record: {
-          name: `_relay-fallback.${FIXTURE.hostname}`,
+          name: `_linksetgo-fallback.${FIXTURE.hostname}`,
           type: 'TXT',
-          value: expect.stringMatching(/^relay-fallback-verification=/),
+          value: expect.stringMatching(/^linksetgo-fallback-verification=/),
         },
       },
     })

@@ -21,7 +21,7 @@ const teamProps = (overrides: Partial<TeamViewProps> = {}): TeamViewProps => ({
     {
       canRevoke: true,
       deliveryMode: 'webhook',
-      email: 'invitee@relay.test',
+      email: 'invitee@linksetgo.test',
       expiresLabel: 'Aug 3, 2026',
       id: '21',
       inviter: 'Owner',
@@ -52,7 +52,7 @@ const teamProps = (overrides: Partial<TeamViewProps> = {}): TeamViewProps => ({
   members: [
     {
       canEdit: true,
-      detail: 'owner@relay.test',
+      detail: 'owner@linksetgo.test',
       id: '10',
       isSelf: true,
       name: 'Owner',
@@ -79,7 +79,7 @@ const teamProps = (overrides: Partial<TeamViewProps> = {}): TeamViewProps => ({
   onRoleChange: noop,
   onSaveMember: (event) => event.preventDefault(),
   onToggleRemoveConfirmation: noop,
-  organizationName: 'Oberoi Mall',
+  organizationName: 'Example App',
   toast: null,
   workspaceName: 'Production',
   ...overrides,
@@ -94,7 +94,7 @@ const inviteProps = (overrides: Partial<TeamInviteViewProps> = {}): TeamInviteVi
   onConfirmPasswordChange: noop,
   onCreateAccount: (event) => event.preventDefault(),
   onNameChange: noop,
-  onOpenRelay: noop,
+  onOpenLinksetGo: noop,
   onPasswordChange: noop,
   onSignIn: noop,
   onUseDifferentAccount: noop,
@@ -102,8 +102,8 @@ const inviteProps = (overrides: Partial<TeamInviteViewProps> = {}): TeamInviteVi
   state: {
     preview: {
       accountMode: 'create',
-      emailMasked: 'in*****@relay.test',
-      organizationName: 'Oberoi Mall',
+      emailMasked: 'in*****@linksetgo.test',
+      organizationName: 'Example App',
       role: 'member',
     },
     status: 'ready',
@@ -134,7 +134,7 @@ describe('team management views', () => {
             error: null,
             isOpen: true,
             isSaving: false,
-            manualUrl: 'https://app.relay.test/invite#token=secret',
+            manualUrl: 'https://app.linksetgo.test/invite#token=secret',
             role: 'viewer',
           },
         }),
@@ -149,11 +149,11 @@ describe('team management views', () => {
   it('shows only the masked invited email on public account creation', () => {
     render(createElement(TeamInviteView, inviteProps()))
 
-    expect(screen.getByRole('heading', { name: 'Join Oberoi Mall' })).toBeTruthy()
-    expect(screen.getByText('in*****@relay.test', { exact: true })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Join Example App' })).toBeTruthy()
+    expect(screen.getByText('in*****@linksetgo.test', { exact: true })).toBeTruthy()
     expect(screen.getByLabelText('Your name')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Create account and join' })).toBeTruthy()
-    expect(screen.queryByText('invitee@relay.test')).toBeNull()
+    expect(screen.queryByText('invitee@linksetgo.test')).toBeNull()
   })
 
   it('requires account switching when the authenticated email does not match', () => {
@@ -164,8 +164,8 @@ describe('team management views', () => {
           state: {
             preview: {
               accountMode: 'wrong-account',
-              emailMasked: 'in*****@relay.test',
-              organizationName: 'Oberoi Mall',
+              emailMasked: 'in*****@linksetgo.test',
+              organizationName: 'Example App',
               role: 'admin',
             },
             status: 'ready',

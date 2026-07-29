@@ -31,7 +31,7 @@ export function LoginView(props: LoginViewProps) {
                 inputMode="email"
                 name="email"
                 onChange={props.onEmailChange}
-                placeholder="you@company.com"
+                placeholder="you@example.com"
                 type="email"
                 value={props.email}
               />

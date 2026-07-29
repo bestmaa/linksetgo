@@ -203,7 +203,7 @@ export function useFallbackOriginsController(props: { required: boolean }) {
       onClose: closeRegistration,
       onHostnameBlur: () => {
         if (hostname && !normalizeCustomHostnameDraft(hostname)) {
-          setHostnameError('Enter a hostname such as www.company.com.')
+          setHostnameError('Enter a hostname such as www.example.com.')
         }
       },
       onHostnameChange: (value: string) => {

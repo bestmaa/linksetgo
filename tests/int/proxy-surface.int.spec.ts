@@ -29,7 +29,7 @@ describe.sequential('request host surface proxy', () => {
     const response = proxy(
       new NextRequest('https://internal.example/admin', {
         headers: {
-          host: 'oberoi.linksetgo.com',
+          host: 'example.linksetgo.com',
           'x-forwarded-host': 'app.linksetgo.com',
         },
       }),

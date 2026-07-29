@@ -98,7 +98,7 @@ export function validateOnboardingStep(
     if (!form.nativeScheme.trim()) {
       errors.nativeScheme = 'Enter the custom URL scheme supplied by the mobile team.'
     } else if (!normalizeNativeScheme(form.nativeScheme)) {
-      errors.nativeScheme = 'Use a custom scheme such as oberoi, without ://.'
+      errors.nativeScheme = 'Use a custom scheme such as sampleapp, without ://.'
     }
   }
 

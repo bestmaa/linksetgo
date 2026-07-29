@@ -2,7 +2,7 @@ import { sql } from '@payloadcms/db-postgres'
 import { APIError, type CollectionBeforeValidateHook, type PayloadRequest } from 'payload'
 
 import { canCreateResource, type PlanMetric } from '@/lib/domain/plan-catalog'
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { acquireTransactionLock, requiredTransaction } from './postgres-lock'
 import { resolveOrganizationPlan } from './billing-plan'
 import { relationID } from './tenant-context'
@@ -100,7 +100,7 @@ async function enforceQuota(
   organizationID: string,
   metric: CountedMetric,
 ): Promise<void> {
-  if (getRelayEdition() === 'community') return
+  if (getLinksetGoEdition() === 'community') return
 
   await acquireTransactionLock(req, 'organization-quota', `${organizationID}:${metric}`)
   const resolution = await resolveOrganizationPlan(req.payload, relationshipInput(organizationID), {
@@ -126,7 +126,7 @@ export const enforceAppQuota: CollectionBeforeValidateHook = async ({
   originalDoc,
   req,
 }) => {
-  if (getRelayEdition() === 'community') return data
+  if (getLinksetGoEdition() === 'community') return data
   const next = isRecord(data) ? data : {}
   const previous = isRecord(originalDoc) ? originalDoc : {}
   const workspaceID = relationID(selected(next, previous, 'workspace'))
@@ -149,7 +149,7 @@ export const enforceActiveLinkQuota: CollectionBeforeValidateHook = async ({
   originalDoc,
   req,
 }) => {
-  if (getRelayEdition() === 'community') return data
+  if (getLinksetGoEdition() === 'community') return data
   const next = isRecord(data) ? data : {}
   const previous = isRecord(originalDoc) ? originalDoc : {}
   const nextStatus = selected(next, previous, 'status')
@@ -184,7 +184,7 @@ export const enforceCustomDomainQuota: CollectionBeforeValidateHook = async ({
   originalDoc,
   req,
 }) => {
-  if (getRelayEdition() === 'community' || operation !== 'create') return data
+  if (getLinksetGoEdition() === 'community' || operation !== 'create') return data
   const next = isRecord(data) ? data : {}
   const previous = isRecord(originalDoc) ? originalDoc : {}
   if (selected(next, previous, 'type') !== 'custom') return data
@@ -201,7 +201,7 @@ export const enforceMemberQuota: CollectionBeforeValidateHook = async ({
   originalDoc,
   req,
 }) => {
-  if (getRelayEdition() === 'community') return data
+  if (getLinksetGoEdition() === 'community') return data
   const next = isRecord(data) ? data : {}
   const previous = isRecord(originalDoc) ? originalDoc : {}
   if (

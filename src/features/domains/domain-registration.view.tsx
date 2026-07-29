@@ -54,7 +54,7 @@ export function DomainRegistrationView(props: RegistrationProps) {
               id="custom-domain-hostname"
               onBlur={props.onHostnameBlur}
               onChange={(event) => props.onHostnameChange(event.currentTarget.value)}
-              placeholder="links.company.com"
+              placeholder="links.example.com"
               value={props.hostname}
             />
             <span className="form-help" id="custom-domain-help">

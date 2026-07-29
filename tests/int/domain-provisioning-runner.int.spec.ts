@@ -8,9 +8,9 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 const fixture = {
   app: 'domain-provisioner-app',
-  domain: 'provisioner-domain.relay.test',
+  domain: 'provisioner-domain.linksetgo.test',
   organization: 'domain-provisioner-org',
-  user: 'domain-provisioner@relay.test',
+  user: 'domain-provisioner@linksetgo.test',
   workspace: 'domain-provisioner-workspace',
 } as const
 
@@ -80,7 +80,7 @@ describe.sequential('custom-domain provisioning transaction', () => {
 
   beforeAll(async () => {
     assertTestDatabase()
-    vi.stubEnv('MANAGED_INGRESS_CNAME_TARGET', 'ingress.relay.test')
+    vi.stubEnv('MANAGED_INGRESS_CNAME_TARGET', 'ingress.linksetgo.test')
     const config = (await import('@/payload.config')).default
     payload = await getPayload({ config: await config })
     await cleanup()
@@ -162,8 +162,8 @@ describe.sequential('custom-domain provisioning transaction', () => {
     const inspectDNS = vi.fn(async () => ({
       kind: 'success' as const,
       value: {
-        cnameTargets: ['ingress.relay.test'],
-        txtValues: [`relay-domain-verification=${domain.verificationToken}`],
+        cnameTargets: ['ingress.linksetgo.test'],
+        txtValues: [`linksetgo-domain-verification=${domain.verificationToken}`],
       },
     }))
     const requestCertificate = vi.fn(async () => ({
@@ -209,7 +209,7 @@ describe.sequential('custom-domain provisioning transaction', () => {
 
     await expect(
       confirmCustomDomainRelease({
-        confirmedHostname: 'another-domain.relay.test',
+        confirmedHostname: 'another-domain.linksetgo.test',
         domainID: String(domain.id),
         payload: payload!,
         user,

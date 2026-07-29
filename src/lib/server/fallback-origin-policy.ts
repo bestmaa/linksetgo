@@ -5,7 +5,7 @@ import {
   type PayloadRequest,
 } from 'payload'
 
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { fallbackHostnameFromURL, normalizedFallbackHostnames } from './collection-guards'
 import { relationID } from './tenant-context'
 
@@ -58,7 +58,7 @@ export async function areCloudFallbackOriginsReady(input: {
   req?: PayloadRequest
   workspace: unknown
 }): Promise<boolean> {
-  if (getRelayEdition() !== 'cloud') return true
+  if (getLinksetGoEdition() !== 'cloud') return true
 
   const workspaceID = relationID(input.workspace)
   if (!workspaceID) return false
@@ -85,7 +85,7 @@ export const enforceCloudAppFallbackOrigins: CollectionBeforeValidateHook = asyn
   originalDoc,
   req,
 }) => {
-  if (getRelayEdition() !== 'cloud') return data
+  if (getLinksetGoEdition() !== 'cloud') return data
 
   const next = isRecord(data) ? data : {}
   const previous = isRecord(originalDoc) ? originalDoc : {}

@@ -2,7 +2,7 @@ import 'server-only'
 
 import type { Payload } from 'payload'
 
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { resolveOrganizationPlan } from './billing-plan'
 import { relationID } from './tenant-context'
 
@@ -26,7 +26,7 @@ export async function analyticsRetentionDaysForOrganization(
   payload: Payload,
   organizationID: number | string,
 ): Promise<number> {
-  if (getRelayEdition() === 'community') return communityAnalyticsRetentionDays()
+  if (getLinksetGoEdition() === 'community') return communityAnalyticsRetentionDays()
   const resolution = await resolveOrganizationPlan(payload, organizationID, { edition: 'cloud' })
   const limit = resolution.plan.limits.analyticsRetentionDays
   if (limit === 'unlimited') return MAX_ANALYTICS_RETENTION_DAYS

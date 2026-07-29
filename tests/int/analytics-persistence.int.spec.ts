@@ -13,9 +13,9 @@ const FIXTURE = {
   links: ['analytics-alpha-link', 'analytics-beta-link'],
   organizations: ['analytics-alpha', 'analytics-beta'],
   users: [
-    'analytics-platform@relay.test',
-    'analytics-alpha@relay.test',
-    'analytics-beta@relay.test',
+    'analytics-platform@linksetgo.test',
+    'analytics-alpha@linksetgo.test',
+    'analytics-beta@linksetgo.test',
   ],
   workspaces: ['analytics-alpha-workspace', 'analytics-beta-workspace'],
 } as const

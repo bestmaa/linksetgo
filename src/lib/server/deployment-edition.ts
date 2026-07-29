@@ -1,15 +1,15 @@
-export type RelayEdition = 'cloud' | 'community'
+export type LinksetGoEdition = 'cloud' | 'community'
 
-export function getRelayEdition(
+export function getLinksetGoEdition(
   configuredValue: string | undefined = process.env.RELAY_EDITION,
-): RelayEdition {
+): LinksetGoEdition {
   return configuredValue?.trim().toLowerCase() === 'cloud' ? 'cloud' : 'community'
 }
 
 export function requireCloudEdition(
   configuredValue: string | undefined = process.env.RELAY_EDITION,
 ): void {
-  if (getRelayEdition(configuredValue) !== 'cloud') {
+  if (getLinksetGoEdition(configuredValue) !== 'cloud') {
     throw new Error('This operation is available only in LinksetGo Cloud mode.')
   }
 }

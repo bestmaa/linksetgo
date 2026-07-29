@@ -35,7 +35,7 @@ export function validateNativeSchemeValue(value: unknown): true | string {
   if (value === null || value === undefined || value === '') return true
   return normalizeNativeScheme(value) === value
     ? true
-    : 'Use 2–64 lowercase scheme characters (for example, oberoi) without ://.'
+    : 'Use 2–64 lowercase scheme characters (for example, sampleapp) without ://.'
 }
 
 export function nativeSchemeURL(scheme: string, destinationPath: string): string | null {

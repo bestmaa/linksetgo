@@ -6,7 +6,7 @@ import { getPlanUsageState } from '@/lib/domain/plan-catalog'
 import type { BillingSummaryDTO } from '@/lib/client/payload-types'
 import type { User } from '@/payload-types'
 import { resolveOrganizationPlan } from './billing-plan'
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { monthlyUsagePeriodStart } from './resolution-metering'
 import { relationID } from './tenant-context'
 
@@ -65,7 +65,7 @@ export async function getBillingSummary(
       canResolve: resolution.access.canResolve,
       reason: resolution.access.reason,
     },
-    edition: getRelayEdition(),
+    edition: getLinksetGoEdition(),
     plan: {
       key: resolution.plan.key,
       limits: resolution.plan.limits,

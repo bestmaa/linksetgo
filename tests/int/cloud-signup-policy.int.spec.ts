@@ -8,11 +8,11 @@ import { applyNewUserPolicy } from '../../src/lib/server/user-creation-policy'
 
 const validSignup = {
   acceptTerms: true,
-  email: 'owner@oberoi.test',
-  name: 'Oberoi Owner',
-  organizationName: 'Oberoi Mall',
+  email: 'owner@example.test',
+  name: 'Example Owner',
+  organizationName: 'Example App',
   password: 'StrongPassword123!',
-  workspaceSlug: 'oberoi-mall',
+  workspaceSlug: 'example-app',
 } as const
 
 const originalEdition = process.env.RELAY_EDITION
@@ -30,7 +30,7 @@ describe('Relay Cloud signup policy', () => {
     expect(
       evaluateCloudSignupGate({
         cloudSignupEnabled: 'true',
-        relayEdition: 'community',
+        linksetGoEdition: 'community',
       }),
     ).toEqual({ ok: false, code: 'COMMUNITY_EDITION' })
     expect(
@@ -77,7 +77,7 @@ describe('Relay Cloud signup policy', () => {
     expect(
       evaluateCloudSignupGate({
         cloudSignupEnabled: undefined,
-        relayEdition: 'cloud',
+        linksetGoEdition: 'cloud',
       }),
     ).toEqual({ ok: false, code: 'SIGNUP_DISABLED' })
     expect(
@@ -122,7 +122,7 @@ describe('Relay Cloud signup policy', () => {
 
     expect(
       applyNewUserPolicy(
-        { email: 'first-owner@relay.test' },
+        { email: 'first-owner@linksetgo.test' },
         { existingUsers: 0, isCloudSignup: false },
       ),
     ).toMatchObject({ role: 'super-admin', status: 'active' })
@@ -131,27 +131,27 @@ describe('Relay Cloud signup policy', () => {
   it('requires complete, explicit production delivery configuration', () => {
     expect(
       getCloudSignupConfiguration({
-        CLOUD_APP_BASE_URL: 'https://app.relay.test',
+        CLOUD_APP_BASE_URL: 'https://app.linksetgo.test',
         CLOUD_SIGNUP_ENABLED: 'true',
         CLOUD_VERIFICATION_WEBHOOK_SECRET: 'x'.repeat(32),
-        CLOUD_VERIFICATION_WEBHOOK_URL: 'https://mailer.relay.test/verify',
-        MANAGED_LINK_ROOT_DOMAIN: 'links.relay.test',
+        CLOUD_VERIFICATION_WEBHOOK_URL: 'https://mailer.linksetgo.test/verify',
+        MANAGED_LINK_ROOT_DOMAIN: 'links.linksetgo.test',
         NODE_ENV: 'production',
         RELAY_EDITION: 'cloud',
       }),
     ).toMatchObject({
       status: 'ready',
-      appBaseURL: 'https://app.relay.test',
-      managedLinkRootDomain: 'links.relay.test',
+      appBaseURL: 'https://app.linksetgo.test',
+      managedLinkRootDomain: 'links.linksetgo.test',
     })
 
     expect(
       getCloudSignupConfiguration({
-        CLOUD_APP_BASE_URL: 'https://app.relay.test',
+        CLOUD_APP_BASE_URL: 'https://app.linksetgo.test',
         CLOUD_SIGNUP_ENABLED: 'true',
         CLOUD_VERIFICATION_WEBHOOK_SECRET: 'short',
-        CLOUD_VERIFICATION_WEBHOOK_URL: 'https://mailer.relay.test/verify',
-        MANAGED_LINK_ROOT_DOMAIN: 'links.relay.test',
+        CLOUD_VERIFICATION_WEBHOOK_URL: 'https://mailer.linksetgo.test/verify',
+        MANAGED_LINK_ROOT_DOMAIN: 'links.linksetgo.test',
         NODE_ENV: 'production',
         RELAY_EDITION: 'cloud',
       }),
@@ -159,11 +159,11 @@ describe('Relay Cloud signup policy', () => {
 
     expect(
       getCloudSignupConfiguration({
-        CLOUD_APP_BASE_URL: 'https://app.relay.test/untrusted-path',
+        CLOUD_APP_BASE_URL: 'https://app.linksetgo.test/untrusted-path',
         CLOUD_SIGNUP_ENABLED: 'true',
         CLOUD_VERIFICATION_WEBHOOK_SECRET: 'x'.repeat(32),
-        CLOUD_VERIFICATION_WEBHOOK_URL: 'https://mailer.relay.test/verify',
-        MANAGED_LINK_ROOT_DOMAIN: 'links.relay.test',
+        CLOUD_VERIFICATION_WEBHOOK_URL: 'https://mailer.linksetgo.test/verify',
+        MANAGED_LINK_ROOT_DOMAIN: 'links.linksetgo.test',
         NODE_ENV: 'production',
         RELAY_EDITION: 'cloud',
       }),

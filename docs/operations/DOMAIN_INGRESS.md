@@ -20,7 +20,7 @@ DOMAIN_PROVISIONING_WEBHOOK_SECRET=replace-with-at-least-32-random-characters
 ```
 
 `MANAGED_LINK_ROOT_DOMAIN` reserves workspace hostnames such as
-`oberoi.linksetgo.example`. `MANAGED_INGRESS_CNAME_TARGET` is the exact CNAME
+`example.linksetgo.example`. `MANAGED_INGRESS_CNAME_TARGET` is the exact CNAME
 target shown during custom-domain verification.
 
 Keep `TRUST_PROXY_HOST_HEADER=false` when Next.js receives the public `Host`
@@ -53,7 +53,7 @@ rate-limited, serialized with a PostgreSQL advisory transaction lock, and
 subject to a persistent retry cooldown. The application asks the configured
 adapter to inspect:
 
-- TXT `_relay-verification.{hostname}` with the exact LinksetGo challenge; and
+- TXT `_linksetgo-verification.{hostname}` with the exact LinksetGo challenge; and
 - the customer hostname CNAME with the exact configured ingress target.
 
 The adapter receives only the action and normalized hostname:
@@ -69,7 +69,7 @@ It returns already-observed evidence:
   "kind": "success",
   "value": {
     "cnameTargets": ["ingress.linksetgo.example"],
-    "txtValues": ["relay-domain-verification=server-issued-token"]
+    "txtValues": ["linksetgo-domain-verification=server-issued-token"]
   }
 }
 ```
@@ -110,7 +110,7 @@ tenant URL:
 ```json
 {
   "action": "lookup-txt",
-  "recordName": "_relay-fallback.www.company.com"
+  "recordName": "_linksetgo-fallback.www.company.com"
 }
 ```
 
@@ -121,7 +121,7 @@ Its successful response contains the observation time and TXT strings:
   "kind": "success",
   "value": {
     "observedAt": "2026-07-27T08:00:00.000Z",
-    "values": ["relay-fallback-verification=server-issued-token"]
+    "values": ["linksetgo-fallback-verification=server-issued-token"]
   }
 }
 ```

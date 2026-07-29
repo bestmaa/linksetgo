@@ -80,17 +80,17 @@ describe('public deep-link lifecycle', () => {
 
   it('projects a safe user-initiated native fallback without changing the public URL', () => {
     const projection = projectPublicLink(
-      makeApp({ nativeScheme: 'oberoi' }),
+      makeApp({ nativeScheme: 'example' }),
       makeLink({ parameters: { SlabName: 'Gold', promo: '10 OFF' } }),
       'https://links.example.com',
     )
     expect(projection.publicUrl).toBe('https://links.example.com/l/shop/offer')
-    expect(projection.link.nativeUrl).toBe('oberoi://offers/42?SlabName=Gold&promo=10+OFF')
+    expect(projection.link.nativeUrl).toBe('example://offers/42?SlabName=Gold&promo=10+OFF')
   })
 
   it('fails closed when a legacy destination is unsafe for a native fallback', () => {
     const projection = projectPublicLink(
-      makeApp({ nativeScheme: 'oberoi' }),
+      makeApp({ nativeScheme: 'example' }),
       makeLink({ destinationPath: '/offers/%2e%2e/admin' }),
       'https://links.example.com',
     )

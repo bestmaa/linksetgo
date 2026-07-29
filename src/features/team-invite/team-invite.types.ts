@@ -21,7 +21,7 @@ export type TeamInviteViewProps = {
   onConfirmPasswordChange: ChangeEventHandler<HTMLInputElement>
   onCreateAccount: FormEventHandler<HTMLFormElement>
   onNameChange: ChangeEventHandler<HTMLInputElement>
-  onOpenRelay: () => void
+  onOpenLinksetGo: () => void
   onPasswordChange: ChangeEventHandler<HTMLInputElement>
   onSignIn: () => void
   onUseDifferentAccount: () => void

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { login } from '../helpers/login'
-import { seededApp, seededLink } from '../helpers/relay-fixtures'
+import { seededApp, seededLink } from '../helpers/sample-fixtures'
 
 test.describe('workspace app management', () => {
   test.beforeEach(async ({ page }) => {

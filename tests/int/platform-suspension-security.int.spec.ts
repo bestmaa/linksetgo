@@ -8,8 +8,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 const FIXTURE = {
   app: 'suspension-security-app',
   organization: 'suspension-security-org',
-  platformUser: 'suspension-platform@relay.test',
-  tenantUser: 'suspension-tenant@relay.test',
+  platformUser: 'suspension-platform@linksetgo.test',
+  tenantUser: 'suspension-tenant@linksetgo.test',
   workspace: 'suspension-security-workspace',
 } as const
 

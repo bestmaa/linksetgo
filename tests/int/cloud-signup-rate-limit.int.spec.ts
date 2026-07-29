@@ -11,7 +11,7 @@ import {
 const secret = 'rate-limit-test-secret-with-32-characters'
 
 const requestWithHeaders = (headers: HeadersInit): Request =>
-  new Request('https://app.relay.test/api/auth/signup', {
+  new Request('https://app.linksetgo.test/api/auth/signup', {
     headers: { 'user-agent': 'Relay rate-limit test', ...headers },
     method: 'POST',
   })
@@ -76,7 +76,7 @@ describe('Cloud signup proxy identity', () => {
   it('keeps verification resend and password recovery email budgets separate', async () => {
     const provider = new InMemoryRateLimitProvider(() => 1_000)
     const input = {
-      email: 'rate-limit-account@relay.test',
+      email: 'rate-limit-account@linksetgo.test',
       eventHashSecret: secret,
       provider,
     }

@@ -7,7 +7,7 @@ fallback page. Private collection APIs remain authenticated.
 
 ```http
 GET /api/public/links/{appKey}/{linkSlug}
-Host: oberoi.linksetgo.example
+Host: example.linksetgo.example
 ```
 
 The request hostname is part of the tenant key. LinksetGo exact-matches it to an active
@@ -23,21 +23,21 @@ Successful response:
 ```json
 {
   "status": "active",
-  "publicUrl": "https://oberoi.linksetgo.example/l/mall/gold-reward",
+  "publicUrl": "https://example.linksetgo.example/l/sample-app/welcome-offer",
   "app": {
-    "name": "Oberoi Mall",
-    "slug": "mall",
-    "appStoreUrl": "https://apps.apple.com/in/app/example/id123456789",
-    "playStoreUrl": "https://play.google.com/store/apps/details?id=com.example.mall",
+    "name": "Example App",
+    "slug": "sample-app",
+    "appStoreUrl": "https://apps.apple.com/app/id123456789",
+    "playStoreUrl": "https://play.google.com/store/apps/details?id=com.example.sampleapp",
     "fallbackUrl": "https://www.example.com/app"
   },
   "link": {
     "name": "Gold reward",
-    "slug": "gold-reward",
-    "destinationPath": "/rewards-detail",
+    "slug": "welcome-offer",
+    "destinationPath": "/membership-detail",
     "parameters": {
-      "SlabName": "Gold",
-      "SlabPromo": "10OFF"
+      "level": "Gold",
+      "promo": "10OFF"
     },
     "fallbackUrl": null,
     "status": "active",
@@ -96,7 +96,7 @@ Content-Type: application/json
 ```json
 {
   "appSlug": "mall",
-  "linkSlug": "gold-reward",
+  "linkSlug": "welcome-offer",
   "eventType": "store-clicked",
   "sessionID": "opaque-browser-session"
 }

@@ -8,11 +8,11 @@ describe('Community billing provider', () => {
 
     await expect(
       provider.createCheckoutSession({
-        cancelURL: 'https://relay.example/cancel',
+        cancelURL: 'https://linksetgo.example/cancel',
         customerEmail: 'owner@example.com',
         organizationID: 'org_1',
         plan: 'starter',
-        successURL: 'https://relay.example/success',
+        successURL: 'https://linksetgo.example/success',
       }),
     ).resolves.toEqual({
       kind: 'disabled',

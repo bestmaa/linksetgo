@@ -75,7 +75,7 @@ export function validateAppDetailForm(
     errors.description = 'Keep the description under 500 characters.'
   }
   if (form.nativeScheme.trim() && !normalizeNativeScheme(form.nativeScheme)) {
-    errors.nativeScheme = 'Use a custom scheme such as oberoi, without ://.'
+    errors.nativeScheme = 'Use a custom scheme such as sampleapp, without ://.'
   }
   if (form.iosBundleId.trim() && !iosBundlePattern.test(form.iosBundleId.trim())) {
     errors.iosBundleId = 'Use a reverse-domain bundle identifier.'

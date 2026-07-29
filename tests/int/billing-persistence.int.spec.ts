@@ -33,11 +33,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 const FIXTURE = {
   organizations: ['billing-free', 'billing-starter', 'billing-pro'],
   users: [
-    'billing-platform@relay.test',
-    'billing-free@relay.test',
-    'billing-starter@relay.test',
-    'billing-pro@relay.test',
-    'billing-invitee@relay.test',
+    'billing-platform@linksetgo.test',
+    'billing-free@linksetgo.test',
+    'billing-starter@linksetgo.test',
+    'billing-pro@linksetgo.test',
+    'billing-invitee@linksetgo.test',
   ],
 } as const
 
@@ -397,7 +397,7 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
     })
     await expect(
       createOrganizationCheckout({
-        appBaseURL: 'https://app.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
         payload,
         plan: 'pro',
         provider,

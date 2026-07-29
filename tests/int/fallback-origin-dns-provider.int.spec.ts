@@ -15,7 +15,7 @@ describe('fallback-origin DNS webhook adapter', () => {
         kind: 'success',
         value: {
           observedAt: '2026-07-27T08:00:00.000Z',
-          values: ['relay-fallback-verification=expected'],
+          values: ['linksetgo-fallback-verification=expected'],
         },
       }),
     )
@@ -24,16 +24,16 @@ describe('fallback-origin DNS webhook adapter', () => {
       fetchMock as typeof fetch,
     )
 
-    await expect(provider.lookupTXT('_relay-fallback.WWW.Company.Example.')).resolves.toEqual({
+    await expect(provider.lookupTXT('_linksetgo-fallback.WWW.Company.Example.')).resolves.toEqual({
       observedAt: '2026-07-27T08:00:00.000Z',
-      values: ['relay-fallback-verification=expected'],
+      values: ['linksetgo-fallback-verification=expected'],
     })
     const [url, init] = fetchMock.mock.calls[0]!
     expect(url).toBe(configuration.url)
     expect(init).toMatchObject({
       body: JSON.stringify({
         action: 'lookup-txt',
-        recordName: '_relay-fallback.www.company.example',
+        recordName: '_linksetgo-fallback.www.company.example',
       }),
       method: 'POST',
       redirect: 'error',
@@ -52,7 +52,7 @@ describe('fallback-origin DNS webhook adapter', () => {
       /invalid TXT record name/i,
     )
     await expect(
-      provider.lookupTXT('_relay-fallback.https://company.example/path'),
+      provider.lookupTXT('_linksetgo-fallback.https://company.example/path'),
     ).rejects.toThrow(/invalid TXT record name/i)
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -80,13 +80,13 @@ describe('fallback-origin DNS webhook adapter', () => {
       }) as unknown as typeof fetch,
     )
 
-    await expect(malformed.lookupTXT('_relay-fallback.company.example')).rejects.toThrow(
+    await expect(malformed.lookupTXT('_linksetgo-fallback.company.example')).rejects.toThrow(
       /invalid evidence/i,
     )
-    await expect(oversized.lookupTXT('_relay-fallback.company.example')).rejects.toThrow(
+    await expect(oversized.lookupTXT('_linksetgo-fallback.company.example')).rejects.toThrow(
       /invalid evidence/i,
     )
-    await expect(unavailable.lookupTXT('_relay-fallback.company.example')).rejects.toThrow(
+    await expect(unavailable.lookupTXT('_linksetgo-fallback.company.example')).rejects.toThrow(
       /provider is unavailable/i,
     )
   })

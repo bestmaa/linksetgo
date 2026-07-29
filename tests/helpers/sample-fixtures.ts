@@ -4,12 +4,12 @@ export type SeedAdminCredentials = Readonly<{
 }>
 
 export const seededApp = {
-  androidPackageName: 'com.example.relaydemo',
-  appleAppID: 'DEMO123456.com.example.relaydemo',
-  name: 'Relay Demo Shop',
-  nativeScheme: 'relaydemo',
-  pathPattern: '/l/relay-demo/*',
-  slug: 'relay-demo',
+  androidPackageName: 'com.example.sampleapp',
+  appleAppID: 'DEMO123456.com.example.sampleapp',
+  name: 'Sample App',
+  nativeScheme: 'sampleapp',
+  pathPattern: '/l/sample-app/*',
+  slug: 'sample-app',
 } as const
 
 export const seededLink = {

@@ -381,7 +381,7 @@ export async function createCloudSignup(
 ): Promise<CloudSignupResult> {
   const gate = evaluateCloudSignupGate({
     cloudSignupEnabled: process.env.CLOUD_SIGNUP_ENABLED,
-    relayEdition: process.env.RELAY_EDITION,
+    linksetGoEdition: process.env.RELAY_EDITION,
   })
   if (!gate.ok) {
     throw new CloudSignupError(
@@ -615,7 +615,7 @@ export async function resendCloudSignupVerification(
 ): Promise<{ deliveryAttempted: boolean }> {
   const gate = evaluateCloudSignupGate({
     cloudSignupEnabled: process.env.CLOUD_SIGNUP_ENABLED,
-    relayEdition: process.env.RELAY_EDITION,
+    linksetGoEdition: process.env.RELAY_EDITION,
   })
   if (!gate.ok) return { deliveryAttempted: false }
 

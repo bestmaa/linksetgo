@@ -15,7 +15,7 @@ import {
 } from '@/lib/domain/fallback-origin'
 import type { FallbackOrigin, User } from '@/payload-types'
 
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import type { FallbackOriginDNSProviderConfiguration } from './fallback-origin-dns-webhook'
 import {
   beginFallbackOriginVerification,
@@ -77,7 +77,7 @@ export async function listConsoleFallbackOrigins(input: {
   user: User
   workspaceID: string
 }): Promise<ConsoleResult<FallbackOriginListDTO>> {
-  if (getRelayEdition() !== 'cloud') {
+  if (getLinksetGoEdition() !== 'cloud') {
     return {
       ok: true,
       value: {
@@ -130,7 +130,7 @@ export async function registerConsoleFallbackOrigin(input: {
   user: User
   workspaceID: string
 }): Promise<ConsoleResult<FallbackOriginConsoleDTO>> {
-  if (getRelayEdition() !== 'cloud') {
+  if (getLinksetGoEdition() !== 'cloud') {
     return {
       code: 'NOT_REQUIRED',
       message: 'LinksetGo Community does not require fallback-origin verification.',
@@ -229,7 +229,7 @@ export async function getConsoleFallbackOriginInstructions(input: {
   user: User
   workspaceID: string
 }): Promise<ConsoleResult<FallbackOriginInstructionsDTO>> {
-  if (getRelayEdition() !== 'cloud') {
+  if (getLinksetGoEdition() !== 'cloud') {
     return {
       code: 'NOT_REQUIRED',
       message: 'LinksetGo Community does not require fallback-origin verification.',
@@ -286,7 +286,7 @@ export async function runConsoleFallbackOriginAction(input: {
   user: User
   workspaceID: string
 }): Promise<ConsoleResult<FallbackOriginActionDTO>> {
-  if (getRelayEdition() !== 'cloud') {
+  if (getLinksetGoEdition() !== 'cloud') {
     return {
       code: 'NOT_REQUIRED',
       message: 'LinksetGo Community does not require fallback-origin verification.',

@@ -41,7 +41,7 @@ public proxy is enabled.
 
 - LinksetGo admin: `http://127.0.0.1:3100/admin`
 - Payload emergency CMS: `http://127.0.0.1:3100/cms` (super-admin only)
-- Seeded link: `http://127.0.0.1:3100/l/relay-demo/welcome-offer`
+- Seeded link: `http://127.0.0.1:3100/l/sample-app/welcome-offer`
 - Apple association: `http://127.0.0.1:3100/.well-known/apple-app-site-association`
 - Android association: `http://127.0.0.1:3100/.well-known/assetlinks.json`
 

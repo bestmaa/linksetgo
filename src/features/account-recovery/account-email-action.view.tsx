@@ -61,7 +61,7 @@ export function AccountEmailActionView(
                 className="field"
                 inputMode="email"
                 onChange={props.onEmailChange}
-                placeholder="you@company.com"
+                placeholder="you@example.com"
                 required
                 type="email"
                 value={props.email}

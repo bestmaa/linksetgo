@@ -5,11 +5,11 @@ import { POST } from '@/app/api/public/link-events/route'
 describe('public link-event request boundary', () => {
   it('rejects an oversized body before host or database resolution', async () => {
     const response = await POST(
-      new Request('https://links.relay.example/api/public/link-events', {
+      new Request('https://links.linksetgo.example/api/public/link-events', {
         body: JSON.stringify({ padding: 'x'.repeat(5000) }),
         headers: {
           'content-type': 'application/json',
-          host: 'links.relay.example',
+          host: 'links.linksetgo.example',
         },
         method: 'POST',
       }),
@@ -20,23 +20,23 @@ describe('public link-event request boundary', () => {
 
   it('requires JSON and rejects unknown event fields', async () => {
     const wrongType = await POST(
-      new Request('https://links.relay.example/api/public/link-events', {
+      new Request('https://links.linksetgo.example/api/public/link-events', {
         body: '{}',
-        headers: { 'content-type': 'text/plain', host: 'links.relay.example' },
+        headers: { 'content-type': 'text/plain', host: 'links.linksetgo.example' },
         method: 'POST',
       }),
     )
     expect(wrongType.status).toBe(415)
 
     const extraField = await POST(
-      new Request('https://links.relay.example/api/public/link-events', {
+      new Request('https://links.linksetgo.example/api/public/link-events', {
         body: JSON.stringify({
           appSlug: 'app',
           eventType: 'fallback-viewed',
           extra: true,
           linkSlug: 'offer',
         }),
-        headers: { 'content-type': 'application/json', host: 'links.relay.example' },
+        headers: { 'content-type': 'application/json', host: 'links.linksetgo.example' },
         method: 'POST',
       }),
     )
@@ -51,11 +51,11 @@ describe('public link-event request boundary', () => {
 
     for (const body of invalidBodies) {
       const response = await POST(
-        new Request('https://links.relay.example/api/public/link-events', {
+        new Request('https://links.linksetgo.example/api/public/link-events', {
           body: JSON.stringify(body),
           headers: {
             'content-type': 'application/json',
-            host: 'links.relay.example',
+            host: 'links.linksetgo.example',
           },
           method: 'POST',
         }),
@@ -66,7 +66,7 @@ describe('public link-event request boundary', () => {
 
   it('accepts the documented mobile app-opened event at the request boundary', async () => {
     const response = await POST(
-      new Request('https://links.relay.example/api/public/link-events', {
+      new Request('https://links.linksetgo.example/api/public/link-events', {
         body: JSON.stringify({
           appSlug: 'app',
           eventType: 'app-opened',
@@ -74,7 +74,7 @@ describe('public link-event request boundary', () => {
         }),
         headers: {
           'content-type': 'application/json',
-          host: 'links.relay.example:99999',
+          host: 'links.linksetgo.example:99999',
         },
         method: 'POST',
       }),

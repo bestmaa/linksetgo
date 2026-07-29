@@ -2,7 +2,7 @@ import type { AppDTO, DeepLinkDTO } from '@/lib/client/payload-types'
 
 import type { CheckViewModel, SavedLinkOptionViewModel, TestPlatform } from './test-lab.types'
 
-export type ParsedRelayUrl = {
+export type ParsedLinksetGoUrl = {
   appSlug: string
   linkSlug: string
   origin: string
@@ -14,7 +14,7 @@ export type CheckResult = Omit<CheckViewModel, 'copyAction'> & {
   copyValue?: string
 }
 
-export function parseRelayUrl(value: string, configuredOrigin: string): ParsedRelayUrl {
+export function parseLinksetGoUrl(value: string, configuredOrigin: string): ParsedLinksetGoUrl {
   const parsed = new URL(value)
   if (parsed.origin !== configuredOrigin) {
     throw new Error(`Use the configured link domain: ${configuredOrigin}.`)
@@ -31,9 +31,9 @@ export function parseRelayUrl(value: string, configuredOrigin: string): ParsedRe
   }
 }
 
-export function safeRelayUrl(value: string, configuredOrigin: string): string | null {
+export function safeLinksetGoUrl(value: string, configuredOrigin: string): string | null {
   try {
-    return parseRelayUrl(value.trim(), configuredOrigin).url
+    return parseLinksetGoUrl(value.trim(), configuredOrigin).url
   } catch {
     return null
   }

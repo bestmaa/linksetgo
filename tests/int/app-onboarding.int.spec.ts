@@ -11,7 +11,7 @@ const fingerprint = Array.from({ length: 32 }, () => 'AA').join(':')
 
 describe('app onboarding', () => {
   it('generates a stable URL-safe app key from a product name', () => {
-    expect(slugifyAppName('  Oberoi Mall — Rewards!  ')).toBe('oberoi-mall-rewards')
+    expect(slugifyAppName('  Example App — Rewards!  ')).toBe('example-app-rewards')
   })
 
   it('reports the platform identifiers needed to publish both association files', () => {

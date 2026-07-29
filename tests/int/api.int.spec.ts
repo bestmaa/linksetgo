@@ -68,7 +68,7 @@ describe.sequential('Payload/PostgreSQL API', () => {
       ? {
           ok: true,
           httpStatus: 200,
-          body: projectPublicLink(storedApp, storedLink, 'https://links.relay.test'),
+          body: projectPublicLink(storedApp, storedLink, 'https://links.linksetgo.test'),
         }
       : {
           ok: false,
@@ -106,8 +106,8 @@ describe.sequential('Payload/PostgreSQL API', () => {
         name: 'Relay integration app',
         slug: APP_SLUG,
         status: 'active',
-        fallbackUrl: 'https://fallback.relay.test/default',
-        allowedFallbackHosts: ['allowed.relay.test'],
+        fallbackUrl: 'https://fallback.linksetgo.test/default',
+        allowedFallbackHosts: ['allowed.linksetgo.test'],
       },
     })
 
@@ -124,7 +124,7 @@ describe.sequential('Payload/PostgreSQL API', () => {
           app: app.id,
           slug,
           destinationPath: `/offers/${slug}`,
-          fallbackUrl: 'https://allowed.relay.test/offer',
+          fallbackUrl: 'https://allowed.linksetgo.test/offer',
           status,
           ...(expiresAt ? { expiresAt } : {}),
         },
@@ -168,7 +168,7 @@ describe.sequential('Payload/PostgreSQL API', () => {
 
   it('normalizes the app fallback host and rejects a link fallback outside its allowlist', async () => {
     expect(app.allowedFallbackHosts).toEqual(
-      expect.arrayContaining(['allowed.relay.test', 'fallback.relay.test']),
+      expect.arrayContaining(['allowed.linksetgo.test', 'fallback.linksetgo.test']),
     )
 
     await expect(
@@ -180,7 +180,7 @@ describe.sequential('Payload/PostgreSQL API', () => {
           app: app.id,
           slug: 'blocked-fallback',
           destinationPath: '/blocked',
-          fallbackUrl: 'https://untrusted.relay.test/redirect',
+          fallbackUrl: 'https://untrusted.linksetgo.test/redirect',
           status: 'active',
         },
       }),
@@ -195,7 +195,7 @@ describe.sequential('Payload/PostgreSQL API', () => {
       httpStatus: 200,
       body: {
         status: 'active',
-        publicUrl: `https://links.relay.test/l/${APP_SLUG}/${LINK_SLUGS.active}`,
+        publicUrl: `https://links.linksetgo.test/l/${APP_SLUG}/${LINK_SLUGS.active}`,
         app: { slug: APP_SLUG },
         link: { slug: LINK_SLUGS.active, status: 'active' },
       },

@@ -100,7 +100,7 @@ describe('deployment host surfaces', () => {
   })
 
   it('allows only the exact public methods and paths on workspace and custom domains', () => {
-    for (const hostname of ['oberoi.linksetgo.com', 'links.customer.com']) {
+    for (const hostname of ['example.linksetgo.com', 'links.customer.com']) {
       expect(
         decideDeploymentSurface({
           config: cloudConfig,

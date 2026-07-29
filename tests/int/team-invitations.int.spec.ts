@@ -16,14 +16,14 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 const FIXTURE = {
   emails: [
-    'team-platform@relay.test',
-    'team-owner@relay.test',
-    'team-admin@relay.test',
-    'team-other-owner@relay.test',
-    'team-invitee@relay.test',
-    'team-rollback@relay.test',
-    'team-expired@relay.test',
-    'team-revoked@relay.test',
+    'team-platform@linksetgo.test',
+    'team-owner@linksetgo.test',
+    'team-admin@linksetgo.test',
+    'team-other-owner@linksetgo.test',
+    'team-invitee@linksetgo.test',
+    'team-rollback@linksetgo.test',
+    'team-expired@linksetgo.test',
+    'team-revoked@linksetgo.test',
   ],
   organizations: ['team-invitations-primary', 'team-invitations-other'],
 } as const
@@ -200,7 +200,7 @@ describe.sequential('secure organization invitations and owner safety', () => {
         role: 'member',
       },
       {
-        appBaseURL: 'https://app.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
         now: () => new Date('2026-07-27T08:00:00.000Z'),
         payload,
         randomToken: () => token,
@@ -213,7 +213,7 @@ describe.sequential('secure organization invitations and owner safety', () => {
 
     expect(result).not.toHaveProperty('manualUrl')
     expect(result.invitation).not.toHaveProperty('tokenHash')
-    expect(delivered?.invitationURL).toBe(`https://app.relay.test/invite#token=${token}`)
+    expect(delivered?.invitationURL).toBe(`https://app.linksetgo.test/invite#token=${token}`)
     const stored = await payload.find({
       collection: 'organization-invitations',
       overrideAccess: true,
@@ -238,7 +238,7 @@ describe.sequential('secure organization invitations and owner safety', () => {
         collection: 'organization-invitations',
         data: {
           deliveryMode: 'webhook',
-          emailNormalized: 'team-forged@relay.test',
+          emailNormalized: 'team-forged@linksetgo.test',
           expiresAt: '2026-08-03T00:00:00.000Z',
           invitedBy: owner.id,
           organization: organization.id,
@@ -261,7 +261,7 @@ describe.sequential('secure organization invitations and owner safety', () => {
           role: 'viewer',
         },
         {
-          appBaseURL: 'https://app.relay.test',
+          appBaseURL: 'https://app.linksetgo.test',
           payload,
           randomToken: () => 'B'.repeat(43),
           sendInvitation: async () => {
@@ -291,7 +291,7 @@ describe.sequential('secure organization invitations and owner safety', () => {
       }),
     ).resolves.toMatchObject({
       accountMode: 'create',
-      emailMasked: expect.stringMatching(/@relay\.test$/),
+      emailMasked: expect.stringMatching(/@linksetgo\.test$/),
       organizationName: organization.name,
       role: 'member',
     })
@@ -357,7 +357,7 @@ describe.sequential('secure organization invitations and owner safety', () => {
         role: 'viewer',
       },
       {
-        appBaseURL: 'https://app.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
         now: () => new Date('2026-07-01T00:00:00.000Z'),
         payload,
         randomToken: () => token,
@@ -382,7 +382,7 @@ describe.sequential('secure organization invitations and owner safety', () => {
           role: 'member',
         },
         {
-          appBaseURL: 'https://app.relay.test',
+          appBaseURL: 'https://app.linksetgo.test',
           payload,
           randomToken: () => 'D'.repeat(43),
           sendInvitation: async () => undefined,
@@ -401,7 +401,7 @@ describe.sequential('secure organization invitations and owner safety', () => {
         role: 'viewer',
       },
       {
-        appBaseURL: 'https://app.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
         payload,
         randomToken: () => 'E'.repeat(43),
         sendInvitation: async () => undefined,
@@ -443,7 +443,7 @@ describe.sequential('secure organization invitations and owner safety', () => {
           role: 'member',
         },
         {
-          appBaseURL: 'https://app.relay.test',
+          appBaseURL: 'https://app.linksetgo.test',
           payload,
           randomToken: () => 'F'.repeat(43),
           sendInvitation: async () => undefined,

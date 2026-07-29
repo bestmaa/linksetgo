@@ -51,10 +51,10 @@ function viewProps(overrides: Partial<FallbackOriginsViewProps> = {}): FallbackO
       onRequestRevoke: vi.fn(),
       onVerify: vi.fn(),
       record: {
-        name: '_relay-fallback.fallback.company.com',
+        name: '_linksetgo-fallback.fallback.company.com',
         onCopyName: vi.fn(),
         onCopyValue: vi.fn(),
-        value: 'relay-fallback-verification=server-generated-token',
+        value: 'linksetgo-fallback-verification=server-generated-token',
       },
       verificationError: null,
     },
@@ -71,9 +71,11 @@ describe('fallback-origin console view', () => {
     render(createElement(FallbackOriginsView, viewProps()))
 
     expect(screen.getByRole('heading', { level: 1, name: 'Fallback origins' })).toBeTruthy()
-    expect(screen.getByText('_relay-fallback.fallback.company.com', { exact: true })).toBeTruthy()
     expect(
-      screen.getByText('relay-fallback-verification=server-generated-token', { exact: true }),
+      screen.getByText('_linksetgo-fallback.fallback.company.com', { exact: true }),
+    ).toBeTruthy()
+    expect(
+      screen.getByText('linksetgo-fallback-verification=server-generated-token', { exact: true }),
     ).toBeTruthy()
     expect(screen.getAllByRole('button', { name: 'Copy' })).toHaveLength(2)
     expect(screen.getByRole('button', { name: 'Verify TXT record' })).toBeTruthy()

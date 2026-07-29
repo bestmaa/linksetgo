@@ -31,7 +31,7 @@ export type DomainDNSEvaluation =
       message: string
     }
 
-const challengePrefix = 'relay-domain-verification='
+const challengePrefix = 'linksetgo-domain-verification='
 
 const exactSecretMatch = (left: string, right: string): boolean => {
   const leftBuffer = Buffer.from(left)
@@ -56,7 +56,7 @@ export function buildDomainVerificationInstructions(input: {
       type: 'CNAME',
     },
     ownership: {
-      name: `_relay-verification.${hostname}`,
+      name: `_linksetgo-verification.${hostname}`,
       type: 'TXT',
       value: `${challengePrefix}${verificationToken}`,
     },

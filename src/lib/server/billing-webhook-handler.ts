@@ -5,7 +5,7 @@ import type { Payload } from 'payload'
 import type { BillingProviderConfiguration } from './billing-provider-registry'
 import { getBillingProviderConfiguration } from './billing-provider-registry'
 import { processBillingWebhook } from './billing-webhook'
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { getPayloadClient } from './payload-client'
 
 export const MAX_BILLING_WEBHOOK_BYTES = 65_536
@@ -56,7 +56,7 @@ export function createBillingWebhookHandler(
   options: BillingWebhookHandlerOptions = {},
 ): (request: Request) => Promise<Response> {
   return async (request) => {
-    if (getRelayEdition() !== 'cloud') {
+    if (getLinksetGoEdition() !== 'cloud') {
       return json(404, { status: 'unavailable' })
     }
 

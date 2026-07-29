@@ -82,24 +82,24 @@ describe('team invitation policy boundaries', () => {
     })
     expect(
       getTeamInvitationDeliveryConfiguration({
-        CLOUD_APP_BASE_URL: 'http://app.relay.test',
+        CLOUD_APP_BASE_URL: 'http://app.linksetgo.test',
         RELAY_EDITION: 'cloud',
         TEAM_INVITATION_WEBHOOK_SECRET: 'x'.repeat(32),
-        TEAM_INVITATION_WEBHOOK_URL: 'https://hooks.relay.test/invitations',
+        TEAM_INVITATION_WEBHOOK_URL: 'https://hooks.linksetgo.test/invitations',
       }),
     ).toMatchObject({ status: 'misconfigured' })
     expect(
       getTeamInvitationDeliveryConfiguration({
-        CLOUD_APP_BASE_URL: 'https://app.relay.test',
+        CLOUD_APP_BASE_URL: 'https://app.linksetgo.test',
         RELAY_EDITION: 'cloud',
         TEAM_INVITATION_WEBHOOK_SECRET: 'x'.repeat(32),
-        TEAM_INVITATION_WEBHOOK_URL: 'https://hooks.relay.test/invitations',
+        TEAM_INVITATION_WEBHOOK_URL: 'https://hooks.linksetgo.test/invitations',
       }),
     ).toEqual({
-      appBaseURL: 'https://app.relay.test',
+      appBaseURL: 'https://app.linksetgo.test',
       secret: 'x'.repeat(32),
       status: 'ready',
-      webhookURL: 'https://hooks.relay.test/invitations',
+      webhookURL: 'https://hooks.linksetgo.test/invitations',
     })
   })
 })

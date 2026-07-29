@@ -43,9 +43,9 @@ const cleanName = (value: unknown): null | string => {
 
 export function evaluateCloudSignupGate(input: {
   cloudSignupEnabled: string | undefined
-  relayEdition: string | undefined
+  linksetGoEdition: string | undefined
 }): CloudSignupGate {
-  if (input.relayEdition?.trim().toLowerCase() !== 'cloud') {
+  if (input.linksetGoEdition?.trim().toLowerCase() !== 'cloud') {
     return { ok: false, code: 'COMMUNITY_EDITION' }
   }
   return input.cloudSignupEnabled?.trim().toLowerCase() === 'true'

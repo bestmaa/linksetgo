@@ -18,7 +18,7 @@ type ReadyWebhookConfiguration = Extract<
 >
 
 const maximumResponseBytes = 16 * 1024
-const recordPrefix = '_relay-fallback.'
+const recordPrefix = '_linksetgo-fallback.'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
