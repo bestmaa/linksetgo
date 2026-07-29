@@ -16,7 +16,7 @@ test.describe('LinksetGo marketing surface', () => {
       'href',
       new URL('/admin/login', applicationBaseURL).toString(),
     )
-    await expect(page).toHaveTitle(/Deep links, done right.*LinksetGo/)
+    await expect(page).toHaveTitle('LinksetGo — Deep links, done right')
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
       'content',
       /\/og-linksetgo\.png$/,
