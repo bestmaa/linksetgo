@@ -14,7 +14,7 @@ collection. A hostname:
 - belongs permanently to one workspace;
 - begins in `pending`;
 - publishes the generated
-  `_relay-fallback.<hostname>` TXT challenge;
+  `_linksetgo-fallback.<hostname>` TXT challenge;
 - moves through `verifying` to `verified` only after exact TXT evidence; and
 - can be moved to `revoked`, which immediately makes dependent public links
   unavailable.
@@ -49,7 +49,7 @@ by `DOMAIN_PROVISIONING_WEBHOOK_URL` and
 ```json
 {
   "action": "lookup-txt",
-  "recordName": "_relay-fallback.www.company.com"
+  "recordName": "_linksetgo-fallback.www.company.com"
 }
 ```
 
@@ -60,7 +60,7 @@ The adapter returns already-observed, bounded evidence:
   "kind": "success",
   "value": {
     "observedAt": "2026-07-27T08:00:00.000Z",
-    "values": ["relay-fallback-verification=server-issued-token"]
+    "values": ["linksetgo-fallback-verification=server-issued-token"]
   }
 }
 ```

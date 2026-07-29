@@ -50,7 +50,7 @@ export function SignupView(props: SignupViewProps) {
                   id="signup-email"
                   label="Work email"
                   onChange={props.onEmailChange}
-                  placeholder="you@company.com"
+                  placeholder="you@example.com"
                   type="email"
                   value={props.email}
                 />
@@ -60,7 +60,7 @@ export function SignupView(props: SignupViewProps) {
                   id="signup-organization"
                   label="Organization"
                   onChange={props.onOrganizationNameChange}
-                  placeholder="Oberoi Mall"
+                  placeholder="Example Workspace"
                   value={props.organizationName}
                 />
                 <TextField
@@ -74,7 +74,7 @@ export function SignupView(props: SignupViewProps) {
                   label="Workspace URL"
                   maxLength={63}
                   onChange={props.onWorkspaceSlugChange}
-                  placeholder="oberoi-mall"
+                  placeholder="example-workspace"
                   value={props.workspaceSlug}
                 />
                 <TextField

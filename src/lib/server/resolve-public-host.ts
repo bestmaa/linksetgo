@@ -2,7 +2,7 @@ import 'server-only'
 
 import type { Domain } from '@/payload-types'
 import { hostnameFromBaseURL, requestHostname } from '@/lib/domain/request-host'
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { relationID } from './tenant-context'
 import { getPayloadClient } from './payload-client'
 import { getServerEnvironment } from './env'
@@ -33,7 +33,7 @@ export type PublicHostResolution =
 const routableStatuses = (purpose: PublicHostPurpose): Domain['status'][] =>
   purpose === 'resolver' ? ['active'] : ['active', 'association-incomplete', 'certificate-ready']
 
-export const isLegacyPublicHostAllowed = (edition = getRelayEdition()): boolean =>
+export const isLegacyPublicHostAllowed = (edition = getLinksetGoEdition()): boolean =>
   edition === 'community'
 
 export async function resolvePublicHost(

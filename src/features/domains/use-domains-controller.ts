@@ -201,7 +201,7 @@ export function useDomainsController() {
     onCreate: () => setIsCreateOpen(true),
     onHostnameBlur: () => {
       if (hostname && !normalizeCustomHostnameDraft(hostname)) {
-        setHostnameError('Enter one public hostname, for example links.company.com.')
+        setHostnameError('Enter one public hostname, for example links.example.com.')
       }
     },
     onHostnameChange: (value: string) => {

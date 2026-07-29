@@ -62,9 +62,9 @@ test.describe('LinksetGo marketing surface', () => {
       }),
     ).toBeVisible()
     await expect(
-      page.getByText('oberoi://rewards-detail?SlabName=Gold&SlabPromo=10OFF'),
+      page.getByText('sampleapp://membership-detail?level=gold&promo=10OFF'),
     ).toBeVisible()
-    await expect(page.getByText('/rewards-detail', { exact: true })).toBeVisible()
+    await expect(page.getByText('/membership-detail', { exact: true })).toBeVisible()
   })
 
   test('keeps sponsorship optional when no trusted URL is configured', async ({ page }) => {

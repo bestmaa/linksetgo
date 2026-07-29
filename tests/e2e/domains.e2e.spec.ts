@@ -23,7 +23,7 @@ test.describe('workspace domain console', () => {
   test('shows exact DNS instructions and submits only custom-domain intent', async ({ page }) => {
     const domains: MockDomain[] = [
       { hostname: 'links.company.com', id: 11, status: 'pending-dns', type: 'custom' },
-      { hostname: 'workspace.links.relay.example', id: 12, status: 'active', type: 'managed' },
+      { hostname: 'workspace.links.linksetgo.example', id: 12, status: 'active', type: 'managed' },
     ]
     let submittedBody: Record<string, unknown> | null = null
 
@@ -39,13 +39,13 @@ test.describe('workspace domain console', () => {
             records: {
               cname: {
                 name: domain?.hostname,
-                target: 'ingress.relay.example',
+                target: 'ingress.linksetgo.example',
                 type: 'CNAME',
               },
               ownership: {
-                name: `_relay-verification.${domain?.hostname}`,
+                name: `_linksetgo-verification.${domain?.hostname}`,
                 type: 'TXT',
-                value: 'relay-domain-verification=server-generated-token-value',
+                value: 'linksetgo-domain-verification=server-generated-token-value',
               },
             },
           }),
@@ -91,9 +91,9 @@ test.describe('workspace domain console', () => {
         name: /workspace\.links\.relay\.example.*active/i,
       }),
     ).toBeVisible()
-    await expect(page.getByText('ingress.relay.example', { exact: true })).toBeVisible()
+    await expect(page.getByText('ingress.linksetgo.example', { exact: true })).toBeVisible()
     await expect(
-      page.getByText('relay-domain-verification=server-generated-token-value', { exact: true }),
+      page.getByText('linksetgo-domain-verification=server-generated-token-value', { exact: true }),
     ).toBeVisible()
     await expect(page.getByText(/Do not ship this hostname/)).toBeVisible()
 

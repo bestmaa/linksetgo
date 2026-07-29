@@ -7,7 +7,7 @@ import {
 import { resetCloudPassword } from '@/lib/server/account-recovery-service'
 import { readBoundedJSON } from '@/lib/server/bounded-json'
 import { rateLimitPasswordResetRequest } from '@/lib/server/cloud-signup-rate-limit'
-import { getRelayEdition } from '@/lib/server/deployment-edition'
+import { getLinksetGoEdition } from '@/lib/server/deployment-edition'
 import { getServerEnvironment } from '@/lib/server/env'
 import { getPayloadClient } from '@/lib/server/payload-client'
 
@@ -18,7 +18,7 @@ const json = (body: unknown, status: number, headers?: HeadersInit): NextRespons
   })
 
 export async function POST(request: Request): Promise<NextResponse> {
-  if (getRelayEdition() !== 'cloud') {
+  if (getLinksetGoEdition() !== 'cloud') {
     return json(
       {
         status: 'unavailable',

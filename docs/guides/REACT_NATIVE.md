@@ -1,7 +1,7 @@
 # React Native integration
 
 This guide shows the contract between LinksetGo and a React Native app. The examples
-use the reserved documentation host `oberoi.linksetgo.example`; replace it with
+use the reserved documentation host `example.linksetgo.example`; replace it with
 the workspace's real managed or custom hostname.
 
 ## Two kinds of URL
@@ -9,10 +9,10 @@ the workspace's real managed or custom hostname.
 The mobile team may already provide custom-scheme destinations:
 
 ```text
-oberoi://home
-oberoi://offer
-oberoi://rewards-detail?SlabName=Gold&SlabPromo=10OFF
-oberoi://brand-details?Brand_Id=123
+sampleapp://home
+sampleapp://offer
+sampleapp://membership-detail?level=Gold&promo=10OFF
+sampleapp://brand-details?Brand_Id=123
 ```
 
 These URLs describe screens inside the installed app. They are not the campaign
@@ -21,8 +21,8 @@ links sent to customers.
 LinksetGo creates durable HTTPS links:
 
 ```text
-https://oberoi.linksetgo.example/l/mall/home
-https://oberoi.linksetgo.example/l/mall/gold-reward
+https://example.linksetgo.example/l/sample-app/home
+https://example.linksetgo.example/l/sample-app/welcome-offer
 ```
 
 iOS Universal Links and Android App Links open the app directly when the released
@@ -33,15 +33,15 @@ or store fallback.
 
 Ask the mobile team for:
 
-| LinksetGo field      | Mobile-team value                        | Example                          |
-| -------------------- | ---------------------------------------- | -------------------------------- |
-| Native scheme        | React Native linking scheme              | `oberoi`                         |
-| iOS Bundle ID        | Xcode target bundle identifier           | `com.oberoi.mall`                |
-| Apple Team ID        | Apple Developer membership Team ID       | `A1B2C3D4E5`                     |
-| Android package      | Android `applicationId`                  | `com.oberoi.mall`                |
-| SHA-256 fingerprint  | Play App Signing certificate fingerprint | `AA:BB:…`                        |
-| Store URLs           | Public App Store and Play Store listings | Official store URLs              |
-| Default web fallback | Customer-owned HTTPS page                | `https://www.oberoimall.com/app` |
+| LinksetGo field      | Mobile-team value                        | Example                       |
+| -------------------- | ---------------------------------------- | ----------------------------- |
+| Native scheme        | React Native linking scheme              | `sampleapp`                   |
+| iOS Bundle ID        | Xcode target bundle identifier           | `com.example.sampleapp`       |
+| Apple Team ID        | Apple Developer membership Team ID       | `A1B2C3D4E5`                  |
+| Android package      | Android `applicationId`                  | `com.example.sampleapp`       |
+| SHA-256 fingerprint  | Play App Signing certificate fingerprint | `AA:BB:…`                     |
+| Store URLs           | Public App Store and Play Store listings | Official store URLs           |
+| Default web fallback | Customer-owned HTTPS page                | `https://www.example.com/app` |
 
 Apple Team ID, Bundle ID, Android package, and SHA-256 certificate fingerprints
 are public association identifiers. LinksetGo does **not** need Apple private keys,
@@ -52,15 +52,15 @@ Android keystores, signing passwords, or store-account credentials.
 Paste a custom-scheme URL into LinksetGo's native URL field:
 
 ```text
-oberoi://rewards-detail?SlabName=Gold&SlabPromo=10OFF
+sampleapp://membership-detail?level=Gold&promo=10OFF
 ```
 
 LinksetGo previews and saves:
 
 ```text
-Destination path: /rewards-detail
-Parameter SlabName: Gold
-Parameter SlabPromo: 10OFF
+Destination path: /membership-detail
+Parameter level: Gold
+Parameter promo: 10OFF
 ```
 
 The scheme must match the app configuration. URL fragments, credentials,
@@ -69,8 +69,8 @@ non-scalar parameters, oversized values, and dangerous protocols are rejected.
 ## Resolve the campaign URL before navigation
 
 The operating system delivers the public campaign path, for example
-`/l/mall/gold-reward`. It does **not** rewrite that path to the saved
-`/rewards-detail` destination. The app must resolve the campaign slug against the
+`/l/sample-app/welcome-offer`. It does **not** rewrite that path to the saved
+`/membership-detail` destination. The app must resolve the campaign slug against the
 same LinksetGo hostname, validate the returned public projection, and then hand the
 destination to React Navigation.
 
@@ -79,7 +79,7 @@ A small integration can follow this shape:
 ```ts
 import { Linking } from 'react-native'
 
-const linksetGoHosts = new Set(['oberoi.linksetgo.example'])
+const linksetGoHosts = new Set(['example.linksetgo.example'])
 
 async function toNavigationURL(incoming: string): Promise<string> {
   const url = new URL(incoming)
@@ -111,11 +111,11 @@ async function toNavigationURL(incoming: string): Promise<string> {
     if (typeof value === 'string') query.set(key, value)
   }
   const suffix = query.size ? `?${query.toString()}` : ''
-  return `oberoi://${link.destinationPath.slice(1)}${suffix}`
+  return `sampleapp://${link.destinationPath.slice(1)}${suffix}`
 }
 
 const linking = {
-  prefixes: ['oberoi://', 'https://oberoi.linksetgo.example'],
+  prefixes: ['sampleapp://', 'https://example.linksetgo.example'],
   async getInitialURL() {
     const incoming = await Linking.getInitialURL()
     return incoming ? toNavigationURL(incoming) : null
@@ -135,7 +135,7 @@ const linking = {
       Home: 'home',
       Offer: 'offer',
       RewardsDetail: {
-        path: 'rewards-detail',
+        path: 'membership-detail',
       },
       BrandDetails: {
         path: 'brand-details',
@@ -178,13 +178,13 @@ approximate and not proof that a real person opened the screen.
 Add the exact production hostname to the app's Associated Domains entitlement:
 
 ```text
-applinks:oberoi.linksetgo.example
+applinks:example.linksetgo.example
 ```
 
 LinksetGo publishes:
 
 ```text
-https://oberoi.linksetgo.example/.well-known/apple-app-site-association
+https://example.linksetgo.example/.well-known/apple-app-site-association
 ```
 
 The response identifies the configured `TEAM_ID.BUNDLE_ID` and allowed LinksetGo
@@ -200,8 +200,8 @@ Add an auto-verified HTTPS intent filter for the exact hostname:
   <category android:name="android.intent.category.DEFAULT" />
   <category android:name="android.intent.category.BROWSABLE" />
   <data
-    android:host="oberoi.linksetgo.example"
-    android:pathPrefix="/l/mall/"
+    android:host="example.linksetgo.example"
+    android:pathPrefix="/l/sample-app/"
     android:scheme="https" />
 </intent-filter>
 ```
@@ -209,7 +209,7 @@ Add an auto-verified HTTPS intent filter for the exact hostname:
 LinksetGo publishes:
 
 ```text
-https://oberoi.linksetgo.example/.well-known/assetlinks.json
+https://example.linksetgo.example/.well-known/assetlinks.json
 ```
 
 Use the Play App Signing SHA-256 certificate, including separate fingerprints

@@ -46,7 +46,7 @@ export function TeamInviteView(props: TeamInviteViewProps) {
                 Your organization access is active.
                 {props.state.signInRequired ? ' Sign in with your new account.' : ''}
               </p>
-              <Button onClick={props.onOpenRelay}>
+              <Button onClick={props.onOpenLinksetGo}>
                 {props.state.signInRequired ? 'Sign in to LinksetGo' : 'Open LinksetGo'}
               </Button>
             </div>

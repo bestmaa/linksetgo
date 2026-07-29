@@ -73,7 +73,7 @@ if [[ ! -f "${ENV_FILE}" ]]; then
     echo "NEXT_PUBLIC_DATABASE_LABEL=${DATABASE_NAME}"
     echo "PUBLIC_LINK_BASE_URL=http://127.0.0.1:3100"
     echo "EVENT_HASH_SECRET=$(openssl rand -hex 32)"
-    echo "SEED_ADMIN_EMAIL=admin@relay.local"
+    echo "SEED_ADMIN_EMAIL=admin@linksetgo.local"
     echo "SEED_ADMIN_PASSWORD=$(openssl rand -hex 12)"
   } >"${ENV_FILE}"
 fi

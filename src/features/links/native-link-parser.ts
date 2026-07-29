@@ -41,7 +41,8 @@ export function parseNativeDeepLink(
   if (!match) {
     return {
       ok: false,
-      message: 'Use a complete custom-scheme URL, for example oberoi://rewards-detail?level=gold.',
+      message:
+        'Use a complete custom-scheme URL, for example sampleapp://membership-detail?level=gold.',
     }
   }
 

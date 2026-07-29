@@ -4,7 +4,7 @@ import { sql, type PostgresAdapter } from '@payloadcms/db-postgres'
 import type { Payload } from 'payload'
 
 import { getPlanDefinition } from '@/lib/domain/plan-catalog'
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import {
   analyticsRetentionDaysForOrganization,
   communityAnalyticsRetentionDays,
@@ -189,7 +189,7 @@ export async function pruneExpiredLinkEvents(
   const adapter = payload.db as unknown as PostgresAdapter
   const scopes: AnalyticsPruneScope[] = []
 
-  if (getRelayEdition() === 'community') {
+  if (getLinksetGoEdition() === 'community') {
     const retentionDays = communityAnalyticsRetentionDays()
     scopes.push(
       await pruneScope({

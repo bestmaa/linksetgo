@@ -5,7 +5,7 @@ import { readBoundedJSON } from '@/lib/server/bounded-json'
 import { createOrganizationCheckout } from '@/lib/server/billing-checkout'
 import { getBillingProviderConfiguration } from '@/lib/server/billing-provider-registry'
 import { isActiveConsoleUser } from '@/lib/server/domain-console'
-import { getRelayEdition } from '@/lib/server/deployment-edition'
+import { getLinksetGoEdition } from '@/lib/server/deployment-edition'
 import { getPayloadClient } from '@/lib/server/payload-client'
 import { isSameOriginMutation } from '@/lib/server/same-origin-mutation'
 import { getApplicationSiteURL } from '@/lib/server/site-url'
@@ -19,7 +19,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       { headers: noStoreHeaders, status: 403 },
     )
   }
-  if (getRelayEdition() !== 'cloud') {
+  if (getLinksetGoEdition() !== 'cloud') {
     return NextResponse.json({ status: 'unavailable' }, { status: 404 })
   }
   const configuration = getBillingProviderConfiguration()

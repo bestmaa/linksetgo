@@ -130,7 +130,7 @@ export function useTeamInviteController(): TeamInviteViewProps {
       setConfirmPassword(event.currentTarget.value),
     onCreateAccount: createAccount,
     onNameChange: (event: ChangeEvent<HTMLInputElement>) => setName(event.currentTarget.value),
-    onOpenRelay: () =>
+    onOpenLinksetGo: () =>
       router.push(state.status === 'accepted' && state.signInRequired ? '/admin/login' : '/admin'),
     onPasswordChange: (event: ChangeEvent<HTMLInputElement>) =>
       setPassword(event.currentTarget.value),

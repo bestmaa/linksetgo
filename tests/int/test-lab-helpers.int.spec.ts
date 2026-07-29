@@ -3,10 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { validateAssociation } from '@/features/test-lab/association-validator'
 import {
   buildSavedLinkOptions,
-  parseRelayUrl,
+  parseLinksetGoUrl,
   platformsFor,
   qrDownloadBaseName,
-  safeRelayUrl,
+  safeLinksetGoUrl,
 } from '@/features/test-lab/test-lab-controller.helpers'
 import type { AppDTO, DeepLinkDTO } from '@/lib/client/payload-types'
 
@@ -35,21 +35,21 @@ afterEach(() => {
 
 describe('Test Lab controller helpers', () => {
   it('accepts only the configured canonical LinksetGo URL shape', () => {
-    expect(parseRelayUrl(`${origin}/l/example-shop/welcome-offer`, origin)).toEqual({
+    expect(parseLinksetGoUrl(`${origin}/l/example-shop/welcome-offer`, origin)).toEqual({
       appSlug: 'example-shop',
       linkSlug: 'welcome-offer',
       origin,
       url: `${origin}/l/example-shop/welcome-offer`,
     })
-    expect(safeRelayUrl(`${origin}/l/example-shop/welcome-offer/`, origin)).toBe(
+    expect(safeLinksetGoUrl(`${origin}/l/example-shop/welcome-offer/`, origin)).toBe(
       `${origin}/l/example-shop/welcome-offer`,
     )
 
     expect(() =>
-      parseRelayUrl('https://attacker.example/l/example-shop/welcome-offer', origin),
+      parseLinksetGoUrl('https://attacker.example/l/example-shop/welcome-offer', origin),
     ).toThrow(/configured link domain/i)
     expect(() =>
-      parseRelayUrl(`${origin}/l/example-shop/welcome-offer?campaign=sale`, origin),
+      parseLinksetGoUrl(`${origin}/l/example-shop/welcome-offer?campaign=sale`, origin),
     ).toThrow(/without query parameters/i)
   })
 

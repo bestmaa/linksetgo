@@ -9,7 +9,7 @@ import {
 } from 'payload'
 
 import { PASSWORD_RESET_TOKEN_TTL_MS } from '@/lib/domain/account-recovery'
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 
 export type PasswordResetDelivery = {
   email: string
@@ -26,7 +26,7 @@ export async function requestCloudPasswordReset(input: {
   payload: Payload
   sendReset: PasswordResetSender
 }): Promise<{ deliveryAttempted: boolean }> {
-  if (getRelayEdition() !== 'cloud') return { deliveryAttempted: false }
+  if (getLinksetGoEdition() !== 'cloud') return { deliveryAttempted: false }
 
   const req = await createLocalReq({}, input.payload)
   const ownsTransaction = await initTransaction(req)
@@ -85,7 +85,7 @@ export async function resetCloudPassword(input: {
   payload: Payload
   token: string
 }): Promise<void> {
-  if (getRelayEdition() !== 'cloud') throw new Error('Account recovery is unavailable.')
+  if (getLinksetGoEdition() !== 'cloud') throw new Error('Account recovery is unavailable.')
 
   await input.payload.resetPassword({
     collection: 'users',

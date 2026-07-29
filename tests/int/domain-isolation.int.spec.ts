@@ -13,13 +13,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 const FIXTURE = {
   appA: 'domain-alpha-app',
   appB: 'domain-beta-app',
-  domainA: 'alpha-domain.relay.test',
-  domainB: 'beta-domain.relay.test',
+  domainA: 'alpha-domain.linksetgo.test',
+  domainB: 'beta-domain.linksetgo.test',
   organizationA: 'domain-alpha',
   organizationB: 'domain-beta',
-  platformUser: 'domain-platform@relay.test',
-  userA: 'domain-alpha@relay.test',
-  userB: 'domain-beta@relay.test',
+  platformUser: 'domain-platform@linksetgo.test',
+  userA: 'domain-alpha@linksetgo.test',
+  userB: 'domain-beta@linksetgo.test',
   workspaceA: 'domain-alpha-workspace',
   workspaceB: 'domain-beta-workspace',
 } as const
@@ -86,6 +86,22 @@ describe.sequential('workspace domain isolation', () => {
     })
     const organizationIDs = organizations.docs.map((organization) => organization.id)
     if (organizationIDs.length > 0) {
+      const workspaces = await payload.find({
+        collection: 'workspaces',
+        depth: 0,
+        limit: 10,
+        overrideAccess: true,
+        pagination: false,
+        where: { organization: { in: organizationIDs } },
+      })
+      const workspaceIDs = workspaces.docs.map((workspace) => workspace.id)
+      if (workspaceIDs.length > 0) {
+        await payload.delete({
+          collection: 'domains',
+          overrideAccess: true,
+          where: { workspace: { in: workspaceIDs } },
+        })
+      }
       await payload.delete({
         collection: 'organization-memberships',
         context: { [MEMBERSHIP_OWNER_OVERRIDE_CONTEXT]: true },
@@ -244,10 +260,10 @@ describe.sequential('workspace domain isolation', () => {
       collection: 'apps',
       overrideAccess: true,
       data: {
-        androidPackageName: 'com.relay.domainalpha',
+        androidPackageName: 'com.example.domainalpha',
         androidSha256CertFingerprints: [fingerprint],
-        fallbackUrl: 'https://alpha.relay.test',
-        iosBundleId: 'com.relay.domainalpha',
+        fallbackUrl: 'https://alpha.linksetgo.test',
+        iosBundleId: 'com.example.domainalpha',
         iosTeamId: 'ALPHA12345',
         name: 'Domain Alpha app',
         slug: FIXTURE.appA,
@@ -259,10 +275,10 @@ describe.sequential('workspace domain isolation', () => {
       collection: 'apps',
       overrideAccess: true,
       data: {
-        androidPackageName: 'com.relay.domainbeta',
+        androidPackageName: 'com.example.domainbeta',
         androidSha256CertFingerprints: [fingerprint],
-        fallbackUrl: 'https://beta.relay.test',
-        iosBundleId: 'com.relay.domainbeta',
+        fallbackUrl: 'https://beta.linksetgo.test',
+        iosBundleId: 'com.example.domainbeta',
         iosTeamId: 'BETA123456',
         name: 'Domain Beta app',
         slug: FIXTURE.appB,
@@ -299,7 +315,7 @@ describe.sequential('workspace domain isolation', () => {
       collection: 'domains',
       overrideAccess: true,
       data: {
-        hostname: 'Alpha-Domain.Relay.Test.',
+        hostname: 'Alpha-Domain.LinksetGo.Test.',
         status: 'pending-dns',
         type: 'custom',
         verificationToken: 'alpha-domain-verification-token-123456',
@@ -338,7 +354,7 @@ describe.sequential('workspace domain isolation', () => {
         collection: 'domains',
         overrideAccess: true,
         data: {
-          hostname: 'ALPHA-DOMAIN.RELAY.TEST.',
+          hostname: 'ALPHA-DOMAIN.LINKSETGO.TEST.',
           status: 'pending-dns',
           type: 'custom',
           verificationToken: 'collision-verification-token-12345678',
@@ -378,7 +394,7 @@ describe.sequential('workspace domain isolation', () => {
         overrideAccess: false,
         user: userA,
         data: {
-          hostname: 'blocked-cross-tenant.relay.test',
+          hostname: 'blocked-cross-tenant.linksetgo.test',
           status: 'pending-dns',
           type: 'custom',
           verificationToken: 'blocked-verification-token-123456789',
@@ -390,7 +406,7 @@ describe.sequential('workspace domain isolation', () => {
 
   it('resolves an exact host to one workspace and ignores forged forwarded-host by default', async () => {
     const host = await resolvePublicHost(
-      new Request('https://internal.relay.test/l/x/y', {
+      new Request('https://internal.linksetgo.test/l/x/y', {
         headers: {
           host: FIXTURE.domainA,
           'x-forwarded-host': FIXTURE.domainB,
@@ -407,8 +423,8 @@ describe.sequential('workspace domain isolation', () => {
 
     await expect(
       resolvePublicHost(
-        new Request('https://forged.relay.test/l/x/y', {
-          headers: { host: 'unknown-domain.relay.test' },
+        new Request('https://forged.linksetgo.test/l/x/y', {
+          headers: { host: 'unknown-domain.linksetgo.test' },
         }),
         'resolver',
       ),
@@ -481,9 +497,9 @@ describe.sequential('workspace domain isolation', () => {
 
     expect(appsForA.map((app) => app.slug)).toEqual([FIXTURE.appA])
     expect(apple.applinks.details.map((detail) => detail.appID)).toEqual([
-      'ALPHA12345.com.relay.domainalpha',
+      'ALPHA12345.com.example.domainalpha',
     ])
-    expect(android.map((entry) => entry.target.package_name)).toEqual(['com.relay.domainalpha'])
+    expect(android.map((entry) => entry.target.package_name)).toEqual(['com.example.domainalpha'])
     expect(JSON.stringify({ android, apple })).not.toContain('domainbeta')
   })
 
@@ -500,8 +516,8 @@ describe.sequential('workspace domain isolation', () => {
         }),
       ),
       getAppleAssociation(
-        new Request('https://forged.relay.test/.well-known/apple-app-site-association', {
-          headers: { host: 'forged.relay.test' },
+        new Request('https://forged.linksetgo.test/.well-known/apple-app-site-association', {
+          headers: { host: 'forged.linksetgo.test' },
         }),
       ),
     ])
@@ -509,10 +525,10 @@ describe.sequential('workspace domain isolation', () => {
     const androidDocument = JSON.stringify((await androidResponse.json()) as unknown)
 
     expect(appleResponse.status).toBe(200)
-    expect(appleDocument).toContain('ALPHA12345.com.relay.domainalpha')
+    expect(appleDocument).toContain('ALPHA12345.com.example.domainalpha')
     expect(appleDocument).not.toContain('domainbeta')
     expect(androidResponse.status).toBe(200)
-    expect(androidDocument).toContain('com.relay.domainbeta')
+    expect(androidDocument).toContain('com.example.domainbeta')
     expect(androidDocument).not.toContain('domainalpha')
     expect(unknownHostResponse.status).toBe(404)
   })

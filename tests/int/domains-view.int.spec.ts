@@ -56,14 +56,14 @@ function viewProps(overrides: Partial<DomainsViewProps> = {}): DomainsViewProps 
           onCopyName: vi.fn(),
           onCopyValue: vi.fn(),
           type: 'CNAME',
-          value: 'ingress.relay.example',
+          value: 'ingress.linksetgo.example',
         },
         {
-          name: '_relay-verification.links.company.com',
+          name: '_linksetgo-verification.links.company.com',
           onCopyName: vi.fn(),
           onCopyValue: vi.fn(),
           type: 'TXT',
-          value: 'relay-domain-verification=server-token',
+          value: 'linksetgo-domain-verification=server-token',
         },
       ],
       instructionsError: null,
@@ -87,8 +87,10 @@ describe('domain console view', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Domains' })).toBeTruthy()
     expect(screen.getAllByText('pending-dns', { exact: true })).toHaveLength(2)
     expect(screen.getAllByText('Custom domain', { exact: true })).toHaveLength(2)
-    expect(screen.getByText('ingress.relay.example', { exact: true })).toBeTruthy()
-    expect(screen.getByText('relay-domain-verification=server-token', { exact: true })).toBeTruthy()
+    expect(screen.getByText('ingress.linksetgo.example', { exact: true })).toBeTruthy()
+    expect(
+      screen.getByText('linksetgo-domain-verification=server-token', { exact: true }),
+    ).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Copy CNAME name' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Copy CNAME value' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Copy TXT name' })).toBeTruthy()

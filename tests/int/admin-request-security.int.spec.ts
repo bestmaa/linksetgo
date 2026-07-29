@@ -19,14 +19,14 @@ afterEach(() => {
 
 describe('authenticated mutation request boundaries', () => {
   it('accepts only the configured exact browser origin', () => {
-    const sameOrigin = new Request('https://relay.example/api/admin/domains', {
+    const sameOrigin = new Request('https://linksetgo.example/api/admin/domains', {
       headers: {
-        origin: 'https://relay.example',
+        origin: 'https://linksetgo.example',
         'sec-fetch-site': 'same-origin',
       },
       method: 'POST',
     })
-    const crossOrigin = new Request('https://relay.example/api/admin/domains', {
+    const crossOrigin = new Request('https://linksetgo.example/api/admin/domains', {
       headers: {
         origin: 'https://attacker.example',
         'sec-fetch-site': 'cross-site',
@@ -34,8 +34,8 @@ describe('authenticated mutation request boundaries', () => {
       method: 'POST',
     })
 
-    expect(isSameOriginMutation(sameOrigin, 'https://relay.example')).toBe(true)
-    expect(isSameOriginMutation(crossOrigin, 'https://relay.example')).toBe(false)
+    expect(isSameOriginMutation(sameOrigin, 'https://linksetgo.example')).toBe(true)
+    expect(isSameOriginMutation(crossOrigin, 'https://linksetgo.example')).toBe(false)
   })
 
   it('uses the application origin instead of the separate Cloud marketing origin', () => {
@@ -64,26 +64,26 @@ describe('authenticated mutation request boundaries', () => {
 
   it('rejects missing, null, same-site, and malformed origin evidence', () => {
     const requests = [
-      new Request('https://relay.example/api/admin/domains', { method: 'POST' }),
-      new Request('https://relay.example/api/admin/domains', {
+      new Request('https://linksetgo.example/api/admin/domains', { method: 'POST' }),
+      new Request('https://linksetgo.example/api/admin/domains', {
         headers: { origin: 'null' },
         method: 'POST',
       }),
-      new Request('https://relay.example/api/admin/domains', {
+      new Request('https://linksetgo.example/api/admin/domains', {
         headers: {
-          origin: 'https://relay.example',
+          origin: 'https://linksetgo.example',
           'sec-fetch-site': 'same-site',
         },
         method: 'POST',
       }),
-      new Request('https://relay.example/api/admin/domains', {
+      new Request('https://linksetgo.example/api/admin/domains', {
         headers: { origin: 'not a URL' },
         method: 'POST',
       }),
     ]
 
     expect(
-      requests.every((request) => !isSameOriginMutation(request, 'https://relay.example')),
+      requests.every((request) => !isSameOriginMutation(request, 'https://linksetgo.example')),
     ).toBe(true)
   })
 

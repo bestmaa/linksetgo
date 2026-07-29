@@ -12,7 +12,7 @@ import {
   type SubscriptionStatus,
 } from '@/lib/domain/subscription-state'
 import type { Subscription } from '@/payload-types'
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { relationID } from './tenant-context'
 
 export type OrganizationPlanResolution = {
@@ -47,7 +47,7 @@ export async function resolveOrganizationPlan(
     req?: PayloadRequest
   } = {},
 ): Promise<OrganizationPlanResolution> {
-  if (getRelayEdition(options.edition) === 'community') {
+  if (getLinksetGoEdition(options.edition) === 'community') {
     return {
       access: defaultCloudAccess,
       plan: getPlanDefinition('community'),

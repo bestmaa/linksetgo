@@ -34,7 +34,7 @@ export function BasicsStepView(props: BasicsStepProps) {
           maxLength={120}
           onBlur={() => props.onFieldBlur('name')}
           onChange={(value) => props.onFieldChange('name', value)}
-          placeholder="Oberoi Mall"
+          placeholder="Sample App"
           required
           value={props.form.name}
         />
@@ -46,7 +46,7 @@ export function BasicsStepView(props: BasicsStepProps) {
           maxLength={80}
           onBlur={() => props.onFieldBlur('slug')}
           onChange={(value) => props.onFieldChange('slug', value)}
-          placeholder="oberoi-mall"
+          placeholder="sample-app"
           required
           value={props.form.slug}
         />
@@ -58,7 +58,7 @@ export function BasicsStepView(props: BasicsStepProps) {
           maxLength={64}
           onBlur={() => props.onFieldBlur('nativeScheme')}
           onChange={(value) => props.onFieldChange('nativeScheme', value)}
-          placeholder="oberoi"
+          placeholder="sampleapp"
           required
           spellCheck={false}
           value={props.form.nativeScheme}

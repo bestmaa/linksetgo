@@ -34,14 +34,16 @@ export function CustomDomainsGuideView() {
             <p className="marketing-docs-eyebrow">DOMAIN OWNERSHIP</p>
             <h2>LinksetGo issues exact records for one hostname.</h2>
             <p>
-              A custom hostname such as <code>links.oberoimall.com</code> receives a unique TXT
+              A custom hostname such as <code>links.example.com</code> receives a unique TXT
               ownership challenge and a CNAME target configured by the LinksetGo Cloud ingress.
             </p>
             <pre>
-              <code>_relay-verification.links.oberoimall.com TXT relay-domain-verification=…</code>
+              <code>
+                _linksetgo-verification.links.example.com TXT linksetgo-domain-verification=…
+              </code>
             </pre>
             <pre>
-              <code>links.oberoimall.com CNAME ingress.linksetgo.com</code>
+              <code>links.example.com CNAME ingress.linksetgo.com</code>
             </pre>
             <p>
               After publishing both records, use <strong>Check DNS &amp; TLS</strong> in the Domains
@@ -69,8 +71,8 @@ export function CustomDomainsGuideView() {
             <p className="marketing-docs-eyebrow">APP RELEASE REQUIRED</p>
             <h2>A DNS change cannot update an installed app.</h2>
             <p>
-              The iOS team adds <code>applinks:links.oberoimall.com</code> to Associated Domains.
-              The Android team adds the same exact host to an auto-verified intent filter. Test
+              The iOS team adds <code>applinks:links.example.com</code> to Associated Domains. The
+              Android team adds the same exact host to an auto-verified intent filter. Test
               release-signed builds before LinksetGo activates the domain.
             </p>
             <p>

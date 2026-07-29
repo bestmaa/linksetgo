@@ -62,7 +62,7 @@ export function DestinationsStepView(props: DestinationsStepProps) {
             label="Default web fallback"
             onBlur={() => props.onFieldBlur('fallbackUrl')}
             onChange={(value) => props.onFieldChange('fallbackUrl', value)}
-            placeholder="https://www.oberoimall.com/download"
+            placeholder="https://www.example.com/download"
             required
             type="url"
             value={props.form.fallbackUrl}

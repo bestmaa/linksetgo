@@ -10,28 +10,28 @@ import {
 
 describe('workspace domain contract', () => {
   it('builds the documented managed URL without a global app-key requirement', () => {
-    const hostname = buildManagedWorkspaceHostname('Oberoi', 'linksetgo.com')
+    const hostname = buildManagedWorkspaceHostname('Example', 'linksetgo.com')
 
-    expect(hostname).toBe('oberoi.linksetgo.com')
+    expect(hostname).toBe('example.linksetgo.com')
     expect(
       buildWorkspacePublicLinkURL({
         appKey: 'mall',
         hostname: hostname ?? '',
         linkSlug: 'summer-offer',
       }),
-    ).toBe('https://oberoi.linksetgo.com/l/mall/summer-offer')
+    ).toBe('https://example.linksetgo.com/l/mall/summer-offer')
   })
 
   it('normalizes DNS names but rejects URLs, ports, wildcards, and malformed labels', () => {
-    expect(normalizeHostname('Links.OberoiMall.com.')).toBe('links.oberoimall.com')
-    expect(normalizeHostname('https://links.oberoimall.com')).toBeNull()
-    expect(normalizeHostname('links.oberoimall.com:443')).toBeNull()
-    expect(normalizeHostname('*.oberoimall.com')).toBeNull()
-    expect(normalizeHostname('-bad.oberoimall.com')).toBeNull()
+    expect(normalizeHostname('Links.Example.com.')).toBe('links.example.com')
+    expect(normalizeHostname('https://links.example.com')).toBeNull()
+    expect(normalizeHostname('links.example.com:443')).toBeNull()
+    expect(normalizeHostname('*.exampleapp.com')).toBeNull()
+    expect(normalizeHostname('-bad.exampleapp.com')).toBeNull()
   })
 
   it('reserves infrastructure workspace slugs', () => {
-    expect(normalizeWorkspaceSlug('oberoi-mall')).toBe('oberoi-mall')
+    expect(normalizeWorkspaceSlug('example-app')).toBe('example-app')
     expect(normalizeWorkspaceSlug('API')).toBeNull()
     expect(normalizeWorkspaceSlug('ingress')).toBeNull()
     expect(normalizeWorkspaceSlug('linksetgo')).toBeNull()

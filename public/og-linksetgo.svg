@@ -44,7 +44,7 @@
     <circle cx="65" cy="169" r="15" fill="none" stroke="#60a5fa" stroke-width="3"/>
     <path d="M50 169h30M65 154c7 8 7 22 0 30M65 154c-7 8-7 22 0 30" fill="none" stroke="#60a5fa" stroke-width="2"/>
     <text x="92" y="176" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="16">
-      oberoi.linksetgo.com
+      example.linksetgo.com
     </text>
 
     <path d="M254 169h50M304 169v-92M304 169v92M304 77h42M304 169h42M304 261h42"

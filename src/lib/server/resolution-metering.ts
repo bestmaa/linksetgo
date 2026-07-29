@@ -3,7 +3,7 @@ import 'server-only'
 import { sql, type PostgresAdapter } from '@payloadcms/db-postgres'
 import type { Payload } from 'payload'
 
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { resolveOrganizationPlan } from './billing-plan'
 import { relationID } from './tenant-context'
 
@@ -59,7 +59,7 @@ export async function meterResolvedApp(
   appID: number | string,
   now: Date = new Date(),
 ): Promise<ResolutionMeteringResult> {
-  if (getRelayEdition() === 'community') {
+  if (getLinksetGoEdition() === 'community') {
     return { allowDetailedAnalytics: true, count: null, limit: 'unlimited' }
   }
 
@@ -92,7 +92,7 @@ export async function canRecordDetailedAnalytics(
   appID: number | string,
   now: Date = new Date(),
 ): Promise<boolean> {
-  if (getRelayEdition() === 'community') return true
+  if (getLinksetGoEdition() === 'community') return true
   const organizationID = await organizationForApp(payload, appID)
   const plan = await resolveOrganizationPlan(payload, organizationID, { edition: 'cloud', now })
   const limit = plan.plan.limits.monthlyResolutions

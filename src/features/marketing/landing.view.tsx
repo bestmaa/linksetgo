@@ -93,7 +93,7 @@ export function LandingView({ primaryAction }: { primaryAction: MarketingActionV
                 <span>LinksetGo resolver</span>
                 <span className="visual-status">Live</span>
               </div>
-              <div className="visual-url">oberoi.linksetgo.com/l/mall/summer-offer</div>
+              <div className="visual-url">example.linksetgo.com/l/sample-app/welcome-offer</div>
               <div className="visual-flow">
                 <div className="visual-source">
                   <small>INCOMING</small>

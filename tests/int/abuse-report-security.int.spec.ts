@@ -13,7 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 const hostname = 'reported-resource.invalid'
 
 const request = (forwardedFor = '203.0.113.20'): Request =>
-  new Request('https://relay.example/api/public/abuse-reports', {
+  new Request('https://linksetgo.example/api/public/abuse-reports', {
     headers: {
       'accept-language': 'en',
       'user-agent': 'Relay abuse report test',

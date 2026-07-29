@@ -1,10 +1,10 @@
 import Link from 'next/link'
 
 const appFields = [
-  ['Native scheme', 'The scheme before ://, for example oberoi.'],
-  ['iOS Bundle ID', 'The Xcode target identifier, for example com.oberoi.mall.'],
+  ['Native scheme', 'The scheme before ://, for example sampleapp.'],
+  ['iOS Bundle ID', 'The Xcode target identifier, for example com.example.sampleapp.'],
   ['Apple Team ID', 'The 10-character public Apple Developer Team ID.'],
-  ['Android package', 'The Android applicationId, for example com.oberoi.mall.'],
+  ['Android package', 'The Android applicationId, for example com.example.sampleapp.'],
   ['SHA-256 fingerprint', 'The public Play App Signing certificate fingerprint.'],
   ['Web fallback', 'A customer-owned HTTPS page for users who cannot open the app.'],
 ] as const
@@ -42,11 +42,11 @@ export function ReactNativeGuideView() {
             <div className="marketing-code-pair">
               <div>
                 <small>MOBILE TEAM PROVIDES</small>
-                <code>oberoi://offer</code>
+                <code>sampleapp://welcome</code>
               </div>
               <div>
                 <small>LINKSETGO PUBLISHES</small>
-                <code>https://oberoi.linksetgo.com/l/mall/offer</code>
+                <code>https://example.linksetgo.com/l/sample-app/welcome-offer</code>
               </div>
             </div>
           </section>
@@ -54,20 +54,20 @@ export function ReactNativeGuideView() {
             <p className="marketing-docs-eyebrow">ROUTE IMPORT</p>
             <h2>Paste the URL instead of translating it by hand.</h2>
             <pre>
-              <code>oberoi://rewards-detail?SlabName=Gold&amp;SlabPromo=10OFF</code>
+              <code>sampleapp://membership-detail?level=gold&amp;promo=10OFF</code>
             </pre>
             <div className="marketing-import-result">
               <span>
                 <small>Destination</small>
-                <strong>/rewards-detail</strong>
+                <strong>/membership-detail</strong>
               </span>
               <span>
                 <small>Parameter</small>
-                <strong>SlabName = Gold</strong>
+                <strong>level = gold</strong>
               </span>
               <span>
                 <small>Parameter</small>
-                <strong>SlabPromo = 10OFF</strong>
+                <strong>promo = 10OFF</strong>
               </span>
             </div>
             <p>
@@ -85,7 +85,7 @@ export function ReactNativeGuideView() {
             </p>
             <pre>
               <code>
-                GET /api/public/links/mall/gold-reward{'\n'}→ /rewards-detail?SlabName=Gold
+                GET /api/public/links/sample-app/welcome-offer{'\n'}→ /membership-detail?level=gold
               </code>
             </pre>
             <p>

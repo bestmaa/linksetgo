@@ -75,7 +75,7 @@ export function TeamInviteDialogView(props: Props) {
                   id="team-invite-email"
                   maxLength={254}
                   onChange={(event) => props.onEmailChange(event.currentTarget.value)}
-                  placeholder="teammate@company.com"
+                  placeholder="teammate@example.com"
                   required
                   type="email"
                   value={dialog.email}

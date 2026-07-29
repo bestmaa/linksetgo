@@ -85,17 +85,17 @@ describe('trusted site URLs', () => {
   it('returns one credential-free origin without a path, query, or fragment', () => {
     expect(
       getMarketingSiteURL({
-        NEXT_PUBLIC_SITE_URL: 'https://relay.example/console?tab=apps#top',
+        NEXT_PUBLIC_SITE_URL: 'https://linksetgo.example/console?tab=apps#top',
       }).toString(),
-    ).toBe('https://relay.example/')
+    ).toBe('https://linksetgo.example/')
     expect(
       getMarketingSiteURL({
-        NEXT_PUBLIC_SITE_URL: 'https://user:secret@relay.example',
+        NEXT_PUBLIC_SITE_URL: 'https://user:secret@linksetgo.example',
       }).toString(),
     ).toBe('http://localhost:3100/')
-    expect(getMarketingSiteURL({ NEXT_PUBLIC_SITE_URL: 'http://relay.example' }).toString()).toBe(
-      'http://localhost:3100/',
-    )
+    expect(
+      getMarketingSiteURL({ NEXT_PUBLIC_SITE_URL: 'http://linksetgo.example' }).toString(),
+    ).toBe('http://localhost:3100/')
     expect(
       getApplicationSiteURL({
         PUBLIC_LINK_BASE_URL: 'http://127.0.0.1:3100/console',

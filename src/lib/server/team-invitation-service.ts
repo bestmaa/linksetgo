@@ -27,7 +27,7 @@ import type {
 } from '@/lib/client/payload-types'
 import type { OrganizationInvitation, User } from '@/payload-types'
 import { resolveOrganizationPlan } from './billing-plan'
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { acquireTransactionLock } from './postgres-lock'
 import { projectTeamInvitation } from './team-console'
 import type { TeamInvitationSender } from './team-invitation-delivery'
@@ -141,7 +141,7 @@ async function enforceInvitationMemberQuota(input: {
   payload: Payload
   req: Awaited<ReturnType<typeof createLocalReq>>
 }): Promise<void> {
-  if (getRelayEdition() === 'community') return
+  if (getLinksetGoEdition() === 'community') return
 
   await acquireTransactionLock(input.req, 'organization-quota', `${input.organizationID}:members`)
   const resolution = await resolveOrganizationPlan(
@@ -524,7 +524,7 @@ export async function previewOrganizationInvitation(input: {
       ? user.status === 'active'
         ? 'sign-in'
         : 'unavailable'
-      : getRelayEdition() === 'cloud'
+      : getLinksetGoEdition() === 'cloud'
         ? 'create'
         : 'unavailable'
   }
@@ -597,7 +597,7 @@ export async function acceptOrganizationInvitation(
         401,
       )
     } else {
-      if (getRelayEdition() !== 'cloud' || !invitationInput.name || !invitationInput.password) {
+      if (getLinksetGoEdition() !== 'cloud' || !invitationInput.name || !invitationInput.password) {
         throw new TeamInvitationError(
           'AUTHENTICATION_REQUIRED',
           'Sign in with the account that received this invitation.',

@@ -9,13 +9,13 @@ import { getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 const FIXTURE = {
-  platformEmail: 'cloud-signup-platform@relay.test',
-  rollbackEmail: 'cloud-signup-rollback@relay.test',
+  platformEmail: 'cloud-signup-platform@linksetgo.test',
+  rollbackEmail: 'cloud-signup-rollback@linksetgo.test',
   rollbackSlug: 'cloud-signup-rollback',
-  successEmail: 'cloud-signup-success@relay.test',
+  successEmail: 'cloud-signup-success@linksetgo.test',
   successSlug: 'cloud-signup-success',
 } as const
-const originalRelayEdition = process.env.RELAY_EDITION
+const originalLinksetGoEdition = process.env.RELAY_EDITION
 const originalSignupEnabled = process.env.CLOUD_SIGNUP_ENABLED
 
 const assertTestDatabase = (): void => {
@@ -41,8 +41,8 @@ describe.sequential('atomic Relay Cloud signup', () => {
       where: {
         hostname: {
           in: [
-            `${FIXTURE.rollbackSlug}.links.relay.test`,
-            `${FIXTURE.successSlug}.links.relay.test`,
+            `${FIXTURE.rollbackSlug}.links.linksetgo.test`,
+            `${FIXTURE.successSlug}.links.linksetgo.test`,
           ],
         },
       },
@@ -111,8 +111,8 @@ describe.sequential('atomic Relay Cloud signup', () => {
 
   afterAll(async () => {
     if (!payload) {
-      if (originalRelayEdition === undefined) delete process.env.RELAY_EDITION
-      else process.env.RELAY_EDITION = originalRelayEdition
+      if (originalLinksetGoEdition === undefined) delete process.env.RELAY_EDITION
+      else process.env.RELAY_EDITION = originalLinksetGoEdition
       if (originalSignupEnabled === undefined) delete process.env.CLOUD_SIGNUP_ENABLED
       else process.env.CLOUD_SIGNUP_ENABLED = originalSignupEnabled
       return
@@ -121,8 +121,8 @@ describe.sequential('atomic Relay Cloud signup', () => {
       await cleanup()
     } finally {
       await payload.destroy()
-      if (originalRelayEdition === undefined) delete process.env.RELAY_EDITION
-      else process.env.RELAY_EDITION = originalRelayEdition
+      if (originalLinksetGoEdition === undefined) delete process.env.RELAY_EDITION
+      else process.env.RELAY_EDITION = originalLinksetGoEdition
       if (originalSignupEnabled === undefined) delete process.env.CLOUD_SIGNUP_ENABLED
       else process.env.CLOUD_SIGNUP_ENABLED = originalSignupEnabled
     }
@@ -140,8 +140,8 @@ describe.sequential('atomic Relay Cloud signup', () => {
           workspaceSlug: FIXTURE.rollbackSlug,
         },
         {
-          appBaseURL: 'https://app.relay.test',
-          managedLinkRootDomain: 'links.relay.test',
+          appBaseURL: 'https://app.linksetgo.test',
+          managedLinkRootDomain: 'links.linksetgo.test',
           payload: payload!,
           randomToken: () => 'A'.repeat(43),
           sendVerification: async () => {
@@ -172,7 +172,7 @@ describe.sequential('atomic Relay Cloud signup', () => {
       payload!.find({
         collection: 'domains',
         overrideAccess: true,
-        where: { hostname: { equals: `${FIXTURE.rollbackSlug}.links.relay.test` } },
+        where: { hostname: { equals: `${FIXTURE.rollbackSlug}.links.linksetgo.test` } },
       }),
     ])
     expect([users, organizations, workspaces, domains].map((result) => result.totalDocs)).toEqual([
@@ -191,8 +191,8 @@ describe.sequential('atomic Relay Cloud signup', () => {
         workspaceSlug: FIXTURE.successSlug,
       },
       {
-        appBaseURL: 'https://app.relay.test',
-        managedLinkRootDomain: 'links.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
+        managedLinkRootDomain: 'links.linksetgo.test',
         now: () => new Date('2026-07-27T06:00:00.000Z'),
         payload: payload!,
         randomToken: () => 'B'.repeat(43),
@@ -204,10 +204,10 @@ describe.sequential('atomic Relay Cloud signup', () => {
 
     expect(result).toMatchObject({
       email: FIXTURE.successEmail,
-      managedHostname: `${FIXTURE.successSlug}.links.relay.test`,
+      managedHostname: `${FIXTURE.successSlug}.links.linksetgo.test`,
     })
     expect(delivered?.verificationURL).toBe(
-      `https://app.relay.test/verify-email#token=${'B'.repeat(43)}`,
+      `https://app.linksetgo.test/verify-email#token=${'B'.repeat(43)}`,
     )
 
     const [user, organization, workspace, memberships, domains] = await Promise.all([

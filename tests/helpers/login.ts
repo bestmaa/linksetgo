@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 
-import { getSeedAdminCredentials, type SeedAdminCredentials } from './relay-fixtures'
+import { getSeedAdminCredentials, type SeedAdminCredentials } from './sample-fixtures'
 
 export interface LoginOptions {
   page: Page

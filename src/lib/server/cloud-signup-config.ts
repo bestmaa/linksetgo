@@ -70,7 +70,7 @@ export function getCloudSignupConfiguration(
 ): CloudSignupConfiguration {
   const gate = evaluateCloudSignupGate({
     cloudSignupEnabled: environment.CLOUD_SIGNUP_ENABLED,
-    relayEdition: environment.RELAY_EDITION,
+    linksetGoEdition: environment.RELAY_EDITION,
   })
   if (!gate.ok) {
     return {

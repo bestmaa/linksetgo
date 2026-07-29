@@ -15,7 +15,7 @@ import { parseAppConsoleMutation } from '@/lib/server/app-console-input'
 import type { App, User } from '@/payload-types'
 
 const activeUser = {
-  email: 'owner@relay.test',
+  email: 'owner@linksetgo.test',
   id: 7,
   role: 'admin',
   status: 'active',

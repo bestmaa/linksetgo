@@ -17,7 +17,7 @@ import {
   type SubscriptionState,
 } from '@/lib/domain/subscription-state'
 import type { Subscription } from '@/payload-types'
-import { getRelayEdition } from './deployment-edition'
+import { getLinksetGoEdition } from './deployment-edition'
 import { acquireTransactionLock } from './postgres-lock'
 import { relationID } from './tenant-context'
 
@@ -122,7 +122,7 @@ export async function processBillingWebhook({
   providerKey,
   request,
 }: ProcessBillingWebhookInput): Promise<BillingWebhookOutcome> {
-  if (getRelayEdition() !== 'cloud') {
+  if (getLinksetGoEdition() !== 'cloud') {
     return { kind: 'disabled', message: 'Billing webhooks are disabled in Community edition.' }
   }
 

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { seededApp, seededLink } from '../helpers/relay-fixtures'
+import { seededApp, seededLink } from '../helpers/sample-fixtures'
 
 test.describe('LinksetGo public surface', () => {
   test('renders the seeded deep-link fallback', async ({ page }) => {

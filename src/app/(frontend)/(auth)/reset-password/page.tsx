@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { ResetPasswordConnector } from '@/features/account-recovery/reset-password.connector'
-import { getRelayEdition } from '@/lib/server/deployment-edition'
+import { getLinksetGoEdition } from '@/lib/server/deployment-edition'
 
 export const metadata: Metadata = {
   referrer: 'no-referrer',
@@ -12,5 +12,5 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 
 export default function ResetPasswordPage() {
-  return <ResetPasswordConnector available={getRelayEdition() === 'cloud'} />
+  return <ResetPasswordConnector available={getLinksetGoEdition() === 'cloud'} />
 }

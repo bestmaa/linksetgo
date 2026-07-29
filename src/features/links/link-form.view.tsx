@@ -65,7 +65,7 @@ export function LinkFormView(props: LinkFormProps) {
                 className="field"
                 id="native-url"
                 onChange={props.onNativeUrlChange}
-                placeholder="oberoi://rewards-detail?SlabName=Gold"
+                placeholder="sampleapp://membership-detail?level=gold"
                 spellCheck={false}
                 value={props.nativeUrl}
               />
@@ -116,7 +116,7 @@ export function LinkFormView(props: LinkFormProps) {
               value={props.form.destinationPath}
             />
             <span className="form-help">
-              Enter only the app route, such as /rewards-detail—not the full oberoi:// URL.
+              Enter only the app route, such as /membership-detail—not the full sampleapp:// URL.
             </span>
           </label>
           <label className="form-group">

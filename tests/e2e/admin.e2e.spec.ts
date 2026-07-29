@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { login } from '../helpers/login'
-import { seededApp, seededLink } from '../helpers/relay-fixtures'
+import { seededApp, seededLink } from '../helpers/sample-fixtures'
 
 const destinations = [
   { heading: 'Apps', label: 'Apps', path: '/admin/apps' },

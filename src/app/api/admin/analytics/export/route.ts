@@ -34,7 +34,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   return new NextResponse(analyticsSummaryCSV(result.value), {
     headers: {
       ...noStoreHeaders,
-      'Content-Disposition': 'attachment; filename="relay-analytics.csv"',
+      'Content-Disposition': 'attachment; filename="linksetgo-analytics.csv"',
       'Content-Type': 'text/csv; charset=utf-8',
       'X-Content-Type-Options': 'nosniff',
     },

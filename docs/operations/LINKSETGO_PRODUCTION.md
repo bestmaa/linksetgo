@@ -105,7 +105,7 @@ Create DNS records that send the managed service hosts to the trusted ingress:
 | `ingress.linksetgo.com` | `A` or `CNAME` | Custom-domain ingress | According to the selected custom-hostname provider |
 
 An explicit `app` record is recommended even when the wildcard would resolve it.
-The wildcard is one label deep: it covers `oberoi.linksetgo.com`, not
+The wildcard is one label deep: it covers `example.linksetgo.com`, not
 `one.two.linksetgo.com`.
 
 For the Cloudflare-to-origin connection:
@@ -157,7 +157,7 @@ domain requires all of the following:
 1. LinksetGo creates one exact pending domain and a server-generated ownership
    challenge.
 2. The customer publishes the requested
-   `_relay-verification.links.customer.com` TXT value.
+   `_linksetgo-verification.links.customer.com` TXT value.
 3. The customer publishes:
 
    ```dns

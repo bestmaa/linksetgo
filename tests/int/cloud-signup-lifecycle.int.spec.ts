@@ -16,13 +16,13 @@ import { getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 const FIXTURE = {
-  extraEmail: 'signup-lifecycle-extra@relay.test',
-  platformEmail: 'signup-lifecycle-platform@relay.test',
-  pruneSafeEmail: 'signup-lifecycle-prune-safe@relay.test',
+  extraEmail: 'signup-lifecycle-extra@linksetgo.test',
+  platformEmail: 'signup-lifecycle-platform@linksetgo.test',
+  pruneSafeEmail: 'signup-lifecycle-prune-safe@linksetgo.test',
   pruneSafeSlug: 'signup-lifecycle-prune-safe',
-  pruneUnsafeEmail: 'signup-lifecycle-prune-unsafe@relay.test',
+  pruneUnsafeEmail: 'signup-lifecycle-prune-unsafe@linksetgo.test',
   pruneUnsafeSlug: 'signup-lifecycle-prune-unsafe',
-  resendEmail: 'signup-lifecycle-resend@relay.test',
+  resendEmail: 'signup-lifecycle-resend@linksetgo.test',
   resendSlug: 'signup-lifecycle-resend',
 } as const
 const allEmails = [
@@ -33,7 +33,7 @@ const allEmails = [
   FIXTURE.resendEmail,
 ]
 const allSlugs = [FIXTURE.pruneSafeSlug, FIXTURE.pruneUnsafeSlug, FIXTURE.resendSlug]
-const originalRelayEdition = process.env.RELAY_EDITION
+const originalLinksetGoEdition = process.env.RELAY_EDITION
 const originalSignupEnabled = process.env.CLOUD_SIGNUP_ENABLED
 
 const assertTestDatabase = (): void => {
@@ -68,7 +68,7 @@ describe.sequential('pending Relay Cloud signup lifecycle', () => {
       await payload.delete({
         collection: 'domains',
         overrideAccess: true,
-        where: { hostname: { in: allSlugs.map((slug) => `${slug}.links.relay.test`) } },
+        where: { hostname: { in: allSlugs.map((slug) => `${slug}.links.linksetgo.test`) } },
       })
       await payload.delete({
         collection: 'organization-memberships',
@@ -110,8 +110,8 @@ describe.sequential('pending Relay Cloud signup lifecycle', () => {
         workspaceSlug: slug,
       },
       {
-        appBaseURL: 'https://app.relay.test',
-        managedLinkRootDomain: 'links.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
+        managedLinkRootDomain: 'links.linksetgo.test',
         now: () => now,
         payload: payload!,
         randomToken: () => token,
@@ -143,8 +143,8 @@ describe.sequential('pending Relay Cloud signup lifecycle', () => {
       await cleanup()
     } finally {
       await payload?.destroy()
-      if (originalRelayEdition === undefined) delete process.env.RELAY_EDITION
-      else process.env.RELAY_EDITION = originalRelayEdition
+      if (originalLinksetGoEdition === undefined) delete process.env.RELAY_EDITION
+      else process.env.RELAY_EDITION = originalLinksetGoEdition
       if (originalSignupEnabled === undefined) delete process.env.CLOUD_SIGNUP_ENABLED
       else process.env.CLOUD_SIGNUP_ENABLED = originalSignupEnabled
     }
@@ -166,7 +166,7 @@ describe.sequential('pending Relay Cloud signup lifecycle', () => {
 
     await expect(
       resendCloudSignupVerification(FIXTURE.resendEmail, {
-        appBaseURL: 'https://app.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
         now: () => resendAt,
         payload: payload!,
         randomToken: () => replacementToken,
@@ -181,7 +181,7 @@ describe.sequential('pending Relay Cloud signup lifecycle', () => {
     })
     await expect(
       resendCloudSignupVerification(FIXTURE.resendEmail, {
-        appBaseURL: 'https://app.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
         now: () => hardDeadline,
         payload: payload!,
         randomToken: () => 'T'.repeat(43),
@@ -235,7 +235,7 @@ describe.sequential('pending Relay Cloud signup lifecycle', () => {
     await expect(
       pruneExpiredPendingCloudSignups({
         candidateUserIDs: [Number(safe.userID), Number(unsafe.userID)],
-        managedLinkRootDomain: 'links.relay.test',
+        managedLinkRootDomain: 'links.linksetgo.test',
         now: pruneAt,
         payload: payload!,
       }),

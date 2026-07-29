@@ -48,7 +48,7 @@ export function FallbackOriginRegistrationView(props: {
               id="fallback-origin-hostname"
               onBlur={registration.onHostnameBlur}
               onChange={(event) => registration.onHostnameChange(event.currentTarget.value)}
-              placeholder="www.company.com"
+              placeholder="www.example.com"
               value={registration.hostname}
             />
             <span className="form-help" id="fallback-origin-help">

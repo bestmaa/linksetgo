@@ -77,7 +77,7 @@ export function PlatformsStepView(props: PlatformsStepProps) {
               label="iOS Bundle ID"
               onBlur={() => props.onFieldBlur('iosBundleId')}
               onChange={(value) => props.onFieldChange('iosBundleId', value)}
-              placeholder="com.oberoimall.app"
+              placeholder="com.example.sampleapp"
               required
               value={props.form.iosBundleId}
             />
@@ -120,7 +120,7 @@ export function PlatformsStepView(props: PlatformsStepProps) {
               label="Android application ID"
               onBlur={() => props.onFieldBlur('androidPackageName')}
               onChange={(value) => props.onFieldChange('androidPackageName', value)}
-              placeholder="com.oberoimall.app"
+              placeholder="com.example.sampleapp"
               required
               value={props.form.androidPackageName}
             />

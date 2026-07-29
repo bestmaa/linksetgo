@@ -73,7 +73,7 @@ const generalFields: readonly FieldDefinition[] = [
   { field: 'name', label: 'App name', maxLength: 120, required: true },
   {
     field: 'nativeScheme',
-    help: 'Custom mobile URL scheme without ://, for example oberoi. Legacy apps can be backfilled.',
+    help: 'Custom mobile URL scheme without ://, for example sampleapp. Existing apps can be backfilled.',
     label: 'Native URL scheme',
     maxLength: 64,
   },

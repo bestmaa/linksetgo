@@ -40,8 +40,8 @@ describe('domain provisioning webhook adapter', () => {
       Response.json({
         kind: 'success',
         value: {
-          cnameTargets: ['ingress.relay.example'],
-          txtValues: ['relay-domain-verification=token'],
+          cnameTargets: ['ingress.linksetgo.example'],
+          txtValues: ['linksetgo-domain-verification=token'],
         },
       }),
     )
@@ -53,8 +53,8 @@ describe('domain provisioning webhook adapter', () => {
     await expect(provider.inspectDNS('links.brand.example')).resolves.toEqual({
       kind: 'success',
       value: {
-        cnameTargets: ['ingress.relay.example'],
-        txtValues: ['relay-domain-verification=token'],
+        cnameTargets: ['ingress.linksetgo.example'],
+        txtValues: ['linksetgo-domain-verification=token'],
       },
     })
     const [url, init] = fetchMock.mock.calls[0]!

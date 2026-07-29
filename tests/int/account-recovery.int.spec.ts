@@ -10,12 +10,12 @@ import { getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 const FIXTURE = {
-  email: 'account-recovery-active@relay.test',
+  email: 'account-recovery-active@linksetgo.test',
   originalPassword: 'OriginalRecovery123!',
   resetPassword: 'UpdatedRecovery456!',
-  unknownEmail: 'account-recovery-unknown@relay.test',
+  unknownEmail: 'account-recovery-unknown@linksetgo.test',
 } as const
-const originalRelayEdition = process.env.RELAY_EDITION
+const originalLinksetGoEdition = process.env.RELAY_EDITION
 
 const assertTestDatabase = (): void => {
   const connectionString = process.env.DATABASE_URL
@@ -60,8 +60,8 @@ describe.sequential('Relay Cloud account recovery', () => {
       })
     } finally {
       await payload?.destroy()
-      if (originalRelayEdition === undefined) delete process.env.RELAY_EDITION
-      else process.env.RELAY_EDITION = originalRelayEdition
+      if (originalLinksetGoEdition === undefined) delete process.env.RELAY_EDITION
+      else process.env.RELAY_EDITION = originalLinksetGoEdition
     }
   })
 
@@ -69,7 +69,7 @@ describe.sequential('Relay Cloud account recovery', () => {
     let deliveries = 0
     await expect(
       requestCloudPasswordReset({
-        appBaseURL: 'https://app.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
         email: FIXTURE.unknownEmail,
         payload: payload!,
         sendReset: async () => {
@@ -83,7 +83,7 @@ describe.sequential('Relay Cloud account recovery', () => {
   it('rolls back the reset state when delivery fails', async () => {
     await expect(
       requestCloudPasswordReset({
-        appBaseURL: 'https://app.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
         email: FIXTURE.email,
         payload: payload!,
         sendReset: async () => {
@@ -108,7 +108,7 @@ describe.sequential('Relay Cloud account recovery', () => {
     let delivery: PasswordResetDelivery | undefined
     await expect(
       requestCloudPasswordReset({
-        appBaseURL: 'https://app.relay.test',
+        appBaseURL: 'https://app.linksetgo.test',
         email: FIXTURE.email,
         payload: payload!,
         sendReset: async (value) => {
@@ -119,7 +119,7 @@ describe.sequential('Relay Cloud account recovery', () => {
 
     const resetURL = new URL(delivery!.resetURL)
     const token = new URLSearchParams(resetURL.hash.slice(1)).get('token')
-    expect(resetURL.origin).toBe('https://app.relay.test')
+    expect(resetURL.origin).toBe('https://app.linksetgo.test')
     expect(resetURL.pathname).toBe('/reset-password')
     expect(resetURL.search).toBe('')
     expect(token).toMatch(/^[a-f0-9]{40}$/)

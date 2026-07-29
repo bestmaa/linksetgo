@@ -47,13 +47,13 @@ https://{workspace}.{MANAGED_LINK_ROOT_DOMAIN}/l/{appKey}/{linkSlug}
 Documentation example, using the reserved `.example` domain:
 
 ```text
-https://oberoi.linksetgo.example/l/mall/offer
+https://example.linksetgo.example/l/sample-app/offer
 ```
 
 Paid custom domains keep the same path:
 
 ```text
-https://links.oberoimall.com/l/mall/offer
+https://links.example.com/l/sample-app/offer
 ```
 
 The hostname selects the workspace. `appKey` is permanent within that workspace.
@@ -72,16 +72,16 @@ A mobile team can provide either a destination path and parameters separately or
 paste its custom-scheme URL:
 
 ```text
-oberoi://rewards-detail?SlabName=Gold&SlabPromo=10OFF
+sampleapp://membership-detail?level=Gold&promo=10OFF
 ```
 
 LinksetGo stores the public, scheme-independent route:
 
 ```text
-path: /rewards-detail
+path: /membership-detail
 parameters:
-  SlabName: Gold
-  SlabPromo: 10OFF
+  level: Gold
+  promo: 10OFF
 ```
 
 The mobile app owns the scheme and navigation implementation. LinksetGo never asks

@@ -30,15 +30,15 @@ describe('analytics public contracts', () => {
   it('parses only the documented aggregate query keys', () => {
     expect(
       analyticsQueryFromURL(
-        'https://relay.example/api/admin/analytics?workspaceId=12&appId=7&platform=ios',
+        'https://linksetgo.example/api/admin/analytics?workspaceId=12&appId=7&platform=ios',
       ),
     ).toEqual({ appId: '7', platform: 'ios', workspaceId: '12' })
     expect(
       analyticsQueryFromURL(
-        'https://relay.example/api/admin/analytics?workspaceId=12&rawSession=true',
+        'https://linksetgo.example/api/admin/analytics?workspaceId=12&rawSession=true',
       ),
     ).toBeNull()
-    expect(analyticsQueryFromURL('https://relay.example/api/admin/analytics')).toBeNull()
+    expect(analyticsQueryFromURL('https://linksetgo.example/api/admin/analytics')).toBeNull()
   })
 
   it('uses a finite Community retention policy and rejects unsafe configuration', () => {
