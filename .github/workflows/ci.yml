@@ -126,5 +126,8 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run desktop and mobile browser tests
+      - name: Run Community desktop and mobile browser tests
         run: npm run test:e2e
+
+      - name: Run Cloud marketing desktop and mobile browser tests
+        run: npm run test:e2e:marketing
