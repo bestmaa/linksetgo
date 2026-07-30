@@ -58,7 +58,9 @@ function presentCloudFeatures(plan: PlanDefinition): readonly string[] {
     limits.monthlyResolutions === 'unlimited' ||
     limits.analyticsRetentionDays === 'unlimited' ||
     limits.customDomains === 'unlimited' ||
-    limits.members === 'unlimited'
+    limits.members === 'unlimited' ||
+    limits.savedLinks === 'unlimited' ||
+    limits.workspaces === 'unlimited'
   ) {
     throw new Error(`Cloud plan ${plan.key} must define finite limits.`)
   }
@@ -72,9 +74,12 @@ function presentCloudFeatures(plan: PlanDefinition): readonly string[] {
         )}`
 
   return [
-    formatCount(limits.apps, 'app'),
-    formatCount(limits.activeLinks, 'active link'),
-    `${limits.monthlyResolutions.toLocaleString('en-US')} monthly resolves`,
+    `${formatCount(limits.apps, 'app')} · ${formatCount(limits.workspaces, 'workspace')}`,
+    `${formatCount(limits.savedLinks, 'saved link')} · ${formatCount(
+      limits.activeLinks,
+      'active link',
+    )}`,
+    `${limits.monthlyResolutions.toLocaleString('en-US')} monthly tracked resolutions`,
     `${limits.analyticsRetentionDays}-day analytics`,
     access,
   ]

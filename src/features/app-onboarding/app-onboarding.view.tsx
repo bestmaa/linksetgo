@@ -51,6 +51,7 @@ export function AppOnboardingView(props: AppOnboardingViewProps) {
               form={props.form}
               onFieldBlur={props.onFieldBlur}
               onFieldChange={props.onFieldChange}
+              publicUrlPreview={props.publicUrlPreview}
             />
           ) : null}
           {props.step === 'platforms' ? (

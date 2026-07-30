@@ -24,7 +24,9 @@ store fallback.
 
 - Multi-tenant LinksetGo deployment operated by the LinksetGo service.
 - Each organization owns one or more workspaces.
-- Each workspace receives an isolated managed subdomain.
+- Free workspaces use one operator-owned shared hostname with isolated
+  `/{publicAppKey}/{linkSlug}` paths; signup does not provision a subdomain.
+- Paid workspaces may add a LinksetGo-managed hostname or one verified custom domain.
 - Plans limit creation and analytics retention; an exhausted quota does not
   immediately break links that customers have already shared.
 - Paid plans define member and custom-domain entitlements. Managed backups are a
@@ -32,33 +34,41 @@ store fallback.
   Cloud must not advertise a backup SLA until its off-host provider and restore
   runbook are operating.
 
-Cloud must remain invite-only until email verification, cross-tenant security
-tests, rate limiting, abuse reporting, restore drills, and verified fallback
-ownership are operational.
+Public Cloud signup is controlled by an explicit production feature flag and must
+remain closed until email verification, cross-tenant security tests, rate limiting,
+abuse reporting, restore drills, and verified fallback ownership are operational.
 
 ## Permanent public URL contract
 
-Managed workspace URL:
+Free shared URL:
 
 ```text
-https://{workspace}.{MANAGED_LINK_ROOT_DOMAIN}/l/{appKey}/{linkSlug}
+https://{SHARED_LINK_HOST}/{publicAppKey}/{linkSlug}
 ```
 
-Documentation example, using the reserved `.example` domain:
+Production-style example:
 
 ```text
-https://example.linksetgo.example/l/sample-app/offer
+https://go.linksetgo.com/sample-app-7f40d80fef6a0a97b37ad36c/offer
 ```
 
-Paid custom domains keep the same path:
+Paid managed and custom domains use the host-scoped path:
 
 ```text
 https://links.example.com/l/sample-app/offer
 ```
 
-The hostname selects the workspace. `appKey` is permanent within that workspace.
-`linkSlug` is permanent within the app. A custom-domain failure never removes the
-managed workspace URL.
+On the shared hostname, globally unique `publicAppKey` selects the app and tenant.
+Public quick setup derives this key from a readable scheme prefix plus a stable,
+secret-keyed workspace suffix. A customer-supplied native scheme such as `paypal`
+or `oberoi` never receives the exact global `/paypal/...` or `/oberoi/...` namespace
+and is not promoted into the public app display name. Existing exact aliases remain
+routable, while assigning a new exact alias is reserved for an explicit platform
+administrator and verified-brand workflow.
+On a custom or managed hostname, the hostname selects the workspace and `appKey`
+selects the app within it. Both keys become permanent after publication.
+`linkSlug` is permanent within the app. If a paid domain is unavailable, the
+shared clean URL remains the service fallback.
 
 Existing single-host URLs remain valid while installations migrate. Legacy
 aliases remain available in Community for old globally unique app keys, but all
@@ -91,28 +101,31 @@ for Apple private keys, Android keystores, store passwords, or signing secrets.
 
 The customer supplies only identifiers already controlled by its mobile team:
 
-- App name, permanent app key, description, native scheme, and safe default web
-  fallback.
+- Simple scheme handoff: paste a custom-scheme URL. LinksetGo derives the app,
+  permanent shared key, destination and link slug; fallback and store URLs are optional.
+- Verified App Links: app name, permanent app key, description and native scheme.
 - iOS Bundle ID, Apple Team ID, and App Store URL when iOS is enabled.
 - Android package name, Play signing SHA-256 certificate fingerprints, and Play
   Store URL when Android is enabled.
 - App-owned fallback hostnames. Cloud activation additionally requires ownership
   verification.
 
-An app starts as `draft`. It becomes `active` only when at least one configured
-platform is complete and the operator explicitly activates it.
+A simple scheme-handoff app can become active immediately because the HTTPS landing
+page performs the custom-scheme handoff. A verified-App-Links app starts as `draft`
+and becomes `active` only when at least one configured platform is complete and the
+operator explicitly activates it.
 
 ## Beta plan catalog
 
 The plan catalog is versioned and enforced by server-side policy, never only by
 the dashboard.
 
-| Plan       |          Price |      Apps | Active links | Monthly resolutions |           Analytics |   Members |      Custom domains |
-| ---------- | -------------: | --------: | -----------: | ------------------: | ------------------: | --------: | ------------------: |
-| Community  | $0 self-hosted | Unlimited |    Unlimited |           Unlimited | Operator controlled | Unlimited | Operator controlled |
-| Cloud Free |             $0 |         1 |           25 |               5,000 |              7 days |         1 |                   0 |
-| Starter    |       $5/month |         3 |          250 |              25,000 |             30 days |         2 |                   0 |
-| Pro        |      $10/month |        10 |        2,000 |             100,000 |             90 days |         5 |                   1 |
+| Plan       |          Price | Workspaces |      Apps | Saved links | Active links | Monthly tracked resolutions |           Analytics |   Members |      Custom domains |
+| ---------- | -------------: | ---------: | --------: | ----------: | -----------: | --------------------------: | ------------------: | --------: | ------------------: |
+| Community  | $0 self-hosted |  Unlimited | Unlimited |   Unlimited |    Unlimited |                   Unlimited | Operator controlled | Unlimited | Operator controlled |
+| Cloud Free |             $0 |          1 |         1 |          25 |           10 |                       1,000 |              7 days |         1 |                   0 |
+| Starter    |       $5/month |          5 |         5 |       2,500 |        2,500 |                     150,000 |             90 days |         3 |                   1 |
+| Pro        |      $10/month |         20 |        20 |      10,000 |       10,000 |                   1,000,000 |            365 days |        10 |                   5 |
 
 These are beta limits. Before paid launch they must be checked against measured
 database, bandwidth, backup, email, abuse-handling, and support costs.
@@ -120,6 +133,8 @@ database, bandwidth, backup, email, abuse-handling, and support costs.
 At 80% usage the dashboard warns the workspace. At 100% it blocks new resources
 for that metric and offers an upgrade. Existing active links continue to resolve
 through a billing grace period unless the workspace is suspended for abuse.
+Saved-link usage includes draft, active, paused, and expired records; the active
+link limit is enforced separately for the currently resolvable subset.
 
 ## Domain lifecycle
 

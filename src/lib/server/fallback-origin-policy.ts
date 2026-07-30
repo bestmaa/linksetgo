@@ -22,12 +22,16 @@ const relationshipInput = (id: string): number | string => (/^\d+$/.test(id) ? N
 
 export async function findUnverifiedFallbackHostnames(input: {
   hostnames: readonly string[]
+  now?: Date
   payload: Payload
   req?: PayloadRequest
   workspaceID: string
 }): Promise<string[]> {
   const required = [...new Set(normalizedFallbackHostnames(input.hostnames))]
   if (required.length === 0) return []
+  const now = input.now ?? new Date()
+  if (!Number.isFinite(now.getTime())) return required
+  const nowISO = now.toISOString()
 
   const result = await input.payload.find({
     collection: 'fallback-origins',
@@ -41,6 +45,13 @@ export async function findUnverifiedFallbackHostnames(input: {
         { workspace: { equals: relationshipInput(input.workspaceID) } },
         { hostname: { in: required } },
         { status: { equals: 'verified' } },
+        { verifiedAt: { less_than_equal: nowISO } },
+        {
+          or: [
+            { verificationExpiresAt: { greater_than: nowISO } },
+            { outageGraceExpiresAt: { greater_than: nowISO } },
+          ],
+        },
       ],
     },
   })
@@ -54,6 +65,7 @@ export async function findUnverifiedFallbackHostnames(input: {
 
 export async function areCloudFallbackOriginsReady(input: {
   fallbackURLs: readonly (null | string | undefined)[]
+  now?: Date
   payload: Payload
   req?: PayloadRequest
   workspace: unknown
@@ -72,6 +84,7 @@ export async function areCloudFallbackOriginsReady(input: {
     (
       await findUnverifiedFallbackHostnames({
         hostnames,
+        ...(input.now ? { now: input.now } : {}),
         payload: input.payload,
         ...(input.req ? { req: input.req } : {}),
         workspaceID,
@@ -90,6 +103,7 @@ export const enforceCloudAppFallbackOrigins: CollectionBeforeValidateHook = asyn
   const next = isRecord(data) ? data : {}
   const previous = isRecord(originalDoc) ? originalDoc : {}
   if (selected(next, previous, 'status') !== 'active') return data
+  if (selected(next, previous, 'routingMode') === 'scheme-handoff') return data
 
   const workspaceID = relationID(selected(next, previous, 'workspace'))
   if (!workspaceID) {
@@ -101,9 +115,7 @@ export const enforceCloudAppFallbackOrigins: CollectionBeforeValidateHook = asyn
     selected(next, previous, 'allowedFallbackHosts'),
   )
   const required = [...new Set(defaultHostname ? [...allowedHostnames, defaultHostname] : [])]
-  if (!defaultHostname || required.length === 0) {
-    throw new APIError('A valid HTTPS fallback URL is required before activation.', 422)
-  }
+  if (required.length === 0) return data
 
   const missing = await findUnverifiedFallbackHostnames({
     hostnames: required,

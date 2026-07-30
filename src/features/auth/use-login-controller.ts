@@ -8,7 +8,11 @@ import { errorMessage, payloadClient } from '@/lib/client/payload-client'
 export function useLoginController() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const destination = searchParams.get('next') === '/invite' ? '/invite' : '/admin'
+  const requestedDestination = searchParams.get('next')
+  const destination =
+    requestedDestination === '/invite' || requestedDestination === '/admin/links'
+      ? requestedDestination
+      : '/admin'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)

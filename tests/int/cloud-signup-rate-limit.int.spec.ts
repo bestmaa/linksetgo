@@ -117,4 +117,51 @@ describe('Cloud signup proxy identity', () => {
       allowed: false,
     })
   })
+
+  it('does not let browser-controlled headers manufacture identities without a trusted ingress', async () => {
+    const provider = new InMemoryRateLimitProvider(() => 1_000)
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const decision = await rateLimitCloudSignupRequest({
+        eventHashSecret: secret,
+        provider,
+        request: new Request('https://app.linksetgo.test/api/auth/signup', {
+          headers: { 'user-agent': `rotating-agent-${attempt}` },
+          method: 'POST',
+        }),
+        trustProxy: false,
+      })
+      expect(decision.allowed).toBe(true)
+    }
+
+    await expect(
+      rateLimitCloudSignupRequest({
+        eventHashSecret: secret,
+        provider,
+        request: new Request('https://app.linksetgo.test/api/auth/signup', {
+          headers: { 'user-agent': 'rotating-agent-final' },
+          method: 'POST',
+        }),
+        trustProxy: false,
+      }),
+    ).resolves.toMatchObject({ allowed: false })
+  })
+
+  it('atomically preserves the global budget when one scoped identity is blocked', async () => {
+    const provider = new InMemoryRateLimitProvider(() => 1_000)
+    const global = { bucket: 'test-global', key: 'a'.repeat(64), limit: 2, windowMs: 60_000 }
+    const scopedA = {
+      bucket: 'test-scoped',
+      key: 'b'.repeat(64),
+      limit: 1,
+      windowMs: 60_000,
+    }
+    const scopedB = { ...scopedA, key: 'c'.repeat(64) }
+    const scopedC = { ...scopedA, key: 'd'.repeat(64) }
+
+    await expect(provider.consumePair(global, scopedA)).resolves.toMatchObject({ allowed: true })
+    await expect(provider.consumePair(global, scopedA)).resolves.toMatchObject({ allowed: false })
+    await expect(provider.consumePair(global, scopedB)).resolves.toMatchObject({ allowed: true })
+    await expect(provider.consumePair(global, scopedC)).resolves.toMatchObject({ allowed: false })
+  })
 })

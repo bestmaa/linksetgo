@@ -1,6 +1,7 @@
 import { APIError, type CollectionBeforeValidateHook } from 'payload'
 
 import { hasCompleteAppPlatform } from '@/lib/domain/app-readiness'
+import { isSharedPublicAppKey } from '@/lib/domain/deployment-surface'
 import { normalizeNativeScheme } from '@/lib/domain/native-scheme'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -38,14 +39,45 @@ export const enforceAppIdentityPermanence: CollectionBeforeValidateHook = ({
   const next = isRecord(data) ? data : {}
   const previous = isRecord(originalDoc) ? originalDoc : {}
   const slugChanged = Object.hasOwn(next, 'slug') && next.slug !== previous.slug
+  const publicKeyChanged =
+    Object.hasOwn(next, 'publicKey') &&
+    previous.publicKey !== null &&
+    previous.publicKey !== undefined &&
+    next.publicKey !== previous.publicKey
   const workspaceChanged =
     Object.hasOwn(next, 'workspace') &&
     relationID(next.workspace) !== relationID(previous.workspace)
 
-  if (slugChanged || workspaceChanged) {
-    throw new APIError('An app key and workspace are permanent after the app is created.', 409)
+  if (slugChanged || publicKeyChanged || workspaceChanged) {
+    throw new APIError(
+      'An app key and workspace are permanent after the app is created; its shared public key is also permanent.',
+      409,
+    )
   }
   return data
+}
+
+export const normalizeOptionalPublicAppKey: CollectionBeforeValidateHook = ({ data }) => {
+  const next = isRecord(data) ? data : {}
+  if (!Object.hasOwn(next, 'publicKey')) return data
+  if (next.publicKey === null || next.publicKey === undefined || next.publicKey === '') {
+    return { ...next, publicKey: null }
+  }
+  const publicKey =
+    typeof next.publicKey === 'string'
+      ? next.publicKey
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '')
+      : ''
+  if (!publicKey) {
+    throw new APIError('Enter a valid shared public app key.', 422)
+  }
+  if (!isSharedPublicAppKey(publicKey)) {
+    throw new APIError('That shared public app key is reserved by LinksetGo.', 409)
+  }
+  return { ...next, publicKey }
 }
 
 export const normalizeAndRequireNativeScheme: CollectionBeforeValidateHook = ({
@@ -69,6 +101,7 @@ export const enforceActiveAppReadiness: CollectionBeforeValidateHook = ({ data, 
   const next = isRecord(data) ? data : {}
   const previous = isRecord(originalDoc) ? originalDoc : {}
   if (selected(next, previous, 'status') !== 'active') return data
+  if (selected(next, previous, 'routingMode') === 'scheme-handoff') return data
 
   if (
     !hasCompleteAppPlatform({

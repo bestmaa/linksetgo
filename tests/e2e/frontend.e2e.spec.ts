@@ -10,7 +10,7 @@ test.describe('LinksetGo public surface', () => {
       page.getByRole('heading', { level: 1, name: `Continue to ${seededApp.name}` }),
     ).toBeVisible()
     await expect(page.getByText(`Destination: ${seededLink.destinationPath}`)).toHaveCount(0)
-    await expect(page.getByRole('link', { name: 'Continue on the web' })).toHaveAttribute(
+    await expect(page.getByRole('link', { name: 'Continue to example.com' })).toHaveAttribute(
       'href',
       'https://example.com/',
     )
@@ -22,9 +22,9 @@ test.describe('LinksetGo public surface', () => {
     await expect(
       page.getByRole('heading', { level: 1, name: 'This link is unavailable' }),
     ).toBeVisible()
-    await expect(
-      page.getByRole('link', { name: /App Store|Google Play|Continue on the web/ }),
-    ).toHaveCount(0)
+    await expect(page.getByRole('link', { name: /App Store|Google Play|Continue to/ })).toHaveCount(
+      0,
+    )
   })
 
   test('publishes association records for the seeded app', async ({ request }) => {

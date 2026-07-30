@@ -53,6 +53,8 @@ function projectApp(app: App): AppDTO {
     ...(app.iosBundleId ? { iosBundleId: app.iosBundleId } : {}),
     ...(app.iosTeamId ? { iosTeamId: app.iosTeamId } : {}),
     ...(app.playStoreUrl ? { playStoreUrl: app.playStoreUrl } : {}),
+    ...(app.publicKey ? { publicKey: app.publicKey } : {}),
+    ...(app.routingMode ? { routingMode: app.routingMode } : {}),
     ...(app.updatedAt ? { updatedAt: app.updatedAt } : {}),
   }
 }
@@ -134,7 +136,7 @@ function configurationData(configuration: AppConsoleConfigurationInput) {
     androidSha256CertFingerprints: configuration.androidSha256CertFingerprints,
     appStoreUrl: optional(configuration.appStoreUrl),
     description: optional(configuration.description),
-    fallbackUrl: configuration.fallbackUrl.trim(),
+    fallbackUrl: optional(configuration.fallbackUrl),
     iosBundleId: optional(configuration.iosBundleId),
     iosTeamId: optional(configuration.iosTeamId),
     name: configuration.name.trim(),
@@ -144,6 +146,7 @@ function configurationData(configuration: AppConsoleConfigurationInput) {
 }
 
 function transitionError(app: App, input: AppConsoleMutationInput): ConsoleResult<never> | null {
+  const requiresPlatform = app.routingMode !== 'scheme-handoff'
   if (input.action === 'activate') {
     if (app.status === 'active') {
       return {
@@ -153,7 +156,7 @@ function transitionError(app: App, input: AppConsoleMutationInput): ConsoleResul
         status: 409,
       }
     }
-    if (!hasCompleteAppPlatform(app)) {
+    if (requiresPlatform && !hasCompleteAppPlatform(app)) {
       return {
         code: 'NOT_READY',
         message: 'Complete either the iOS or Android configuration before activation.',
@@ -173,6 +176,7 @@ function transitionError(app: App, input: AppConsoleMutationInput): ConsoleResul
   if (
     input.action === 'save' &&
     app.status === 'active' &&
+    requiresPlatform &&
     !hasCompleteAppPlatform(input.configuration)
   ) {
     return {
@@ -204,6 +208,10 @@ export async function mutateConsoleApp(
   if (blocked) return blocked
 
   try {
+    const data =
+      input.action === 'save'
+        ? configurationData(input.configuration)
+        : { status: input.action === 'activate' ? ('active' as const) : ('paused' as const) }
     const update = await payload.update({
       collection: 'apps',
       depth: 0,
@@ -216,10 +224,7 @@ export async function mutateConsoleApp(
           { workspace: { equals: relationIdentifier(input.workspaceId) } },
         ],
       },
-      data:
-        input.action === 'save'
-          ? configurationData(input.configuration)
-          : { status: input.action === 'activate' ? 'active' : 'paused' },
+      data,
     })
     if (update.docs.length === 0 || update.errors.length > 0) throw new Error('Update rejected')
   } catch (error) {

@@ -47,7 +47,7 @@ export function TestLabView(props: TestLabViewProps) {
                 <input
                   className="field"
                   onChange={props.onUrlChange}
-                  placeholder="https://links.example.com/l/app/link"
+                  placeholder={props.urlPlaceholder}
                   required
                   type="url"
                   value={props.url}

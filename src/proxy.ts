@@ -23,15 +23,22 @@ export function proxy(request: NextRequest): NextResponse {
   )
   if (!host.ok) return unavailable(request, 400)
 
+  const surfaceConfig = getDeploymentSurfaceConfig()
   const decision = decideDeploymentSurface({
-    config: getDeploymentSurfaceConfig(),
+    config: surfaceConfig,
     hostname: host.hostname,
     method: request.method,
     pathname: request.nextUrl.pathname,
     search: request.nextUrl.search,
   })
 
-  if (decision.kind === 'allow') return NextResponse.next()
+  if (decision.kind === 'allow') {
+    const response = NextResponse.next()
+    if (host.hostname === surfaceConfig.sharedLinkHostname) {
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive')
+    }
+    return response
+  }
   if (decision.kind === 'deny') return unavailable(request)
   return NextResponse.redirect(new URL(decision.destination, request.url))
 }

@@ -1,5 +1,7 @@
 import { appPlatformReadiness } from '@/lib/domain/app-readiness'
 import type { AppConsoleDetailDTO, AppDTO } from '@/lib/client/payload-types'
+import { buildPublicURL } from '@/lib/domain/public-link'
+import type { PublicLinkPathStyle } from '@/lib/domain/runtime-link-config'
 
 import type {
   AppDetailForm,
@@ -105,17 +107,20 @@ function effectiveLinkStatus(link: AppConsoleDetailDTO['links'][number]): string
 
 function linkViewModel(
   link: AppConsoleDetailDTO['links'][number],
-  appSlug: string,
+  app: Pick<AppDTO, 'publicKey' | 'slug'>,
   runtimeBaseUrl: string | null,
+  pathStyle: PublicLinkPathStyle,
 ): AppDetailLinkViewModel {
   const status = effectiveLinkStatus(link)
+  const appKey = pathStyle === 'shared-clean' ? app.publicKey : app.slug
   return {
     destination: link.destinationPath,
     id: String(link.id),
     name: link.name,
-    publicUrl: runtimeBaseUrl
-      ? `${runtimeBaseUrl.replace(/\/$/, '')}/l/${appSlug}/${link.slug}`
-      : null,
+    publicUrl:
+      runtimeBaseUrl && appKey
+        ? buildPublicURL(runtimeBaseUrl, appKey, link.slug, pathStyle)
+        : null,
     status,
     statusTone: status === 'active' ? 'success' : status === 'expired' ? 'danger' : 'neutral',
   }
@@ -138,6 +143,7 @@ export function presentAppDetail(
   workspaceName: string,
   canManage: boolean,
   runtimeBaseUrl: string | null,
+  pathStyle: PublicLinkPathStyle = 'host-scoped',
 ): AppDetailViewModel {
   const status = detail.app.status ?? 'draft'
   const ios = iosReadiness(detail.app)
@@ -161,7 +167,9 @@ export function presentAppDetail(
     name: detail.app.name,
     nativeScheme: detail.app.nativeScheme ?? null,
     playStoreUrl: detail.app.playStoreUrl ?? null,
-    recentLinks: detail.links.map((link) => linkViewModel(link, detail.app.slug, runtimeBaseUrl)),
+    recentLinks: detail.links.map((link) =>
+      linkViewModel(link, detail.app, runtimeBaseUrl, pathStyle),
+    ),
     status,
     statusTone: status === 'active' ? 'success' : status === 'paused' ? 'warning' : 'neutral',
     updatedLabel: updatedLabel(detail.app.updatedAt),

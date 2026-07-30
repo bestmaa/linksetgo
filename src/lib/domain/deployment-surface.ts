@@ -10,6 +10,8 @@ export type DeploymentSurfaceConfig = {
   managedRootDomain: string | null
   marketingOrigin: string | null
   marketingHostname: string | null
+  sharedLinkOrigin: string | null
+  sharedLinkHostname: string | null
 }
 
 export type DeploymentSurfaceDecision =
@@ -47,12 +49,59 @@ const staticPathPrefixes = [
   '/og.png',
 ] as const
 const metadataPaths = ['/robots.txt', '/sitemap.xml'] as const
+const blockedPayloadUserAuthPathPrefixes = [
+  '/api/users/first-register',
+  '/api/users/forgot-password',
+  '/api/users/reset-password',
+  '/api/users/unlock',
+  '/api/users/verify',
+] as const
+const reservedSharedPathSegments = new Set([
+  '.well-known',
+  '_next',
+  'admin',
+  'api',
+  'brand',
+  'changelog',
+  'cms',
+  'docs',
+  'forgot-password',
+  'invite',
+  'l',
+  'open-source',
+  'pricing',
+  'privacy',
+  'report-abuse',
+  'resend-verification',
+  'reset-password',
+  'security',
+  'signup',
+  'sponsor',
+  'status',
+  'terms',
+  'verify-email',
+])
+
+export const isSharedPublicAppKey = (value: string): boolean =>
+  /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) && !reservedSharedPathSegments.has(value)
 
 const matchesPrefix = (pathname: string, prefix: string): boolean =>
   pathname === prefix || pathname.startsWith(`${prefix}/`)
 
 const matchesAnyPrefix = (pathname: string, prefixes: readonly string[]): boolean =>
   prefixes.some((prefix) => matchesPrefix(pathname, prefix))
+
+export const isBlockedPayloadUserAuthPath = (pathname: string): boolean =>
+  (() => {
+    try {
+      return matchesAnyPrefix(
+        decodeURIComponent(pathname).toLowerCase(),
+        blockedPayloadUserAuthPathPrefixes,
+      )
+    } catch {
+      return false
+    }
+  })()
 
 const safeWebOrigin = (value: string | undefined): string | null => {
   if (!value?.trim()) return null
@@ -94,6 +143,8 @@ export function getDeploymentSurfaceConfig(
     safeWebOrigin(environment.MARKETING_SITE_URL) ??
     safeWebOrigin(environment.NEXT_PUBLIC_SITE_URL) ??
     (edition === 'cloud' && managedRootDomain ? `https://${managedRootDomain}` : null)
+  const sharedLinkOrigin =
+    edition === 'cloud' ? safeWebOrigin(environment.SHARED_LINK_BASE_URL) : null
 
   return {
     appOrigin,
@@ -102,6 +153,8 @@ export function getDeploymentSurfaceConfig(
     managedRootDomain,
     marketingOrigin,
     marketingHostname: marketingOrigin ? hostnameFromBaseURL(marketingOrigin) : null,
+    sharedLinkOrigin,
+    sharedLinkHostname: sharedLinkOrigin ? hostnameFromBaseURL(sharedLinkOrigin) : null,
   }
 }
 
@@ -131,6 +184,25 @@ const publicSurfaceAllowed = (pathname: string, method: string): boolean => {
   return isReadMethod(method) && pathname === '/report-abuse'
 }
 
+const sharedCleanLinkPath = (pathname: string): boolean => {
+  // This is a routing-syntax check, not an allocation grant. Exact keys remain
+  // routable for existing and explicitly managed aliases; untrusted quick-link
+  // allocation is tenant-scoped in the server application service.
+  const match = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/.exec(pathname)
+  return Boolean(match?.[1] && isSharedPublicAppKey(match[1]))
+}
+
+const sharedPublicSurfaceAllowed = (pathname: string, method: string): boolean => {
+  if (isReadMethod(method) && pathname === '/robots.txt') return true
+  if (isReadMethod(method) && sharedCleanLinkPath(pathname)) return true
+  if (isReadMethod(method) && matchesAnyPrefix(pathname, staticPathPrefixes)) return true
+  if (isReadMethod(method) && matchesPrefix(pathname, '/l')) return true
+  if (method === 'GET' && matchesPrefix(pathname, '/api/public/links')) return true
+  if (method === 'POST' && pathname === '/api/public/link-events') return true
+  if (method === 'POST' && pathname === '/api/public/abuse-reports') return true
+  return isReadMethod(method) && pathname === '/report-abuse'
+}
+
 export function decideDeploymentSurface(input: {
   config: DeploymentSurfaceConfig
   hostname: string
@@ -143,6 +215,7 @@ export function decideDeploymentSurface(input: {
   const method = (input.method ?? 'GET').toUpperCase()
   const search = input.search ?? ''
   if (!hostname) return { kind: 'deny' }
+  if (isBlockedPayloadUserAuthPath(pathname)) return { kind: 'deny' }
 
   if (
     isLoopbackHostname(hostname) &&
@@ -198,6 +271,10 @@ export function decideDeploymentSurface(input: {
       return { kind: 'allow' }
     }
     return { kind: 'deny' }
+  }
+
+  if (hostname === config.sharedLinkHostname) {
+    return sharedPublicSurfaceAllowed(pathname, method) ? { kind: 'allow' } : { kind: 'deny' }
   }
 
   if (isMarketingHostname(hostname, config)) {

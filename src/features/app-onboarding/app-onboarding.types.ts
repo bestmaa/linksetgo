@@ -52,6 +52,7 @@ export type AppOnboardingViewProps = {
   onPlatformChange: (platform: AppPlatform) => void
   onStepSelect: (step: AppOnboardingStep) => void
   onSubmit: FormEventHandler<HTMLFormElement>
+  publicUrlPreview: string
   step: AppOnboardingStep
   steps: readonly AppOnboardingStepItem[]
   submitError: string | null

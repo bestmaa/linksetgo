@@ -36,11 +36,12 @@ export function useSignupController(props: SignupConnectorProps) {
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
-  const [organizationName, setOrganizationName] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [state, setState] = useState<SignupSubmissionState>({ status: 'idle' })
-  const [workspaceSlug, setWorkspaceSlug] = useState('')
+  const [workspaceSuffix] = useState(() => crypto.randomUUID().replaceAll('-', '').slice(0, 6))
+  const organizationName = organizationNameFor(name, email)
+  const workspaceSlug = workspaceSlugFor(organizationName, email, workspaceSuffix)
 
   const change = (setter: (value: string) => void) => (event: ChangeEvent<HTMLInputElement>) => {
     setter(event.target.value)
@@ -71,7 +72,15 @@ export function useSignupController(props: SignupConnectorProps) {
         setState({
           status: 'error',
           message: parsed?.error.message ?? 'We could not create the account. Please try again.',
-          ...(parsed?.error.field ? { field: parsed.error.field } : {}),
+          ...(parsed?.error.field
+            ? {
+                field:
+                  parsed.error.field === 'workspaceSlug' ||
+                  parsed.error.field === 'organizationName'
+                    ? 'form'
+                    : parsed.error.field,
+              }
+            : {}),
         })
         return
       }
@@ -88,7 +97,6 @@ export function useSignupController(props: SignupConnectorProps) {
     acceptTerms,
     available: props.available,
     email,
-    managedLinkRootDomain: props.managedLinkRootDomain,
     name,
     onAcceptTermsChange: (event: ChangeEvent<HTMLInputElement>) => {
       setAcceptTerms(event.target.checked)
@@ -96,24 +104,33 @@ export function useSignupController(props: SignupConnectorProps) {
     },
     onEmailChange: change(setEmail),
     onNameChange: change(setName),
-    onOrganizationNameChange: change(setOrganizationName),
     onPasswordChange: change(setPassword),
     onShowPasswordChange: (event: ChangeEvent<HTMLInputElement>) =>
       setShowPassword(event.target.checked),
     onSubmit,
-    onWorkspaceSlugChange: change((value) =>
-      setWorkspaceSlug(
-        value
-          .toLowerCase()
-          .replace(/[^a-z0-9-]+/g, '-')
-          .replace(/-{2,}/g, '-')
-          .replace(/^-+/g, ''),
-      ),
-    ),
-    organizationName,
     password,
     showPassword,
     state,
-    workspaceSlug,
   }
+}
+
+function organizationNameFor(name: string, email: string): string {
+  const hostname = email.split('@')[1]?.split('.')[0] ?? ''
+  const company =
+    hostname && !['gmail', 'hotmail', 'outlook', 'yahoo'].includes(hostname) ? hostname : ''
+  const source = company || name.trim().split(/\s+/)[0] || 'My'
+  return `${source.charAt(0).toUpperCase()}${source.slice(1)} Workspace`.slice(0, 120)
+}
+
+const slugPart = (value: string): string =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+function workspaceSlugFor(organizationName: string, email: string, suffix: string): string {
+  const organization = slugPart(organizationName).slice(0, 34) || 'workspace'
+  const account = slugPart(email.split('@')[0] ?? '').slice(0, 14) || 'owner'
+  return `${organization}-${account}-${suffix}`.slice(0, 63).replace(/-$/g, '')
 }

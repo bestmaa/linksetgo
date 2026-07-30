@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation'
 import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useWorkspaceSelection } from '@/features/workspaces/workspace-context'
+import { useRuntimeLinkConfig } from '@/features/runtime-config/use-runtime-link-config'
 import { errorMessage, payloadClient } from '@/lib/client/payload-client'
 import { normalizeNativeScheme } from '@/lib/domain/native-scheme'
+import { buildPublicURL } from '@/lib/domain/public-link'
 
 import {
   buildDraftAppInput,
@@ -52,6 +54,7 @@ function firstInvalidStep(form: AppOnboardingForm): {
 export function useAppOnboardingController() {
   const router = useRouter()
   const { selectedWorkspace, selectedWorkspaceId } = useWorkspaceSelection()
+  const runtimeConfig = useRuntimeLinkConfig(selectedWorkspaceId)
   const [form, setForm] = useState<AppOnboardingForm>(emptyAppOnboardingForm)
   const [step, setStep] = useState<AppOnboardingStep>('basics')
   const [furthestStepIndex, setFurthestStepIndex] = useState(0)
@@ -201,6 +204,14 @@ export function useAppOnboardingController() {
       if (selectedIndex <= furthestStepIndex) moveTo(selectedStep)
     },
     onSubmit,
+    publicUrlPreview: runtimeConfig.config
+      ? buildPublicURL(
+          runtimeConfig.config.baseUrl,
+          form.slug || 'your-app',
+          'welcome-offer',
+          runtimeConfig.config.pathStyle,
+        )
+      : 'Loading workspace link domain…',
     step,
     steps,
     submitError,

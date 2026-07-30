@@ -3,6 +3,7 @@ import type { JSONFieldValidation, TextFieldManyValidation, TextFieldValidation 
 import { parseLinkParameters } from '@/lib/domain/link-parameters'
 import { validateNativeSchemeValue } from '@/lib/domain/native-scheme'
 import { appDestinationPathError } from '@/lib/domain/app-route'
+import { canonicalizeFallbackURL } from '@/lib/domain/fallback-url-safety'
 
 import { normalizeHostname } from '@/lib/domain/workspace-domain'
 
@@ -32,19 +33,8 @@ export const validateNativeScheme: TextFieldValidation = (value) => validateNati
 
 export const validateHttpsURL: TextFieldValidation = (value) => {
   if (!value) return true
-
-  try {
-    const url = new URL(value)
-    return url.protocol === 'https:' &&
-      !url.username &&
-      !url.password &&
-      url.port === '' &&
-      Boolean(url.hostname)
-      ? true
-      : 'URL must use HTTPS without credentials or an explicit port.'
-  } catch {
-    return 'Enter a valid absolute HTTPS URL.'
-  }
+  const result = canonicalizeFallbackURL(value)
+  return result.ok ? true : result.message
 }
 
 export const validateAppStoreURL: TextFieldValidation = (value) =>

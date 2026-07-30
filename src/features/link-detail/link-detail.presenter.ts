@@ -1,24 +1,29 @@
 import type { AnalyticsSummaryDTO, LinkConsoleDetailDTO } from '@/lib/client/payload-types'
 import { nativeSchemeURL } from '@/lib/domain/native-scheme'
+import { buildPublicURL } from '@/lib/domain/public-link'
+import type { PublicLinkPathStyle } from '@/lib/domain/runtime-link-config'
 
 import type { LinkAnalyticsViewModel, LinkDetailViewModel } from './link-detail.types'
 
 export function publicURLForLink(
   detail: LinkConsoleDetailDTO | null,
   baseURL: string | null,
+  pathStyle: PublicLinkPathStyle = 'host-scoped',
 ): string | null {
   if (!detail || !baseURL) return null
-  return `${baseURL.replace(/\/$/, '')}/l/${detail.app.slug}/${detail.link.slug}`
+  const appKey = pathStyle === 'shared-clean' ? detail.app.publicKey : detail.app.slug
+  return appKey ? buildPublicURL(baseURL, appKey, detail.link.slug, pathStyle) : null
 }
 
 export function presentLinkDetail(input: {
   baseURL: string | null
   canManage: boolean
   detail: LinkConsoleDetailDTO
+  pathStyle: PublicLinkPathStyle
   qrDataURL: string | null
   qrError: string | null
 }): LinkDetailViewModel {
-  const publicURL = publicURLForLink(input.detail, input.baseURL)
+  const publicURL = publicURLForLink(input.detail, input.baseURL, input.pathStyle)
   const status = input.detail.effectiveStatus
   return {
     appName: input.detail.app.name,

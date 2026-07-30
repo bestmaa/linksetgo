@@ -22,8 +22,8 @@ export function DestinationsStepView(props: DestinationsStepProps) {
           Decide where every visitor can continue
         </h1>
         <p>
-          Store listings help people install the app. The default web fallback is the guaranteed
-          destination when the app cannot open, so it must use HTTPS.
+          These are optional. Without them, LinksetGo shows a safe landing page when the app cannot
+          open.
         </p>
       </div>
 
@@ -57,13 +57,12 @@ export function DestinationsStepView(props: DestinationsStepProps) {
         <div className="onboarding-form-span">
           <OnboardingTextField
             error={props.errors.fallbackUrl}
-            help="LinksetGo automatically allowlists this hostname for the app. Per-link fallbacks must stay on an approved hostname."
+            help="Optional. It is exposed only after a safety scan and DNS TXT ownership verification."
             id="fallback-url"
-            label="Default web fallback"
+            label="Default web fallback (optional)"
             onBlur={() => props.onFieldBlur('fallbackUrl')}
             onChange={(value) => props.onFieldChange('fallbackUrl', value)}
             placeholder="https://www.example.com/download"
-            required
             type="url"
             value={props.form.fallbackUrl}
           />

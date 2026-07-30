@@ -2,6 +2,7 @@ export type FallbackViewProps = {
   appName: string
   destination: string
   fallbackHref: string | null
+  fallbackLabel: string | null
   isLoading: boolean
   message: string
   openAppAction: { href: string; onClick: () => void } | null

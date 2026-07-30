@@ -10,6 +10,8 @@ import {
   enforceFallbackOriginLifecycle,
   fallbackOriginVerificationToken,
 } from '@/lib/server/fallback-origin-lifecycle'
+import { enforceFallbackOriginPlanQuota } from '@/lib/server/fallback-binding-quota'
+import { cleanupFallbackOriginAssessments } from '@/lib/server/fallback-binding-hooks'
 
 const immutableField: FieldAccess = () => false
 const validateEvidence: JSONFieldValidation = (value) => {
@@ -30,6 +32,12 @@ export const FallbackOrigins: CollectionConfig = {
     read: domainReadAccess,
     update: domainManageAccess,
   },
+  indexes: [
+    {
+      fields: ['workspace', 'hostname'],
+      unique: true,
+    },
+  ],
   fields: [
     {
       name: 'workspace',
@@ -42,7 +50,6 @@ export const FallbackOrigins: CollectionConfig = {
       name: 'hostname',
       type: 'text',
       required: true,
-      unique: true,
       index: true,
       maxLength: 253,
     },
@@ -83,6 +90,27 @@ export const FallbackOrigins: CollectionConfig = {
       access: { update: immutableField },
     },
     {
+      name: 'verificationExpiresAt',
+      type: 'date',
+      index: true,
+      access: { create: immutableField, update: immutableField },
+      admin: {
+        description: 'Ownership proof must be renewed before this instant.',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'outageGraceExpiresAt',
+      type: 'date',
+      index: true,
+      access: { create: immutableField, update: immutableField },
+      admin: {
+        description:
+          'Bounded fail-safe grace after the proof expires, set only when the DNS provider is unavailable.',
+        readOnly: true,
+      },
+    },
+    {
       name: 'revokedAt',
       type: 'date',
       access: { update: immutableField },
@@ -106,6 +134,7 @@ export const FallbackOrigins: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeValidate: [enforceFallbackOriginLifecycle],
+    beforeDelete: [cleanupFallbackOriginAssessments],
+    beforeValidate: [enforceFallbackOriginLifecycle, enforceFallbackOriginPlanQuota],
   },
 }

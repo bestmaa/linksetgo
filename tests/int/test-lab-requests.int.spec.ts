@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { checkPublicLink } from '@/features/test-lab/test-lab-requests'
+import { checkPublicLink, loadAppConfiguration } from '@/features/test-lab/test-lab-requests'
+import { payloadClient } from '@/lib/client/payload-client'
 
 const activeProjection = {
   app: {
@@ -14,11 +15,13 @@ const activeProjection = {
     slug: 'offer',
     status: 'active',
   },
+  eventToken: 'signed-test-event-token',
   publicUrl: 'https://team.links.example/l/mall/offer',
   status: 'active',
 }
 
 afterEach(() => {
+  vi.restoreAllMocks()
   vi.unstubAllGlobals()
 })
 
@@ -51,6 +54,37 @@ describe('Test Lab public resolver request', () => {
     ).resolves.toMatchObject({
       data: null,
       error: 'Public resolver returned invalid data.',
+    })
+  })
+
+  it('loads a shared-clean app by its permanent public key', async () => {
+    vi.spyOn(payloadClient, 'listApps').mockResolvedValue({
+      docs: [
+        {
+          id: 7,
+          name: 'Mall',
+          publicKey: 'mall-global',
+          slug: 'mall',
+        },
+      ],
+      hasNextPage: false,
+      hasPrevPage: false,
+      limit: 100,
+      page: 1,
+      pagingCounter: 1,
+      totalDocs: 1,
+      totalPages: 1,
+    })
+
+    await expect(
+      loadAppConfiguration('mall-global', 'workspace-1', 'shared-clean'),
+    ).resolves.toMatchObject({
+      data: { name: 'Mall', publicKey: 'mall-global', slug: 'mall' },
+      error: null,
+    })
+    expect(payloadClient.listApps).toHaveBeenCalledWith({
+      limit: 100,
+      workspaceId: 'workspace-1',
     })
   })
 })

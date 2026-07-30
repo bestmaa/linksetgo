@@ -1,4 +1,6 @@
 import type { AppDTO, DeepLinkDTO } from '@/lib/client/payload-types'
+import { buildPublicURL } from '@/lib/domain/public-link'
+import type { PublicLinkPathStyle } from '@/lib/domain/runtime-link-config'
 
 import type { CheckViewModel, SavedLinkOptionViewModel, TestPlatform } from './test-lab.types'
 
@@ -14,26 +16,38 @@ export type CheckResult = Omit<CheckViewModel, 'copyAction'> & {
   copyValue?: string
 }
 
-export function parseLinksetGoUrl(value: string, configuredOrigin: string): ParsedLinksetGoUrl {
+export function parseLinksetGoUrl(
+  value: string,
+  configuredOrigin: string,
+  pathStyle: PublicLinkPathStyle = 'host-scoped',
+): ParsedLinksetGoUrl {
   const parsed = new URL(value)
-  if (parsed.origin !== configuredOrigin) {
+  if (parsed.origin !== configuredOrigin || parsed.username || parsed.password) {
     throw new Error(`Use the configured link domain: ${configuredOrigin}.`)
   }
-  const match = /^\/l\/([a-z0-9][a-z0-9-]*)\/([a-z0-9][a-z0-9-]*)\/?$/.exec(parsed.pathname)
+  const match =
+    pathStyle === 'shared-clean'
+      ? /^\/([a-z0-9][a-z0-9-]*)\/([a-z0-9][a-z0-9-]*)\/?$/.exec(parsed.pathname)
+      : /^\/l\/([a-z0-9][a-z0-9-]*)\/([a-z0-9][a-z0-9-]*)\/?$/.exec(parsed.pathname)
   if (!match?.[1] || !match[2] || parsed.search || parsed.hash) {
-    throw new Error('Expected exactly /l/{app}/{link} without query parameters or a fragment.')
+    const shape = pathStyle === 'shared-clean' ? '/{app}/{link}' : '/l/{app}/{link}'
+    throw new Error(`Expected exactly ${shape} without query parameters or a fragment.`)
   }
   return {
     appSlug: match[1],
     linkSlug: match[2],
     origin: parsed.origin,
-    url: `${parsed.origin}/l/${match[1]}/${match[2]}`,
+    url: buildPublicURL(parsed.origin, match[1], match[2], pathStyle),
   }
 }
 
-export function safeLinksetGoUrl(value: string, configuredOrigin: string): string | null {
+export function safeLinksetGoUrl(
+  value: string,
+  configuredOrigin: string,
+  pathStyle: PublicLinkPathStyle = 'host-scoped',
+): string | null {
   try {
-    return parseLinksetGoUrl(value.trim(), configuredOrigin).url
+    return parseLinksetGoUrl(value.trim(), configuredOrigin, pathStyle).url
   } catch {
     return null
   }
@@ -79,15 +93,18 @@ export function buildSavedLinkOptions(
   links: readonly DeepLinkDTO[],
   apps: readonly AppDTO[],
   configuredOrigin: string,
+  pathStyle: PublicLinkPathStyle = 'host-scoped',
 ): SavedLinkOptionViewModel[] {
   return links.flatMap((link) => {
     const app = relatedApp(link, apps)
     if (!app) return []
+    const appKey = pathStyle === 'shared-clean' ? app.publicKey : app.slug
+    if (!appKey) return []
     return [
       {
         id: String(link.id),
         label: `${app.name} / ${link.name}`,
-        url: `${configuredOrigin}/l/${app.slug}/${link.slug}`,
+        url: buildPublicURL(configuredOrigin, appKey, link.slug, pathStyle),
       },
     ]
   })

@@ -29,6 +29,7 @@ const reservedWorkspaceSlugs = new Set([
   'login',
   'mail',
   'open',
+  'go',
   'relay',
   'root',
   'security',

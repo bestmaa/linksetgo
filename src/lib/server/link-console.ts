@@ -51,6 +51,7 @@ function project(link: DeepLink, app: App): LinkConsoleDetailDTO {
       id: app.id,
       name: app.name,
       nativeScheme: app.nativeScheme ?? null,
+      publicKey: app.publicKey ?? null,
       slug: app.slug,
       status: app.status,
     },

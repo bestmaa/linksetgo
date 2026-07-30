@@ -4,6 +4,8 @@ import type {
   DeepLinkDTO,
   Identifier,
 } from '@/lib/client/payload-types'
+import { buildPublicURL } from '@/lib/domain/public-link'
+import type { PublicLinkPathStyle } from '@/lib/domain/runtime-link-config'
 
 import type { LinkFormViewModel } from './links.types'
 export { parseNativeDeepLink } from './native-link-parser'
@@ -115,9 +117,16 @@ export function relatedApp(link: DeepLinkDTO, apps: AppDTO[]) {
   return apps.find((app) => String(app.id) === String(link.app))
 }
 
-export function buildPublicLinkUrl(linkOrigin: string | null, appSlug: string, linkSlug: string) {
+export function buildPublicLinkUrl(
+  linkOrigin: string | null,
+  app: Pick<AppDTO, 'publicKey' | 'slug'> | null | undefined,
+  linkSlug: string,
+  pathStyle: PublicLinkPathStyle = 'host-scoped',
+) {
   if (!linkOrigin) return null
-  return `${linkOrigin}/l/${appSlug || 'app'}/${linkSlug || 'your-link'}`
+  const appKey = pathStyle === 'shared-clean' ? app?.publicKey : app?.slug
+  if (app && !appKey) return null
+  return buildPublicURL(linkOrigin, appKey || 'app', linkSlug || 'your-link', pathStyle)
 }
 
 export function parseRelationIdentifier(value: string): Identifier {

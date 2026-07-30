@@ -102,7 +102,10 @@ export function useAppDetailController(appId: string) {
     event.preventDefault()
     if (!detail || !selectedWorkspaceId || !canManage) return
 
-    const validation = validateAppDetailForm(form, detail.app.status === 'active')
+    const validation = validateAppDetailForm(
+      form,
+      detail.app.status === 'active' && detail.app.routingMode !== 'scheme-handoff',
+    )
     setFormErrors(validation.errors)
     setMutationError(validation.message)
     if (Object.keys(validation.errors).length > 0 || validation.message) return
@@ -151,9 +154,16 @@ export function useAppDetailController(appId: string) {
             selectedWorkspace?.name ?? 'Selected workspace',
             canManage,
             runtimeConfig.config?.baseUrl ?? null,
+            runtimeConfig.config?.pathStyle ?? 'host-scoped',
           )
         : null,
-    [canManage, detail, runtimeConfig.config?.baseUrl, selectedWorkspace?.name],
+    [
+      canManage,
+      detail,
+      runtimeConfig.config?.baseUrl,
+      runtimeConfig.config?.pathStyle,
+      selectedWorkspace?.name,
+    ],
   )
 
   return {

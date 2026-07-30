@@ -7,3 +7,5 @@ blob-report
 package-lock.json
 src/payload-types.ts
 src/app/(payload)/cms/importMap.js
+output
+tmp

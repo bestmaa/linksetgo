@@ -1,3 +1,4 @@
+import { ACCOUNT_PASSWORD_REQUIREMENTS, isStrongAccountPassword } from './account-password'
 import { normalizeWorkspaceSlug } from './workspace-domain'
 
 export const MAX_CLOUD_SIGNUP_BODY_BYTES = 16 * 1024
@@ -77,19 +78,11 @@ export function parseCloudSignupInput(value: unknown): CloudSignupValidation {
   }
 
   const password = typeof value.password === 'string' ? value.password : ''
-  if (
-    password.length < 12 ||
-    password.length > 128 ||
-    CONTROL_CHARACTER_PATTERN.test(password) ||
-    !/[a-z]/.test(password) ||
-    !/[A-Z]/.test(password) ||
-    !/[0-9]/.test(password) ||
-    !/[^A-Za-z0-9]/.test(password)
-  ) {
+  if (!isStrongAccountPassword(password)) {
     return {
       ok: false,
       field: 'password',
-      message: 'Use 12–128 characters with upper, lower, number, and symbol.',
+      message: ACCOUNT_PASSWORD_REQUIREMENTS,
     }
   }
 

@@ -7,6 +7,7 @@ export type ServerEnvironment = {
   managedLinkRootDomain: null | string
   payloadSecret: string
   publicLinkBaseURL: string
+  sharedLinkBaseURL: null | string
   trustProxyClientIPHeader: boolean
   trustProxyHostHeader: boolean
 }
@@ -73,6 +74,11 @@ const optionalHostname = (name: string): null | string => {
   return hostname
 }
 
+const optionalPublicBaseURL = (name: string): null | string => {
+  const value = process.env[name]?.trim()
+  return value ? validatePublicBaseURL(value) : null
+}
+
 const optionalBoolean = (name: string): boolean => {
   const value = process.env[name]?.trim().toLowerCase()
   if (!value || value === 'false') return false
@@ -92,6 +98,7 @@ export const getServerEnvironment = (): ServerEnvironment => {
     managedLinkRootDomain: optionalHostname('MANAGED_LINK_ROOT_DOMAIN'),
     payloadSecret,
     publicLinkBaseURL: validatePublicBaseURL(required('PUBLIC_LINK_BASE_URL')),
+    sharedLinkBaseURL: optionalPublicBaseURL('SHARED_LINK_BASE_URL'),
     trustProxyClientIPHeader: optionalBoolean('TRUST_PROXY_CLIENT_IP_HEADER'),
     trustProxyHostHeader: optionalBoolean('TRUST_PROXY_HOST_HEADER'),
   }

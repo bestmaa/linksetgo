@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 
 import { errorMessage, payloadClient } from '@/lib/client/payload-client'
+import type { PublicLinkPathStyle } from '@/lib/domain/runtime-link-config'
 
 import { buildSavedLinkOptions } from './test-lab-controller.helpers'
 import type { SavedLinkOptionViewModel } from './test-lab.types'
@@ -13,9 +14,14 @@ type SavedLinksState =
   | { kind: 'loading'; scope: string }
   | { kind: 'ready'; options: SavedLinkOptionViewModel[]; scope: string }
 
-export function useSavedLinkOptions(configuredOrigin: string | null, workspaceID: string | null) {
+export function useSavedLinkOptions(
+  configuredOrigin: string | null,
+  pathStyle: PublicLinkPathStyle,
+  workspaceID: string | null,
+) {
   const [state, setState] = useState<SavedLinksState>({ kind: 'idle' })
-  const scope = configuredOrigin && workspaceID ? `${workspaceID}:${configuredOrigin}` : null
+  const scope =
+    configuredOrigin && workspaceID ? `${workspaceID}:${configuredOrigin}:${pathStyle}` : null
 
   useEffect(() => {
     if (!configuredOrigin || !workspaceID || !scope) return
@@ -34,7 +40,12 @@ export function useSavedLinkOptions(configuredOrigin: string | null, workspaceID
           if (!active) return
           setState({
             kind: 'ready',
-            options: buildSavedLinkOptions(linksResponse.docs, appsResponse.docs, configuredOrigin),
+            options: buildSavedLinkOptions(
+              linksResponse.docs,
+              appsResponse.docs,
+              configuredOrigin,
+              pathStyle,
+            ),
             scope,
           })
         })
@@ -49,7 +60,7 @@ export function useSavedLinkOptions(configuredOrigin: string | null, workspaceID
       active = false
       window.clearTimeout(timeout)
     }
-  }, [configuredOrigin, scope, workspaceID])
+  }, [configuredOrigin, pathStyle, scope, workspaceID])
 
   const isCurrent = state.kind !== 'idle' && state.scope === scope
   return {

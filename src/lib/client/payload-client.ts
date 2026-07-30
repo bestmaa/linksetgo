@@ -23,6 +23,8 @@ import type {
   OrganizationMembershipDTO,
   PayloadList,
   PublicLinkResponse,
+  QuickLinkCreateDTO,
+  QuickLinkCreateInput,
   TeamConsoleDTO,
   TeamInvitationAcceptDTO,
   TeamInvitationCreateDTO,
@@ -126,30 +128,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T
 }
 
-const PUBLIC_SESSION_KEY = 'relay-public-session'
-
-function createPublicSessionID(): string {
-  if (typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID()
-
-  const bytes = window.crypto.getRandomValues(new Uint8Array(16))
-  return Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('')
-}
-
-function getPublicSessionID(): string | undefined {
-  if (typeof window === 'undefined') return undefined
-
-  try {
-    const existing = window.sessionStorage.getItem(PUBLIC_SESSION_KEY)
-    if (existing) return existing
-
-    const sessionID = createPublicSessionID()
-    window.sessionStorage.setItem(PUBLIC_SESSION_KEY, sessionID)
-    return sessionID
-  } catch {
-    return undefined
-  }
-}
-
 export const payloadClient = {
   createApp(input: CreateAppInput) {
     return request<AppDTO>('/api/apps', {
@@ -160,6 +138,13 @@ export const payloadClient = {
 
   createDeepLink(input: CreateDeepLinkInput) {
     return request<DeepLinkDTO>('/api/deep-links', {
+      body: JSON.stringify(input),
+      method: 'POST',
+    })
+  },
+
+  createQuickLink(input: QuickLinkCreateInput) {
+    return request<QuickLinkCreateDTO>('/api/admin/quick-links', {
       body: JSON.stringify(input),
       method: 'POST',
     })
@@ -461,12 +446,12 @@ export const payloadClient = {
 
   recordPublicEvent(input: {
     appSlug: string
+    eventToken: string
     eventType: 'app-opened' | 'fallback-viewed' | 'open-app-clicked' | 'store-clicked'
     linkSlug: string
   }) {
-    const sessionID = getPublicSessionID()
     return request<{ accepted: true }>('/api/public/link-events', {
-      body: JSON.stringify(sessionID ? { ...input, sessionID } : input),
+      body: JSON.stringify(input),
       keepalive: true,
       method: 'POST',
     })

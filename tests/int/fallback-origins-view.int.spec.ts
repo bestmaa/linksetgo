@@ -102,7 +102,7 @@ describe('fallback-origin console view', () => {
     expect(screen.queryByRole('button', { name: 'Verify TXT record' })).toBeNull()
   })
 
-  it('states app-level allowlisting and permanent revocation consequences', () => {
+  it('states app-level allowlisting and scoped revocation consequences', () => {
     const props = viewProps()
     render(
       createElement(FallbackOriginsView, {
@@ -122,7 +122,8 @@ describe('fallback-origin console view', () => {
     expect(within(registration).getByText(/Each app must still list the hostname/)).toBeTruthy()
 
     const revocation = screen.getByRole('dialog', { name: 'Revoke fallback origin?' })
-    expect(within(revocation).getByText('Cloud routing will fail closed')).toBeTruthy()
+    expect(within(revocation).getByText('The web fallback will be removed')).toBeTruthy()
+    expect(within(revocation).getByText(/continue to the neutral or store landing/i)).toBeTruthy()
     expect(within(revocation).getByRole('button', { name: 'Revoke permanently' })).toBeTruthy()
   })
 })

@@ -6,11 +6,11 @@ signature verification, and webhook parsing.
 
 ## Published beta plans
 
-| Plan    | Monthly price | Apps | Active links | Resolutions | Retention | Members | Custom domains |
-| ------- | ------------: | ---: | -----------: | ----------: | --------: | ------: | -------------: |
-| Free    |            $0 |    1 |           25 |       5,000 |    7 days |       1 |              0 |
-| Starter |            $5 |    3 |          250 |      25,000 |   30 days |       2 |              0 |
-| Pro     |           $10 |   10 |        2,000 |     100,000 |   90 days |       5 |              1 |
+| Plan    | Monthly price | Workspaces | Apps | Saved links | Active links | Tracked resolutions | Retention | Members | Custom domains |
+| ------- | ------------: | ---------: | ---: | ----------: | -----------: | ------------------: | --------: | ------: | -------------: |
+| Free    |            $0 |          1 |    1 |          25 |           10 |               1,000 |    7 days |       1 |              0 |
+| Starter |            $5 |          5 |    5 |       2,500 |        2,500 |             150,000 |   90 days |       3 |              1 |
+| Pro     |           $10 |         20 |   20 |      10,000 |       10,000 |           1,000,000 |  365 days |      10 |              5 |
 
 Prices are stored as integer USD minor units: `500` and `1000`. The versioned plan
 catalog is the source of truth for display and server enforcement.
@@ -34,6 +34,8 @@ creates a fake paid subscription.
 - At 80%, the console warns.
 - At 100%, the relevant new creation is blocked atomically.
 - Concurrent creates reserve capacity in the same database transaction.
+- Saved links count every draft, active, paused, and expired link. Active links are
+  the concurrently resolvable subset.
 - Resolution overage can stop new tracked analytics or request an upgrade, but an
   ordinary payment failure does not immediately break already-shared links.
 - A separate abuse suspension can disable resolution after review.

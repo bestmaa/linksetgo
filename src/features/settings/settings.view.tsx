@@ -80,9 +80,9 @@ export function SettingsView(props: SettingsViewProps) {
                     </div>
                     <div className="status-row">
                       <span className="status-copy">
-                        <span className="status-title">Monthly resolutions</span>
+                        <span className="status-title">Monthly tracked resolutions</span>
                         <span className="status-detail">
-                          Current UTC billing month, capped after the plan threshold
+                          Detailed analytics stop at the plan threshold; links keep resolving
                         </span>
                       </span>
                       <Badge

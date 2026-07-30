@@ -119,4 +119,27 @@ describe('public deep-link lifecycle', () => {
       'https://links.example.com/l/shop/offer',
     )
   })
+
+  it('builds a clean shared URL without changing the host-scoped contract', () => {
+    expect(buildPublicURL('https://go.linksetgo.com/base', 'oberoi', 'offer', 'shared-clean')).toBe(
+      'https://go.linksetgo.com/oberoi/offer',
+    )
+    expect(buildPublicURL('https://oberoi.linksetgo.com', 'oberoi', 'offer')).toBe(
+      'https://oberoi.linksetgo.com/l/oberoi/offer',
+    )
+  })
+
+  it('projects the requested shared public key instead of the workspace app slug', () => {
+    expect(
+      projectPublicLink(
+        makeApp({ slug: 'internal-oberoi' }),
+        makeLink(),
+        'https://go.linksetgo.com',
+        {
+          appKey: 'oberoi',
+          pathStyle: 'shared-clean',
+        },
+      ).publicUrl,
+    ).toBe('https://go.linksetgo.com/oberoi/offer')
+  })
 })

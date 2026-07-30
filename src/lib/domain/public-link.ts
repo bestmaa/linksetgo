@@ -1,4 +1,5 @@
 import type { App, DeepLink } from '@/payload-types'
+import type { PublicLinkPathStyle } from './runtime-link-config'
 import { parseLinkParameters, type LinkParameters } from './link-parameters'
 import { nativeDeepLinkURL } from './native-scheme'
 
@@ -27,7 +28,7 @@ export type PublicLinkSuccess = {
     slug: string
     appStoreUrl: null | string
     playStoreUrl: null | string
-    fallbackUrl: string
+    fallbackUrl: null | string
   }
   link: {
     name: string
@@ -70,9 +71,15 @@ export const evaluateLinkAvailability = (
   return { status: 'active' }
 }
 
-export const buildPublicURL = (baseURL: string, appSlug: string, linkSlug: string): string => {
+export const buildPublicURL = (
+  baseURL: string,
+  appSlug: string,
+  linkSlug: string,
+  pathStyle: PublicLinkPathStyle = 'host-scoped',
+): string => {
   const base = new URL(baseURL)
-  base.pathname = `/l/${encodeURIComponent(appSlug)}/${encodeURIComponent(linkSlug)}`
+  const path = `${encodeURIComponent(appSlug)}/${encodeURIComponent(linkSlug)}`
+  base.pathname = pathStyle === 'shared-clean' ? `/${path}` : `/l/${path}`
   base.search = ''
   base.hash = ''
   return base.toString().replace(/\/$/, '')
@@ -83,17 +90,33 @@ const projectPublicParameters = (value: unknown): LinkParameters | null => {
   return result.ok ? result.value : null
 }
 
-export const projectPublicLink = (app: App, link: DeepLink, baseURL: string): PublicLinkSuccess => {
+export const projectPublicLink = (
+  app: App,
+  link: DeepLink,
+  baseURL: string,
+  options: {
+    appFallbackUrl?: null | string
+    appKey?: string
+    linkFallbackUrl?: null | string
+    pathStyle?: PublicLinkPathStyle
+  } = {},
+): PublicLinkSuccess => {
   const parameters = projectPublicParameters(link.parameters)
   return {
     status: 'active',
-    publicUrl: buildPublicURL(baseURL, app.slug, link.slug),
+    publicUrl: buildPublicURL(
+      baseURL,
+      options.appKey ?? app.slug,
+      link.slug,
+      options.pathStyle ?? 'host-scoped',
+    ),
     app: {
       name: app.name,
       slug: app.slug,
       appStoreUrl: app.appStoreUrl ?? null,
       playStoreUrl: app.playStoreUrl ?? null,
-      fallbackUrl: app.fallbackUrl,
+      fallbackUrl:
+        options.appFallbackUrl === undefined ? (app.fallbackUrl ?? null) : options.appFallbackUrl,
     },
     link: {
       name: link.name,
@@ -107,7 +130,10 @@ export const projectPublicLink = (app: App, link: DeepLink, baseURL: string): Pu
           })
         : null,
       parameters,
-      fallbackUrl: link.fallbackUrl ?? null,
+      fallbackUrl:
+        options.linkFallbackUrl === undefined
+          ? (link.fallbackUrl ?? null)
+          : options.linkFallbackUrl,
       status: 'active',
       expiresAt: link.expiresAt ?? null,
     },

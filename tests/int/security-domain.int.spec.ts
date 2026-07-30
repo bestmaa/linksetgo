@@ -8,7 +8,6 @@ import {
   validateSlug,
 } from '@/collections/validators'
 import { isFallbackURLAllowed, relationIDsMatch } from '@/lib/server/collection-guards'
-import { EVENT_RATE_LIMIT, shouldRecordLinkEvent } from '@/lib/domain/event-policy'
 import { parseLinkParameters } from '@/lib/domain/link-parameters'
 
 const textOptions = {} as Parameters<typeof validateSlug>[1]
@@ -80,11 +79,5 @@ describe('security validation', () => {
   it('compares populated and scalar relationship IDs safely', () => {
     expect(relationIDsMatch({ id: 7 }, 7)).toBe(true)
     expect(relationIDsMatch({ id: 7 }, 8)).toBe(false)
-  })
-
-  it('deduplicates repeated events and caps a session window', () => {
-    expect(shouldRecordLinkEvent(0, 0)).toBe(true)
-    expect(shouldRecordLinkEvent(1, 0)).toBe(false)
-    expect(shouldRecordLinkEvent(0, EVENT_RATE_LIMIT)).toBe(false)
   })
 })

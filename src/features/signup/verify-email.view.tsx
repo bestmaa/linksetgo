@@ -36,8 +36,8 @@ export function VerifyEmailView(props: VerifyEmailViewProps) {
                 <p>
                   <strong>{props.state.email}</strong> is verified. You can now sign in.
                 </p>
-                <Link className="button button-primary" href="/admin/login">
-                  Sign in to LinksetGo
+                <Link className="button button-primary" href="/admin/login?next=/admin/links">
+                  Sign in and create your first link
                 </Link>
               </>
             ) : (

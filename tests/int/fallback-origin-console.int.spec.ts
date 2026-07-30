@@ -212,6 +212,30 @@ describe.sequential('workspace fallback-origin console', () => {
     })
     if (!result.ok) throw new Error('Fallback-origin registration failed.')
     originID = String(result.value.id)
+
+    await expect(
+      registerConsoleFallbackOrigin({
+        hostname: FIXTURE.hostname,
+        payload: payload!,
+        user: userB,
+        workspaceID: String(workspaceBID),
+      }),
+    ).resolves.toMatchObject({
+      ok: true,
+      value: { hostname: FIXTURE.hostname, status: 'pending' },
+    })
+    const independentOrigins = await payload!.find({
+      collection: 'fallback-origins',
+      depth: 0,
+      limit: 3,
+      overrideAccess: true,
+      pagination: false,
+      where: { hostname: { equals: FIXTURE.hostname } },
+    })
+    expect(independentOrigins.docs).toHaveLength(2)
+    expect(
+      new Set(independentOrigins.docs.map(({ verificationToken }) => verificationToken)).size,
+    ).toBe(2)
   })
 
   it('lists and reveals TXT instructions only inside the selected workspace', async () => {

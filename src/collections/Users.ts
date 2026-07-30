@@ -12,6 +12,10 @@ import {
   isCloudSignupRequest,
   isTeamInvitationUserRequest,
 } from '@/lib/server/user-creation-policy'
+import {
+  enforceUserCredentialPolicy,
+  enforceUserPasswordResetPolicy,
+} from '@/lib/server/user-credential-policy'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -23,6 +27,7 @@ export const Users: CollectionConfig = {
     create: superAdminAccess,
     delete: superAdminAccess,
     read: selfOrSuperAdminAccess,
+    unlock: superAdminAccess,
     update: selfOrSuperAdminAccess,
   },
   auth: {
@@ -102,6 +107,30 @@ export const Users: CollectionConfig = {
         update: superAdminFieldAccess,
       },
     },
+    {
+      name: 'passwordResetTokenHash',
+      type: 'text',
+      unique: true,
+      index: true,
+      maxLength: 64,
+      hidden: true,
+      access: {
+        create: superAdminFieldAccess,
+        read: superAdminFieldAccess,
+        update: superAdminFieldAccess,
+      },
+    },
+    {
+      name: 'passwordResetExpiresAt',
+      type: 'date',
+      index: true,
+      hidden: true,
+      access: {
+        create: superAdminFieldAccess,
+        read: superAdminFieldAccess,
+        update: superAdminFieldAccess,
+      },
+    },
   ],
   hooks: {
     beforeLogin: [
@@ -110,7 +139,9 @@ export const Users: CollectionConfig = {
         return user
       },
     ],
+    beforeOperation: [enforceUserPasswordResetPolicy],
     beforeValidate: [
+      enforceUserCredentialPolicy,
       async ({ data, operation, req }) => {
         if (operation !== 'create' || !data) return data
 

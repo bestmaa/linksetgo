@@ -1,4 +1,4 @@
-export const PLAN_CATALOG_VERSION = 1 as const
+export const PLAN_CATALOG_VERSION = 2 as const
 
 export type CloudPlanKey = 'free' | 'pro' | 'starter'
 export type PlanKey = 'community' | CloudPlanKey
@@ -9,6 +9,8 @@ export type PlanMetric =
   | 'customDomains'
   | 'members'
   | 'monthlyResolutions'
+  | 'savedLinks'
+  | 'workspaces'
 
 export type PlanLimit = number | 'unlimited'
 
@@ -38,6 +40,8 @@ export const planCatalog = {
       customDomains: 'unlimited',
       members: 'unlimited',
       monthlyResolutions: 'unlimited',
+      savedLinks: 'unlimited',
+      workspaces: 'unlimited',
     },
     name: 'Community',
     priceMonthlyMinor: null,
@@ -47,12 +51,14 @@ export const planCatalog = {
     currency: 'USD',
     key: 'free',
     limits: {
-      activeLinks: 250,
-      analyticsRetentionDays: 14,
+      activeLinks: 10,
+      analyticsRetentionDays: 7,
       apps: 1,
       customDomains: 0,
       members: 1,
-      monthlyResolutions: 15_000,
+      monthlyResolutions: 1_000,
+      savedLinks: 25,
+      workspaces: 1,
     },
     name: 'Cloud Free',
     priceMonthlyMinor: 0,
@@ -68,6 +74,8 @@ export const planCatalog = {
       customDomains: 5,
       members: 10,
       monthlyResolutions: 1_000_000,
+      savedLinks: 10_000,
+      workspaces: 20,
     },
     name: 'Pro',
     priceMonthlyMinor: 1_000,
@@ -83,6 +91,8 @@ export const planCatalog = {
       customDomains: 1,
       members: 3,
       monthlyResolutions: 150_000,
+      savedLinks: 2_500,
+      workspaces: 5,
     },
     name: 'Starter',
     priceMonthlyMinor: 500,
@@ -121,7 +131,10 @@ export function getPlanUsageState(
 
 export function canCreateResource(
   plan: PlanDefinition,
-  metric: Extract<PlanMetric, 'activeLinks' | 'apps' | 'customDomains' | 'members'>,
+  metric: Extract<
+    PlanMetric,
+    'activeLinks' | 'apps' | 'customDomains' | 'members' | 'savedLinks' | 'workspaces'
+  >,
   currentUsage: number,
 ): boolean {
   return getPlanUsageState(plan, metric, currentUsage).kind !== 'blocked'

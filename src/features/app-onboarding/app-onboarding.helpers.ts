@@ -128,9 +128,7 @@ export function validateOnboardingStep(
   }
 
   if (step === 'destinations') {
-    if (!form.fallbackUrl.trim()) {
-      errors.fallbackUrl = 'Add the safe web page to use when the app cannot open.'
-    } else if (!isSecureURL(form.fallbackUrl.trim())) {
+    if (form.fallbackUrl.trim() && !isSecureURL(form.fallbackUrl.trim())) {
       errors.fallbackUrl = 'Enter a complete HTTPS URL without embedded credentials.'
     }
     if (

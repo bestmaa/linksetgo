@@ -1,8 +1,14 @@
+import { ACCOUNT_PASSWORD_REQUIREMENTS, isStrongAccountPassword } from './account-password'
+
+export { isStrongAccountPassword } from './account-password'
+
 export const MAX_ACCOUNT_RECOVERY_BODY_BYTES = 4_096
 export const PASSWORD_RESET_TOKEN_TTL_MS = 60 * 60 * 1_000
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const RESET_TOKEN_PATTERN = /^[a-f0-9]{40}$/
+// 32 random bytes encoded as unpadded base64url. Keeping the exact encoded
+// length prevents weaker caller-supplied tokens from reaching the database.
+const RESET_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/
 const CONTROL_CHARACTER_PATTERN = /[\u0000-\u001F\u007F]/
 
 type EmailResult = { ok: true; email: string } | { ok: false; message: string }
@@ -20,19 +26,6 @@ export function normalizeAccountEmail(value: unknown): string | null {
     EMAIL_PATTERN.test(email)
     ? email
     : null
-}
-
-export function isStrongAccountPassword(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.length >= 12 &&
-    value.length <= 128 &&
-    !CONTROL_CHARACTER_PATTERN.test(value) &&
-    /[a-z]/.test(value) &&
-    /[A-Z]/.test(value) &&
-    /[0-9]/.test(value) &&
-    /[^A-Za-z0-9]/.test(value)
-  )
 }
 
 export function isPasswordResetToken(value: unknown): value is string {
@@ -57,7 +50,7 @@ export function parsePasswordResetRequest(value: unknown): ResetResult {
   ) {
     return {
       ok: false,
-      message: 'Use a valid reset link and a 12–128 character strong password.',
+      message: `Use a valid reset link. ${ACCOUNT_PASSWORD_REQUIREMENTS}`,
     }
   }
   return { ok: true, password: value.password, token: value.token }

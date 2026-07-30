@@ -14,6 +14,7 @@ import { DeepLinks } from './collections/DeepLinks'
 import { Domains } from './collections/Domains'
 import { EnforcementEvents } from './collections/EnforcementEvents'
 import { FallbackOrigins } from './collections/FallbackOrigins'
+import { FallbackURLSafetyAssessments } from './collections/FallbackURLSafetyAssessments'
 import { LinkEvents } from './collections/LinkEvents'
 import { OrganizationMemberships } from './collections/OrganizationMemberships'
 import { OrganizationInvitations } from './collections/OrganizationInvitations'
@@ -25,12 +26,17 @@ import { VerificationRuns } from './collections/VerificationRuns'
 import { Workspaces } from './collections/Workspaces'
 import { getServerEnvironment } from './lib/server/env'
 import { getApplicationSiteURL } from './lib/server/site-url'
+import {
+  CLOUD_ACCOUNT_EMAIL_OUTBOX_TASK,
+  deliverCloudAccountEmailTask,
+} from './lib/server/cloud-account-email-task'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const environment = getServerEnvironment()
 const applicationOrigin = getApplicationSiteURL().origin
 const isProduction = process.env.NODE_ENV === 'production'
+const isContinuousIntegration = process.env.CI?.trim().toLowerCase() === 'true'
 
 export default buildConfig({
   admin: {
@@ -45,6 +51,7 @@ export default buildConfig({
     Workspaces,
     Domains,
     FallbackOrigins,
+    FallbackURLSafetyAssessments,
     OrganizationInvitations,
     OrganizationMemberships,
     Subscriptions,
@@ -62,16 +69,68 @@ export default buildConfig({
   cors: [applicationOrigin],
   csrf: [applicationOrigin],
   db: postgresAdapter({
-    disableCreateDatabase: isProduction,
+    // CI and production both apply reviewed migrations before starting Payload.
+    // Schema push remains a local-development convenience only.
+    disableCreateDatabase: isProduction || isContinuousIntegration,
     pool: {
       connectionString: environment.databaseURL,
     },
-    push: !isProduction,
+    push: !isProduction && !isContinuousIntegration,
   }),
   defaultDepth: 1,
   editor: lexicalEditor(),
   graphQL: {
     disable: true,
+  },
+  jobs: {
+    access: {
+      cancel: () => false,
+      queue: () => false,
+      run: () => false,
+    },
+    deleteJobOnComplete: true,
+    jobsCollectionOverrides: ({ defaultJobsCollection }) => ({
+      ...defaultJobsCollection,
+      access: {
+        create: () => false,
+        delete: () => false,
+        read: () => false,
+        update: () => false,
+      },
+    }),
+    tasks: [
+      {
+        slug: CLOUD_ACCOUNT_EMAIL_OUTBOX_TASK,
+        handler: deliverCloudAccountEmailTask,
+        inputSchema: [
+          {
+            name: 'encryptedEnvelope',
+            type: 'textarea',
+            required: true,
+            maxLength: 16_384,
+          },
+          {
+            name: 'expiresAt',
+            type: 'date',
+            required: true,
+          },
+        ],
+        outputSchema: [
+          {
+            name: 'delivered',
+            type: 'checkbox',
+            required: true,
+          },
+        ],
+        retries: {
+          attempts: 5,
+          backoff: {
+            delay: 30_000,
+            type: 'exponential',
+          },
+        },
+      },
+    ],
   },
   maxDepth: 4,
   routes: {

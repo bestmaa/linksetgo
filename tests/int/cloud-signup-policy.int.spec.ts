@@ -128,21 +128,38 @@ describe('Relay Cloud signup policy', () => {
     ).toMatchObject({ role: 'super-admin', status: 'active' })
   })
 
-  it('requires complete, explicit production delivery configuration', () => {
+  it('requires explicit email delivery and a dedicated shared resolver origin', () => {
     expect(
       getCloudSignupConfiguration({
         CLOUD_APP_BASE_URL: 'https://app.linksetgo.test',
         CLOUD_SIGNUP_ENABLED: 'true',
         CLOUD_VERIFICATION_WEBHOOK_SECRET: 'x'.repeat(32),
         CLOUD_VERIFICATION_WEBHOOK_URL: 'https://mailer.linksetgo.test/verify',
-        MANAGED_LINK_ROOT_DOMAIN: 'links.linksetgo.test',
         NODE_ENV: 'production',
         RELAY_EDITION: 'cloud',
+        SHARED_LINK_BASE_URL: 'https://go.linksetgo.test',
+      }),
+    ).toMatchObject({
+      status: 'misconfigured',
+      reason: expect.stringMatching(/trusted ingress/i),
+    })
+
+    expect(
+      getCloudSignupConfiguration({
+        CLOUD_APP_BASE_URL: 'https://app.linksetgo.test',
+        CLOUD_SIGNUP_ENABLED: 'true',
+        CLOUD_VERIFICATION_WEBHOOK_SECRET: 'x'.repeat(32),
+        CLOUD_VERIFICATION_WEBHOOK_URL: 'https://mailer.linksetgo.test/verify',
+        NODE_ENV: 'production',
+        RELAY_EDITION: 'cloud',
+        SHARED_LINK_BASE_URL: 'https://go.linksetgo.test',
+        TRUST_PROXY_CLIENT_IP_HEADER: 'true',
       }),
     ).toMatchObject({
       status: 'ready',
       appBaseURL: 'https://app.linksetgo.test',
-      managedLinkRootDomain: 'links.linksetgo.test',
+      managedLinkRootDomain: null,
+      sharedLinkBaseURL: 'https://go.linksetgo.test',
     })
 
     expect(
@@ -154,6 +171,8 @@ describe('Relay Cloud signup policy', () => {
         MANAGED_LINK_ROOT_DOMAIN: 'links.linksetgo.test',
         NODE_ENV: 'production',
         RELAY_EDITION: 'cloud',
+        SHARED_LINK_BASE_URL: 'https://go.linksetgo.test',
+        TRUST_PROXY_CLIENT_IP_HEADER: 'true',
       }),
     ).toMatchObject({ status: 'misconfigured' })
 
@@ -166,7 +185,41 @@ describe('Relay Cloud signup policy', () => {
         MANAGED_LINK_ROOT_DOMAIN: 'links.linksetgo.test',
         NODE_ENV: 'production',
         RELAY_EDITION: 'cloud',
+        SHARED_LINK_BASE_URL: 'https://go.linksetgo.test',
+        TRUST_PROXY_CLIENT_IP_HEADER: 'true',
       }),
     ).toMatchObject({ status: 'misconfigured' })
+
+    expect(
+      getCloudSignupConfiguration({
+        CLOUD_APP_BASE_URL: 'https://app.linksetgo.test',
+        CLOUD_SIGNUP_ENABLED: 'true',
+        CLOUD_VERIFICATION_WEBHOOK_SECRET: 'x'.repeat(32),
+        CLOUD_VERIFICATION_WEBHOOK_URL: 'https://mailer.linksetgo.test/verify',
+        NODE_ENV: 'production',
+        RELAY_EDITION: 'cloud',
+        TRUST_PROXY_CLIENT_IP_HEADER: 'true',
+      }),
+    ).toEqual({
+      status: 'misconfigured',
+      reason: 'SHARED_LINK_BASE_URL must be a safe HTTPS origin.',
+    })
+
+    expect(
+      getCloudSignupConfiguration({
+        CLOUD_APP_BASE_URL: 'https://app.linksetgo.test',
+        CLOUD_SIGNUP_ENABLED: 'true',
+        CLOUD_VERIFICATION_WEBHOOK_SECRET: 'x'.repeat(32),
+        CLOUD_VERIFICATION_WEBHOOK_URL: 'https://mailer.linksetgo.test/verify',
+        NODE_ENV: 'production',
+        RELAY_EDITION: 'cloud',
+        SHARED_LINK_BASE_URL: 'https://app.linksetgo.test',
+        TRUST_PROXY_CLIENT_IP_HEADER: 'true',
+      }),
+    ).toEqual({
+      status: 'misconfigured',
+      reason:
+        'SHARED_LINK_BASE_URL must use a hostname separate from the application and marketing sites.',
+    })
   })
 })

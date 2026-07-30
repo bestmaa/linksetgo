@@ -1,6 +1,8 @@
 import config from '@/payload.config'
 import {
   createCloudSignup,
+  hashCloudVerificationToken,
+  resendCloudSignupVerification,
   verifyCloudSignupEmail,
   type VerificationDelivery,
 } from '@/lib/server/cloud-signup-service'
@@ -128,7 +130,8 @@ describe.sequential('atomic Relay Cloud signup', () => {
     }
   })
 
-  it('rolls back every tenant record when verification delivery fails', async () => {
+  it('commits a recoverable pending graph before delivery and allows a failed send to be retried', async () => {
+    let committedBeforeDelivery = false
     await expect(
       createCloudSignup(
         {
@@ -145,6 +148,12 @@ describe.sequential('atomic Relay Cloud signup', () => {
           payload: payload!,
           randomToken: () => 'A'.repeat(43),
           sendVerification: async () => {
+            const users = await payload!.find({
+              collection: 'users',
+              overrideAccess: true,
+              where: { email: { equals: FIXTURE.rollbackEmail } },
+            })
+            committedBeforeDelivery = users.totalDocs === 1
             throw new Error('Simulated delivery outage')
           },
         },
@@ -152,11 +161,13 @@ describe.sequential('atomic Relay Cloud signup', () => {
     ).rejects.toMatchObject({
       code: 'VERIFICATION_DELIVERY_FAILED',
     })
+    expect(committedBeforeDelivery).toBe(true)
 
     const [users, organizations, workspaces, domains] = await Promise.all([
       payload!.find({
         collection: 'users',
         overrideAccess: true,
+        showHiddenFields: true,
         where: { email: { equals: FIXTURE.rollbackEmail } },
       }),
       payload!.find({
@@ -175,9 +186,104 @@ describe.sequential('atomic Relay Cloud signup', () => {
         where: { hostname: { equals: `${FIXTURE.rollbackSlug}.links.linksetgo.test` } },
       }),
     ])
-    expect([users, organizations, workspaces, domains].map((result) => result.totalDocs)).toEqual([
-      0, 0, 0, 0,
-    ])
+    const memberships = await payload!.find({
+      collection: 'organization-memberships',
+      overrideAccess: true,
+      where: { user: { equals: users.docs[0]?.id ?? -1 } },
+    })
+    expect(
+      [users, organizations, workspaces, memberships, domains].map((value) => value.totalDocs),
+    ).toEqual([1, 1, 1, 1, 0])
+    expect(users.docs[0]).toMatchObject({
+      emailVerificationTokenHash: hashCloudVerificationToken('A'.repeat(43)),
+      status: 'pending-verification',
+    })
+    expect(organizations.docs[0]?.status).toBe('pending-verification')
+    expect(workspaces.docs[0]?.status).toBe('pending-verification')
+    expect(memberships.docs[0]?.status).toBe('disabled')
+
+    let duplicateReachedDelivery = false
+    await expect(
+      createCloudSignup(
+        {
+          acceptTerms: true,
+          email: FIXTURE.rollbackEmail,
+          name: 'Rollback Owner',
+          organizationName: 'Rollback Organization',
+          password: 'RollbackPassword123!',
+          workspaceSlug: FIXTURE.rollbackSlug,
+        },
+        {
+          appBaseURL: 'https://app.linksetgo.test',
+          managedLinkRootDomain: 'links.linksetgo.test',
+          payload: payload!,
+          randomToken: () => 'E'.repeat(43),
+          sendVerification: async () => {
+            duplicateReachedDelivery = true
+          },
+        },
+      ),
+    ).rejects.toMatchObject({ code: 'EMAIL_UNAVAILABLE' })
+    expect(duplicateReachedDelivery).toBe(false)
+
+    const afterIdenticalRetry = await payload!.find({
+      collection: 'users',
+      limit: 1,
+      overrideAccess: true,
+      pagination: false,
+      showHiddenFields: true,
+      where: { email: { equals: FIXTURE.rollbackEmail } },
+    })
+    expect(afterIdenticalRetry.totalDocs).toBe(1)
+    expect(afterIdenticalRetry.docs[0]?.emailVerificationTokenHash).toBe(
+      hashCloudVerificationToken('A'.repeat(43)),
+    )
+
+    let resendCommittedBeforeDelivery = false
+    await expect(
+      resendCloudSignupVerification(FIXTURE.rollbackEmail, {
+        appBaseURL: 'https://app.linksetgo.test',
+        payload: payload!,
+        randomToken: () => 'C'.repeat(43),
+        sendVerification: async () => {
+          const persisted = await payload!.find({
+            collection: 'users',
+            limit: 1,
+            overrideAccess: true,
+            pagination: false,
+            showHiddenFields: true,
+            where: { email: { equals: FIXTURE.rollbackEmail } },
+          })
+          resendCommittedBeforeDelivery =
+            persisted.docs[0]?.emailVerificationTokenHash ===
+            hashCloudVerificationToken('C'.repeat(43))
+          throw new Error('Simulated resend delivery outage')
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'VERIFICATION_DELIVERY_FAILED' })
+    expect(resendCommittedBeforeDelivery).toBe(true)
+    const afterFailedResend = await payload!.find({
+      collection: 'users',
+      limit: 1,
+      overrideAccess: true,
+      pagination: false,
+      showHiddenFields: true,
+      where: { email: { equals: FIXTURE.rollbackEmail } },
+    })
+    expect(afterFailedResend.docs[0]?.emailVerificationTokenHash).toBe(
+      hashCloudVerificationToken('C'.repeat(43)),
+    )
+    await expect(
+      resendCloudSignupVerification(FIXTURE.rollbackEmail, {
+        appBaseURL: 'https://app.linksetgo.test',
+        payload: payload!,
+        randomToken: () => 'D'.repeat(43),
+        sendVerification: async () => undefined,
+      }),
+    ).resolves.toEqual({ deliveryAttempted: true })
+    await expect(verifyCloudSignupEmail('A'.repeat(43), payload!)).rejects.toMatchObject({
+      code: 'VERIFICATION_INVALID',
+    })
   })
 
   it('creates an isolated pending graph and activates it only after one-time verification', async () => {
@@ -204,7 +310,7 @@ describe.sequential('atomic Relay Cloud signup', () => {
 
     expect(result).toMatchObject({
       email: FIXTURE.successEmail,
-      managedHostname: `${FIXTURE.successSlug}.links.linksetgo.test`,
+      managedHostname: null,
     })
     expect(delivered?.verificationURL).toBe(
       `https://app.linksetgo.test/verify-email#token=${'B'.repeat(43)}`,
@@ -247,8 +353,7 @@ describe.sequential('atomic Relay Cloud signup', () => {
     expect(workspace.status).toBe('pending-verification')
     expect(memberships.docs).toHaveLength(1)
     expect(memberships.docs[0]).toMatchObject({ role: 'owner', status: 'disabled' })
-    expect(domains.docs).toHaveLength(1)
-    expect(domains.docs[0]).toMatchObject({ status: 'active', type: 'managed' })
+    expect(domains.docs).toHaveLength(0)
 
     await expect(
       payload!.login({

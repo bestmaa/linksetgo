@@ -72,6 +72,7 @@ export interface Config {
     workspaces: Workspace;
     domains: Domain;
     'fallback-origins': FallbackOrigin;
+    'fallback-url-safety-assessments': FallbackUrlSafetyAssessment;
     'organization-invitations': OrganizationInvitation;
     'organization-memberships': OrganizationMembership;
     subscriptions: Subscription;
@@ -86,6 +87,7 @@ export interface Config {
     'link-events': LinkEvent;
     'verification-runs': VerificationRun;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -97,6 +99,7 @@ export interface Config {
     workspaces: WorkspacesSelect<false> | WorkspacesSelect<true>;
     domains: DomainsSelect<false> | DomainsSelect<true>;
     'fallback-origins': FallbackOriginsSelect<false> | FallbackOriginsSelect<true>;
+    'fallback-url-safety-assessments': FallbackUrlSafetyAssessmentsSelect<false> | FallbackUrlSafetyAssessmentsSelect<true>;
     'organization-invitations': OrganizationInvitationsSelect<false> | OrganizationInvitationsSelect<true>;
     'organization-memberships': OrganizationMembershipsSelect<false> | OrganizationMembershipsSelect<true>;
     subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
@@ -111,6 +114,7 @@ export interface Config {
     'link-events': LinkEventsSelect<false> | LinkEventsSelect<true>;
     'verification-runs': VerificationRunsSelect<false> | VerificationRunsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -127,7 +131,13 @@ export interface Config {
   };
   user: User;
   jobs: {
-    tasks: unknown;
+    tasks: {
+      'deliver-cloud-account-email': TaskDeliverCloudAccountEmail;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -161,6 +171,8 @@ export interface User {
   allowedApps?: (number | App)[] | null;
   emailVerificationTokenHash?: string | null;
   emailVerificationExpiresAt?: string | null;
+  passwordResetTokenHash?: string | null;
+  passwordResetExpiresAt?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -192,6 +204,11 @@ export interface App {
   workspace?: (number | null) | Workspace;
   name: string;
   slug: string;
+  /**
+   * Globally unique key used by clean shared links. Exact aliases are platform-admin controlled; quick setup assigns a tenant-scoped key.
+   */
+  publicKey?: string | null;
+  routingMode?: ('scheme-handoff' | 'verified-app-links') | null;
   description?: string | null;
   /**
    * Custom mobile URL scheme without ://. Required for new apps; legacy apps can be backfilled.
@@ -204,7 +221,7 @@ export interface App {
   androidSha256CertFingerprints?: string[] | null;
   appStoreUrl?: string | null;
   playStoreUrl?: string | null;
-  fallbackUrl: string;
+  fallbackUrl?: string | null;
   /**
    * Hostnames permitted for per-link fallback overrides.
    */
@@ -406,12 +423,53 @@ export interface FallbackOrigin {
   verificationToken: string;
   lastCheckedAt?: string | null;
   verifiedAt?: string | null;
+  /**
+   * Ownership proof must be renewed before this instant.
+   */
+  verificationExpiresAt?: string | null;
+  /**
+   * Bounded fail-safe grace after the proof expires, set only when the DNS provider is unavailable.
+   */
+  outageGraceExpiresAt?: string | null;
   revokedAt?: string | null;
   lastVerificationError?: string | null;
   /**
    * Bounded, provider-neutral DNS evidence hashes; raw TXT values are not stored.
    */
   lastEvidence?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fallback-url-safety-assessments".
+ */
+export interface FallbackUrlSafetyAssessment {
+  id: number;
+  workspace: number | Workspace;
+  origin: number | FallbackOrigin;
+  canonicalUrl: string;
+  hostname: string;
+  urlHash: string;
+  status: 'pending' | 'checking' | 'safe' | 'unsafe' | 'error';
+  checkedAt?: string | null;
+  expiresAt?: string | null;
+  providerObservedAt?: string | null;
+  claimToken?: string | null;
+  claimExpiresAt?: string | null;
+  lastAttemptAt?: string | null;
+  redirectCount: number;
+  threats?: ('malware' | 'phishing' | 'social-engineering' | 'unwanted-software' | 'other')[] | null;
+  lastError?: string | null;
+  evidence?:
     | {
         [k: string]: unknown;
       }
@@ -608,6 +666,98 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'deliver-cloud-account-email';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'deliver-cloud-account-email') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -632,6 +782,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'fallback-origins';
         value: number | FallbackOrigin;
+      } | null)
+    | ({
+        relationTo: 'fallback-url-safety-assessments';
+        value: number | FallbackUrlSafetyAssessment;
       } | null)
     | ({
         relationTo: 'organization-invitations';
@@ -738,6 +892,8 @@ export interface UsersSelect<T extends boolean = true> {
   allowedApps?: T;
   emailVerificationTokenHash?: T;
   emailVerificationExpiresAt?: T;
+  passwordResetTokenHash?: T;
+  passwordResetExpiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -826,9 +982,35 @@ export interface FallbackOriginsSelect<T extends boolean = true> {
   verificationToken?: T;
   lastCheckedAt?: T;
   verifiedAt?: T;
+  verificationExpiresAt?: T;
+  outageGraceExpiresAt?: T;
   revokedAt?: T;
   lastVerificationError?: T;
   lastEvidence?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fallback-url-safety-assessments_select".
+ */
+export interface FallbackUrlSafetyAssessmentsSelect<T extends boolean = true> {
+  workspace?: T;
+  origin?: T;
+  canonicalUrl?: T;
+  hostname?: T;
+  urlHash?: T;
+  status?: T;
+  checkedAt?: T;
+  expiresAt?: T;
+  providerObservedAt?: T;
+  claimToken?: T;
+  claimExpiresAt?: T;
+  lastAttemptAt?: T;
+  redirectCount?: T;
+  threats?: T;
+  lastError?: T;
+  evidence?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -921,6 +1103,8 @@ export interface AppsSelect<T extends boolean = true> {
   workspace?: T;
   name?: T;
   slug?: T;
+  publicKey?: T;
+  routingMode?: T;
   description?: T;
   nativeScheme?: T;
   status?: T;
@@ -1072,6 +1256,37 @@ export interface PayloadKvSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
@@ -1111,6 +1326,19 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskDeliver-cloud-account-email".
+ */
+export interface TaskDeliverCloudAccountEmail {
+  input: {
+    encryptedEnvelope: string;
+    expiresAt: string;
+  };
+  output: {
+    delivered: boolean;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

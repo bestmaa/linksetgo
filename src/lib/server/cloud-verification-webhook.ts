@@ -10,9 +10,10 @@ type WebhookVerificationSenderOptions = {
 
 export function createWebhookVerificationSender(
   options: WebhookVerificationSenderOptions,
+  fetchImplementation: typeof fetch = fetch,
 ): VerificationSender {
   return async (delivery) => {
-    const response = await fetch(options.url, {
+    const response = await fetchImplementation(options.url, {
       body: JSON.stringify({
         email: delivery.email,
         expiresAt: delivery.expiresAt,
@@ -37,9 +38,10 @@ export function createWebhookVerificationSender(
 
 export function createWebhookPasswordResetSender(
   options: WebhookVerificationSenderOptions,
+  fetchImplementation: typeof fetch = fetch,
 ): PasswordResetSender {
   return async (delivery) => {
-    const response = await fetch(options.url, {
+    const response = await fetchImplementation(options.url, {
       body: JSON.stringify({
         email: delivery.email,
         expiresAt: delivery.expiresAt,

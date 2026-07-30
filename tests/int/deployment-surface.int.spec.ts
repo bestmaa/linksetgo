@@ -10,6 +10,7 @@ const cloudConfig = getDeploymentSurfaceConfig({
   MANAGED_LINK_ROOT_DOMAIN: 'linksetgo.com',
   MARKETING_SITE_URL: 'https://linksetgo.com',
   RELAY_EDITION: 'cloud',
+  SHARED_LINK_BASE_URL: 'https://go.linksetgo.com',
 })
 
 describe('deployment host surfaces', () => {
@@ -56,6 +57,72 @@ describe('deployment host surfaces', () => {
         pathname: '/api/auth/signup',
       }),
     ).toEqual({ kind: 'deny' })
+  })
+
+  it('blocks generic Payload recovery and registration routes on every host surface', () => {
+    const blockedPaths = [
+      '/api/users/first-register',
+      '/api/users/forgot-password',
+      '/api/users/reset-password',
+      '/api/users/unlock',
+      '/api/users/verify/token-value',
+      '/api/%75sers/%66orgot-password',
+    ]
+
+    for (const hostname of [
+      'app.linksetgo.com',
+      'go.linksetgo.com',
+      'linksetgo.com',
+      'customer.example.com',
+    ]) {
+      for (const pathname of blockedPaths) {
+        expect(
+          decideDeploymentSurface({
+            config: cloudConfig,
+            hostname,
+            method: 'POST',
+            pathname,
+          }),
+        ).toEqual({ kind: 'deny' })
+      }
+    }
+
+    const community = getDeploymentSurfaceConfig({
+      PUBLIC_LINK_BASE_URL: 'http://127.0.0.1:3100',
+      RELAY_EDITION: 'community',
+    })
+    expect(
+      decideDeploymentSurface({
+        config: community,
+        hostname: '127.0.0.1',
+        method: 'POST',
+        pathname: '/api/users/forgot-password',
+      }),
+    ).toEqual({ kind: 'deny' })
+  })
+
+  it('preserves only the required Payload session routes and custom auth flows on the app host', () => {
+    const allowedRoutes = [
+      { method: 'GET', pathname: '/api/users/init' },
+      { method: 'POST', pathname: '/api/users/login' },
+      { method: 'POST', pathname: '/api/users/logout' },
+      { method: 'GET', pathname: '/api/users/me' },
+      { method: 'POST', pathname: '/api/users/refresh-token' },
+      { method: 'POST', pathname: '/api/auth/forgot-password' },
+      { method: 'POST', pathname: '/api/auth/reset-password' },
+      { method: 'POST', pathname: '/api/auth/signup' },
+      { method: 'POST', pathname: '/api/auth/verify-email' },
+    ]
+
+    for (const route of allowedRoutes) {
+      expect(
+        decideDeploymentSurface({
+          config: cloudConfig,
+          hostname: 'app.linksetgo.com',
+          ...route,
+        }),
+      ).toEqual({ kind: 'allow' })
+    }
   })
 
   it('keeps explicitly configured local marketing and app hosts separate', () => {
@@ -146,6 +213,51 @@ describe('deployment host surfaces', () => {
         }),
       ).toEqual({ kind: 'deny' })
     }
+  })
+
+  it('serves clean links only from the exact shared host', () => {
+    expect(
+      decideDeploymentSurface({
+        config: cloudConfig,
+        hostname: 'go.linksetgo.com',
+        pathname: '/oberoi/summer-offer',
+      }),
+    ).toEqual({ kind: 'allow' })
+    expect(
+      decideDeploymentSurface({
+        config: cloudConfig,
+        hostname: 'go.linksetgo.com',
+        pathname: '/paypal-0123456789abcdef01234567/home',
+      }),
+    ).toEqual({ kind: 'allow' })
+    expect(
+      decideDeploymentSurface({
+        config: cloudConfig,
+        hostname: 'go.linksetgo.com',
+        pathname: '/robots.txt',
+      }),
+    ).toEqual({ kind: 'allow' })
+    expect(
+      decideDeploymentSurface({
+        config: cloudConfig,
+        hostname: 'go.linksetgo.com',
+        pathname: '/admin/login',
+      }),
+    ).toEqual({ kind: 'deny' })
+    expect(
+      decideDeploymentSurface({
+        config: cloudConfig,
+        hostname: 'go.linksetgo.com',
+        pathname: '/.well-known/assetlinks.json',
+      }),
+    ).toEqual({ kind: 'deny' })
+    expect(
+      decideDeploymentSurface({
+        config: cloudConfig,
+        hostname: 'other.linksetgo.com',
+        pathname: '/oberoi/summer-offer',
+      }),
+    ).toEqual({ kind: 'deny' })
   })
 
   it('does not serve deep links from the Cloud app or marketing host', () => {

@@ -21,8 +21,8 @@ test.describe('LinksetGo admin console', () => {
   test('shows the seeded workspace on the overview', async ({ page }) => {
     await expect(page).toHaveTitle(/LinksetGo/)
     await expect(page.getByLabel('Active workspace')).not.toHaveValue('')
-    await expect(page.getByText(seededLink.name, { exact: true })).toBeVisible()
-    await expect(page.getByText(seededApp.name, { exact: true })).toBeVisible()
+    await expect(page.getByText(seededLink.name, { exact: true }).first()).toBeVisible()
+    await expect(page.getByText(seededApp.name, { exact: true }).first()).toBeVisible()
     await expect(
       page.getByText(`/l/${seededApp.slug}/${seededLink.slug}`, { exact: false }),
     ).toBeVisible()
@@ -49,36 +49,61 @@ test.describe('LinksetGo admin console', () => {
     }
   })
 
-  test('opens a create-link form without changing seeded data', async ({ page }) => {
+  test('opens the quick-link panel without changing seeded data', async ({ page }) => {
     await page.getByRole('button', { name: 'Create link' }).first().click()
     await page.waitForURL(
-      (url) => url.pathname === '/admin/links' && url.searchParams.get('create') === '1',
+      (url) => url.pathname === '/admin/links' && url.hash === '#quick-link-title',
     )
 
-    const dialog = page.getByRole('dialog')
-    await expect(dialog.getByRole('heading', { name: 'Create deep link' })).toBeVisible()
-    await expect(dialog.getByRole('combobox', { name: 'App', exact: true })).toHaveValue(/\d+/)
-    await dialog.getByRole('button', { name: 'Cancel' }).click()
-    await expect(dialog).toBeHidden()
+    const quickLinkPanel = page.getByRole('region', { name: 'Paste your mobile URL' })
+    await expect(page.getByText(seededLink.name, { exact: true }).first()).toBeVisible()
+    const initialLinkCount = await page.getByText(/\d+ links$/, { exact: true }).innerText()
+
+    await expect(quickLinkPanel).toBeVisible()
+    await expect(quickLinkPanel.getByLabel('Mobile deep link')).toHaveValue('')
+    await expect(quickLinkPanel.getByRole('button', { name: 'Create link' })).toBeDisabled()
+    await expect(page.getByText(seededLink.name, { exact: true }).first()).toBeVisible()
+
+    await page.reload()
+
+    await expect(page.getByText(/\d+ links$/, { exact: true })).toHaveText(initialLinkCount)
+    await expect(page.getByText(seededLink.name, { exact: true }).first()).toBeVisible()
   })
 
-  test('imports a React Native URL into route and parameter fields', async ({ page }) => {
+  test('accepts a complete native URL and exposes optional settings without autosaving', async ({
+    page,
+  }) => {
     await page.getByRole('button', { name: 'Create link' }).first().click()
-    const dialog = page.getByRole('dialog')
+    const quickLinkPanel = page.getByRole('region', { name: 'Paste your mobile URL' })
+    await expect(page.getByText(seededLink.name, { exact: true }).first()).toBeVisible()
+    const linkCount = page.getByText(/\d+ links$/, { exact: true })
+    await expect(linkCount).toHaveText(/^[1-9]\d* links$/)
+    const initialLinkCount = await linkCount.innerText()
+    const nativeUrl = `${seededApp.nativeScheme}://rewards-detail?SlabName=Gold&SlabPromo=10OFF`
 
-    await dialog
-      .getByLabel(/React Native URL/)
-      .fill(`${seededApp.nativeScheme}://rewards-detail?SlabName=Gold&SlabPromo=10OFF`)
-    await dialog.getByRole('button', { name: 'Import route' }).click()
+    await quickLinkPanel.getByLabel('Mobile deep link').fill(nativeUrl)
+    await expect(quickLinkPanel.getByLabel('Mobile deep link')).toHaveValue(nativeUrl)
+    await expect(quickLinkPanel.getByRole('button', { name: 'Create link' })).toBeEnabled()
 
-    await expect(dialog.getByLabel('Destination path')).toHaveValue('/rewards-detail')
-    await expect(dialog.getByLabel('Parameter key').nth(0)).toHaveValue('SlabName')
-    await expect(dialog.getByLabel('Parameter value').nth(0)).toHaveValue('Gold')
-    await expect(dialog.getByLabel('Parameter key').nth(1)).toHaveValue('SlabPromo')
-    await expect(dialog.getByLabel('Parameter value').nth(1)).toHaveValue('10OFF')
-    await expect(dialog.getByRole('status')).toContainText('2 query parameters imported')
+    await quickLinkPanel.getByRole('button', { name: 'Optional fallback and store links' }).click()
+    await quickLinkPanel.getByLabel(/^Link name/).fill('Rewards detail')
+    await quickLinkPanel.getByLabel(/^Web fallback/).fill('https://example.com/rewards')
+    await quickLinkPanel
+      .getByLabel(/^Google Play URL/)
+      .fill('https://play.google.com/store/apps/details?id=com.example.sampleapp')
+    await quickLinkPanel
+      .getByLabel(/^App Store URL/)
+      .fill('https://apps.apple.com/app/sample-app/id123456789')
 
-    await dialog.getByRole('button', { name: 'Cancel' }).click()
+    await expect(quickLinkPanel.getByLabel(/^Link name/)).toHaveValue('Rewards detail')
+    await expect(quickLinkPanel.getByLabel(/^Web fallback/)).toHaveValue(
+      'https://example.com/rewards',
+    )
+
+    await page.reload()
+
+    await expect(linkCount).toHaveText(initialLinkCount)
+    await expect(page.getByText(seededLink.name, { exact: true }).first()).toBeVisible()
   })
 
   test('validates a saved link on both platforms and downloads its QR code', async ({ page }) => {

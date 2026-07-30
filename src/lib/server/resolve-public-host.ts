@@ -2,6 +2,7 @@ import 'server-only'
 
 import type { Domain } from '@/payload-types'
 import { hostnameFromBaseURL, requestHostname } from '@/lib/domain/request-host'
+import type { PublicLinkPathStyle } from '@/lib/domain/runtime-link-config'
 import { getLinksetGoEdition } from './deployment-edition'
 import { relationID } from './tenant-context'
 import { getPayloadClient } from './payload-client'
@@ -15,6 +16,7 @@ export type PublicHostResolution =
       baseURL: string
       hostname: string
       kind: 'domain'
+      pathStyle: PublicLinkPathStyle
       workspaceID: string
     }
   | {
@@ -22,6 +24,15 @@ export type PublicHostResolution =
       baseURL: string
       hostname: string
       kind: 'legacy'
+      pathStyle: PublicLinkPathStyle
+      workspaceID: null
+    }
+  | {
+      ok: true
+      baseURL: string
+      hostname: string
+      kind: 'shared'
+      pathStyle: PublicLinkPathStyle
       workspaceID: null
     }
   | {
@@ -47,6 +58,25 @@ export async function resolvePublicHost(
   }
 
   const legacyHostname = hostnameFromBaseURL(environment.publicLinkBaseURL)
+  const sharedHostname = environment.sharedLinkBaseURL
+    ? hostnameFromBaseURL(environment.sharedLinkBaseURL)
+    : null
+  if (
+    purpose === 'resolver' &&
+    getLinksetGoEdition() === 'cloud' &&
+    environment.sharedLinkBaseURL &&
+    sharedHostname &&
+    requested.hostname === sharedHostname
+  ) {
+    return {
+      ok: true,
+      baseURL: environment.sharedLinkBaseURL,
+      hostname: requested.hostname,
+      kind: 'shared',
+      pathStyle: 'shared-clean',
+      workspaceID: null,
+    }
+  }
   if (legacyHostname && requested.hostname === legacyHostname) {
     if (!isLegacyPublicHostAllowed()) {
       return { ok: false, code: 'UNRECOGNIZED_HOST', httpStatus: 404 }
@@ -56,6 +86,7 @@ export async function resolvePublicHost(
       baseURL: environment.publicLinkBaseURL,
       hostname: requested.hostname,
       kind: 'legacy',
+      pathStyle: 'host-scoped',
       workspaceID: null,
     }
   }
@@ -110,6 +141,7 @@ export async function resolvePublicHost(
     baseURL: `https://${requested.hostname}`,
     hostname: requested.hostname,
     kind: 'domain',
+    pathStyle: 'host-scoped',
     workspaceID,
   }
 }

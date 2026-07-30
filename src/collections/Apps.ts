@@ -1,6 +1,11 @@
 import type { CollectionConfig } from 'payload'
 
-import { appCreateAccess, appManageAccess, appReadAccess } from '@/lib/server/access'
+import {
+  appCreateAccess,
+  appManageAccess,
+  appReadAccess,
+  superAdminFieldAccess,
+} from '@/lib/server/access'
 import {
   validateAllowedHosts,
   validateAppStoreURL,
@@ -18,16 +23,22 @@ import { normalizeAppFallbackHosts } from '@/lib/server/collection-guards'
 import { enforceAppWorkspaceScope } from '@/lib/server/tenant-guards'
 import { enforceWorkspaceAppSlug } from '@/lib/server/app-slug-guard'
 import { enforceAppQuota } from '@/lib/server/quota-enforcement'
+import { enforceCloudAppFallbackOrigins } from '@/lib/server/fallback-origin-policy'
 import {
   enforceActiveAppReadiness,
   enforceAppIdentityPermanence,
+  normalizeOptionalPublicAppKey,
   normalizeAndRequireNativeScheme,
 } from '@/lib/server/app-lifecycle-guards'
-import { enforceCloudAppFallbackOrigins } from '@/lib/server/fallback-origin-policy'
 import {
   enforcePlatformSuspensionFields,
   platformSuspensionFields,
 } from '@/lib/server/platform-suspension'
+import {
+  applyAppFallbackBinding,
+  cleanupDeletedAppFallbackBinding,
+  cleanupReplacedAppFallbackBinding,
+} from '@/lib/server/fallback-binding-hooks'
 
 export const Apps: CollectionConfig = {
   slug: 'apps',
@@ -44,6 +55,10 @@ export const Apps: CollectionConfig = {
   indexes: [
     {
       fields: ['workspace', 'slug'],
+      unique: true,
+    },
+    {
+      fields: ['publicKey'],
       unique: true,
     },
   ],
@@ -74,6 +89,36 @@ export const Apps: CollectionConfig = {
       hooks: {
         beforeValidate: [({ value }) => normalizeSlug(value)],
       },
+    },
+    {
+      name: 'publicKey',
+      type: 'text',
+      index: true,
+      maxLength: 80,
+      validate: validateSlug,
+      admin: {
+        description:
+          'Globally unique key used by clean shared links. Exact aliases are platform-admin controlled; quick setup assigns a tenant-scoped key.',
+        readOnly: true,
+      },
+      access: {
+        create: superAdminFieldAccess,
+        update: superAdminFieldAccess,
+      },
+    },
+    {
+      name: 'routingMode',
+      type: 'select',
+      defaultValue: 'verified-app-links',
+      index: true,
+      access: {
+        create: superAdminFieldAccess,
+        update: superAdminFieldAccess,
+      },
+      options: [
+        { label: 'Scheme handoff', value: 'scheme-handoff' },
+        { label: 'Verified App Links', value: 'verified-app-links' },
+      ],
     },
     {
       name: 'description',
@@ -137,7 +182,6 @@ export const Apps: CollectionConfig = {
     {
       name: 'fallbackUrl',
       type: 'text',
-      required: true,
       validate: validateHttpsURL,
     },
     {
@@ -152,12 +196,16 @@ export const Apps: CollectionConfig = {
     ...platformSuspensionFields,
   ],
   hooks: {
+    afterChange: [cleanupReplacedAppFallbackBinding],
+    afterDelete: [cleanupDeletedAppFallbackBinding],
     beforeValidate: [
       enforcePlatformSuspensionFields,
       normalizeAndRequireNativeScheme,
+      normalizeOptionalPublicAppKey,
       enforceAppIdentityPermanence,
       enforceAppWorkspaceScope,
       enforceActiveAppReadiness,
+      applyAppFallbackBinding,
       normalizeAppFallbackHosts,
       enforceCloudAppFallbackOrigins,
       enforceWorkspaceAppSlug,
