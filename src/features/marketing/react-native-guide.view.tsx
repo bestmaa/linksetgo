@@ -46,7 +46,7 @@ export function ReactNativeGuideView() {
               </div>
               <div>
                 <small>LINKSETGO PUBLISHES</small>
-                <code>https://example.linksetgo.com/l/sample-app/welcome-offer</code>
+                <code>https://go.linksetgo.com/sample-app/welcome-offer</code>
               </div>
             </div>
           </section>
@@ -79,9 +79,10 @@ export function ReactNativeGuideView() {
             <p className="marketing-docs-eyebrow">MOBILE HANDOFF</p>
             <h2>Resolve the campaign slug, then navigate.</h2>
             <p>
-              iOS and Android open the public <code>/l/app/campaign</code> path. Your app calls
-              LinksetGo&apos;s host-scoped public resolver, validates the returned destination and
-              scalar parameters, then passes that app-known route to React Navigation.
+              iOS and Android open the managed shared <code>/app/campaign</code> path. Custom and
+              host-scoped domains retain <code>/l/app/campaign</code>. Your app calls
+              LinksetGo&apos;s public resolver, validates the returned destination and scalar
+              parameters, then passes that app-known route to React Navigation.
             </p>
             <pre>
               <code>

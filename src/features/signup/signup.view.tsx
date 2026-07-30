@@ -33,7 +33,9 @@ export function SignupView(props: SignupViewProps) {
           ) : (
             <>
               <h1>Create your workspace</h1>
-              <p>Start with a secure shared domain. No card required.</p>
+              <p>
+                Sign up free, then paste a mobile URL to get a shareable link. No card required.
+              </p>
               <form className="auth-form signup-form" method="post" onSubmit={props.onSubmit}>
                 <TextField
                   autoComplete="name"
@@ -53,29 +55,6 @@ export function SignupView(props: SignupViewProps) {
                   placeholder="you@example.com"
                   type="email"
                   value={props.email}
-                />
-                <TextField
-                  autoComplete="organization"
-                  error={fieldError(props, 'organizationName')}
-                  id="signup-organization"
-                  label="Organization"
-                  onChange={props.onOrganizationNameChange}
-                  placeholder="Example Workspace"
-                  value={props.organizationName}
-                />
-                <TextField
-                  error={fieldError(props, 'workspaceSlug')}
-                  help={
-                    props.managedLinkRootDomain
-                      ? `${props.workspaceSlug || 'your-workspace'}.${props.managedLinkRootDomain}`
-                      : 'This becomes your LinksetGo Cloud URL.'
-                  }
-                  id="signup-workspace"
-                  label="Workspace URL"
-                  maxLength={63}
-                  onChange={props.onWorkspaceSlugChange}
-                  placeholder="example-workspace"
-                  value={props.workspaceSlug}
                 />
                 <TextField
                   autoComplete="new-password"
@@ -137,8 +116,10 @@ export function SignupView(props: SignupViewProps) {
           <span aria-hidden="true" className="auth-message-symbol">
             ↗
           </span>
-          <h2>Your branded links, ready for every app journey.</h2>
-          <p>One workspace for links, QR codes, App Links, Universal Links, and validation.</p>
+          <h2>Paste an app URL. Share the HTTPS link.</h2>
+          <p>
+            Start simple on LinksetGo&apos;s shared domain. Add stores or a verified fallback later.
+          </p>
         </div>
       </aside>
     </main>

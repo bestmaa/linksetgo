@@ -12,12 +12,5 @@ export const dynamic = 'force-dynamic'
 
 export default function SignupPage() {
   const configuration = getCloudSignupConfiguration()
-  return (
-    <SignupConnector
-      available={configuration.status === 'ready'}
-      managedLinkRootDomain={
-        configuration.status === 'ready' ? configuration.managedLinkRootDomain : null
-      }
-    />
-  )
+  return <SignupConnector available={configuration.status === 'ready'} />
 }

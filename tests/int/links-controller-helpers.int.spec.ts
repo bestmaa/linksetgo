@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   approvedFallbackHosts,
   buildCreateLinkInput,
+  buildPublicLinkUrl,
   fallbackURLForAppError,
   formForAvailableApps,
   linkStatusForApp,
@@ -54,5 +55,29 @@ describe('link controller helpers', () => {
       'approved fallback host',
     )
     expect(fallbackURLForAppError('http://www.example.com', app)).toContain('HTTPS')
+  })
+
+  it('builds clean shared URLs from the permanent public app key', () => {
+    const app = {
+      id: 9,
+      name: 'Example',
+      publicKey: 'example-global',
+      slug: 'example',
+    }
+
+    expect(buildPublicLinkUrl('https://go.example.com', app, 'offer', 'shared-clean')).toBe(
+      'https://go.example.com/example-global/offer',
+    )
+    expect(buildPublicLinkUrl('https://example.links.test', app, 'offer')).toBe(
+      'https://example.links.test/l/example/offer',
+    )
+    expect(
+      buildPublicLinkUrl(
+        'https://go.example.com',
+        { ...app, publicKey: null },
+        'offer',
+        'shared-clean',
+      ),
+    ).toBeNull()
   })
 })

@@ -94,7 +94,7 @@ export function useShellController() {
     isReady: !isCheckingAuth && Boolean(user) && workspace.isReady,
     navigation: items,
     onCloseMobileMenu: () => setIsMobileMenuOpen(false),
-    onCreateLink: () => router.push('/admin/links?create=1'),
+    onCreateLink: () => router.push('/admin/links#quick-link-title'),
     onLogout: async () => {
       await payloadClient.logout().catch(() => undefined)
       router.replace('/admin/login')

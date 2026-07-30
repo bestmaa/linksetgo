@@ -23,11 +23,11 @@ export function FallbackOriginRevocationView(props: {
         </header>
         <div className="modal-body">
           <aside className="domain-release-warning">
-            <strong>Cloud routing will fail closed</strong>
+            <strong>The web fallback will be removed</strong>
             <p>
-              Apps and links that depend on <code>{revocation.hostname}</code> will no longer
-              resolve until their fallback configuration changes. The hostname cannot be re-verified
-              through the tenant console after revocation.
+              Active native links that use <code>{revocation.hostname}</code> will continue to the
+              neutral or store landing, but LinksetGo will omit this web redirect. The hostname
+              cannot be re-verified through the tenant console after revocation.
             </p>
           </aside>
         </div>

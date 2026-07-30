@@ -36,23 +36,23 @@ describe('edition-aware marketing plans', () => {
     const plans = presentPricingPlans(true)
 
     expect(plans.find((plan) => plan.slug === 'free')?.features).toEqual([
-      '1 app',
-      '250 active links',
-      '15,000 monthly resolves',
-      '14-day analytics',
+      '1 app · 1 workspace',
+      '25 saved links · 10 active links',
+      '1,000 monthly tracked resolutions',
+      '7-day analytics',
       'Managed shared domain · 1 member',
     ])
     expect(plans.find((plan) => plan.slug === 'starter')?.features).toEqual([
-      '5 apps',
-      '2,500 active links',
-      '150,000 monthly resolves',
+      '5 apps · 5 workspaces',
+      '2,500 saved links · 2,500 active links',
+      '150,000 monthly tracked resolutions',
       '90-day analytics',
       '1 custom domain · 3 members',
     ])
     expect(plans.find((plan) => plan.slug === 'pro')?.features).toEqual([
-      '20 apps',
-      '10,000 active links',
-      '1,000,000 monthly resolves',
+      '20 apps · 20 workspaces',
+      '10,000 saved links · 10,000 active links',
+      '1,000,000 monthly tracked resolutions',
       '365-day analytics',
       '5 custom domains · 10 members',
     ])

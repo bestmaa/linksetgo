@@ -79,8 +79,7 @@ function parseConfiguration(value: unknown): AppConsoleConfigurationInput | null
     !Array.isArray(fingerprints) ||
     fingerprints.length > 20 ||
     !fingerprints.every((item) => typeof item === 'string' && item.length <= 95) ||
-    !name.trim() ||
-    !fallbackUrl.trim()
+    !name.trim()
   ) {
     return null
   }

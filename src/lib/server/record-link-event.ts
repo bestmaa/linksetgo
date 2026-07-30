@@ -1,29 +1,27 @@
 import 'server-only'
 
-import { createHmac, randomUUID } from 'node:crypto'
-
-import {
-  EVENT_DEDUPE_WINDOW_MS,
-  EVENT_RATE_WINDOW_MS,
-  shouldRecordLinkEvent,
-} from '@/lib/domain/event-policy'
 import type { LinkEvent } from '@/payload-types'
 import { getServerEnvironment } from './env'
+import type { LinkEventAdmissionGrant } from './link-event-rate-limit'
+import { linkEventResourceKey } from './link-event-token'
 import { getPayloadClient } from './payload-client'
-import { canRecordDetailedAnalytics } from './resolution-metering'
+import { privacySafeHash } from './request-privacy'
+import { canRecordDetailedAnalytics, meterResolvedApp } from './resolution-metering'
 
 export type PublicEventType = LinkEvent['eventType']
 export type PublicEventPlatform = LinkEvent['platform']
 
 type RecordEventInput = {
+  admission: LinkEventAdmissionGrant
   appID: number
-  eventType: PublicEventType
   hostname?: string
   linkID: number
   platform: PublicEventPlatform
   referrer?: string
-  sessionID?: string
-  userAgent?: string
+}
+
+type RecordEventDependencies = {
+  now?: () => Date
 }
 
 const limited = (value: string, maximum: number): string => value.slice(0, maximum)
@@ -37,11 +35,6 @@ const referrerOrigin = (referrer: string | undefined): string | undefined => {
   }
 }
 
-const hashSession = (sessionID: string): string => {
-  const salt = getServerEnvironment().eventHashSecret
-  return createHmac('sha256', salt).update(sessionID).digest('hex')
-}
-
 export const inferPlatform = (userAgent: string | null): PublicEventPlatform => {
   if (!userAgent) return 'unknown'
   if (/android/i.test(userAgent)) return 'android'
@@ -49,48 +42,27 @@ export const inferPlatform = (userAgent: string | null): PublicEventPlatform => 
   return 'web'
 }
 
-export const recordLinkEvent = async ({
-  appID,
-  eventType,
-  hostname,
-  linkID,
-  platform,
-  referrer,
-  sessionID,
-  userAgent,
-}: RecordEventInput): Promise<boolean> => {
+export const recordLinkEvent = async (
+  { admission, appID, hostname, linkID, platform, referrer }: RecordEventInput,
+  dependencies: RecordEventDependencies = {},
+): Promise<boolean> => {
+  const environment = getServerEnvironment()
+  if (linkEventResourceKey(appID, linkID, environment.eventHashSecret) !== admission.resourceKey) {
+    return false
+  }
   const payload = await getPayloadClient()
-  if (!(await canRecordDetailedAnalytics(payload, appID))) return false
-  const safeReferrer = referrerOrigin(referrer)
-  const sessionSource =
-    sessionID ||
-    (eventType === 'resolved'
-      ? `resolution:${randomUUID()}`
-      : `${platform}:${userAgent ?? ''}:${safeReferrer ?? ''}`)
-  const sessionHash = hashSession(limited(sessionSource, 512))
+  const now = dependencies.now?.() ?? new Date()
+  const analyticsAllowed =
+    admission.eventType === 'resolved'
+      ? (await meterResolvedApp(payload, appID, now)).allowDetailedAnalytics
+      : await canRecordDetailedAnalytics(payload, appID, now)
+  if (!analyticsAllowed) return false
 
-  const duplicateSince = new Date(Date.now() - EVENT_DEDUPE_WINDOW_MS).toISOString()
-  const duplicate = await payload.count({
-    collection: 'link-events',
-    overrideAccess: true,
-    where: {
-      and: [
-        { link: { equals: linkID } },
-        { eventType: { equals: eventType } },
-        { sessionHash: { equals: sessionHash } },
-        { occurredAt: { greater_than: duplicateSince } },
-      ],
-    },
-  })
-  const rateWindow = new Date(Date.now() - EVENT_RATE_WINDOW_MS).toISOString()
-  const recent = await payload.count({
-    collection: 'link-events',
-    overrideAccess: true,
-    where: {
-      and: [{ sessionHash: { equals: sessionHash } }, { occurredAt: { greater_than: rateWindow } }],
-    },
-  })
-  if (!shouldRecordLinkEvent(duplicate.totalDocs, recent.totalDocs)) return false
+  const safeReferrer = referrerOrigin(referrer)
+  const sessionHash = privacySafeHash(
+    `analytics-session:${admission.clientKey}`,
+    environment.eventHashSecret,
+  )
 
   await payload.create({
     collection: 'link-events',
@@ -98,11 +70,11 @@ export const recordLinkEvent = async ({
     data: {
       app: appID,
       link: linkID,
-      eventType,
+      eventType: admission.eventType,
       ...(hostname ? { hostname: limited(hostname, 253) } : {}),
       platform,
       sessionHash,
-      occurredAt: new Date().toISOString(),
+      occurredAt: now.toISOString(),
       ...(safeReferrer ? { referrer: limited(safeReferrer, 2048) } : {}),
     },
   })

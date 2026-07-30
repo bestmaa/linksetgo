@@ -2,6 +2,10 @@ import 'dotenv/config'
 
 import { getPayload, type Payload } from 'payload'
 
+import {
+  ACCOUNT_PASSWORD_REQUIREMENTS,
+  isStrongAccountPassword,
+} from '../src/lib/domain/account-password'
 import config from '../src/payload.config'
 
 const SAMPLE_APP_SLUG = 'sample-app'
@@ -135,12 +139,20 @@ const seedSampleApp = async (payload: Payload, workspaceID: number): Promise<num
   const existingApp = existing.docs[0]
   if (existingApp) {
     const missingDefaults: {
+      allowedFallbackHosts?: string[]
       appStoreUrl?: string
+      fallbackUrl?: string
       nativeScheme?: string
       playStoreUrl?: string
       workspace?: number
     } = {}
+    if (!existingApp.allowedFallbackHosts?.includes('example.com')) {
+      missingDefaults.allowedFallbackHosts = [
+        ...new Set([...(existingApp.allowedFallbackHosts ?? []), 'example.com']),
+      ]
+    }
     if (!existingApp.appStoreUrl) missingDefaults.appStoreUrl = SAMPLE_APP_STORE_URL
+    if (!existingApp.fallbackUrl) missingDefaults.fallbackUrl = 'https://example.com/'
     if (!existingApp.nativeScheme) missingDefaults.nativeScheme = 'sampleapp'
     if (!existingApp.playStoreUrl) missingDefaults.playStoreUrl = SAMPLE_PLAY_STORE_URL
     if (!existingApp.workspace) missingDefaults.workspace = workspaceID
@@ -194,6 +206,15 @@ const seedSampleLink = async (payload: Payload, appID: number): Promise<void> =>
     },
   })
   if (existing.docs.length > 0) {
+    const existingLink = existing.docs[0]
+    if (existingLink && !existingLink.fallbackUrl) {
+      await payload.update({
+        id: existingLink.id,
+        collection: 'deep-links',
+        overrideAccess: true,
+        data: { fallbackUrl: 'https://example.com/' },
+      })
+    }
     console.info(`Sample deep link already exists: ${SAMPLE_LINK_SLUG}`)
     return
   }
@@ -221,7 +242,9 @@ const main = async (): Promise<void> => {
 
   const email = requiredEnvironment('SEED_ADMIN_EMAIL').toLowerCase()
   const password = requiredEnvironment('SEED_ADMIN_PASSWORD')
-  if (password.length < 12) throw new Error('SEED_ADMIN_PASSWORD must be at least 12 characters.')
+  if (!isStrongAccountPassword(password)) {
+    throw new Error(`SEED_ADMIN_PASSWORD is invalid. ${ACCOUNT_PASSWORD_REQUIREMENTS}`)
+  }
 
   const payload = await getPayload({ config: await config })
   try {

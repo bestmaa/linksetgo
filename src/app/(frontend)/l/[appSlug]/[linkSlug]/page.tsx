@@ -8,6 +8,7 @@ import { getMarketingSiteURL } from '@/lib/server/site-url'
 
 export const metadata: Metadata = {
   description: 'Continue to the right destination in the mobile app or on the web.',
+  robots: { follow: false, index: false, noarchive: true },
   title: 'Open link',
 }
 
@@ -30,6 +31,8 @@ export default async function FallbackPage({
       appSlug={appSlug}
       linkSlug={linkSlug}
       marketingURL={getMarketingSiteURL().origin}
+      pathStyle={host.pathStyle}
+      publicBaseURL={host.baseURL}
     />
   )
 }

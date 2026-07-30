@@ -23,9 +23,6 @@ const main = async (): Promise<void> => {
     throw new Error('Pending Cloud signup pruning is available only in LinksetGo Cloud.')
   }
   const managedLinkRootDomain = normalizeHostname(process.env.MANAGED_LINK_ROOT_DOMAIN)
-  if (!managedLinkRootDomain) {
-    throw new Error('MANAGED_LINK_ROOT_DOMAIN must be one normalized hostname.')
-  }
 
   const payload = await getPayload({ config: await config })
   try {

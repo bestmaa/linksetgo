@@ -1,4 +1,5 @@
 import type { AppDTO } from '@/lib/client/payload-types'
+import type { PublicLinkPathStyle } from '@/lib/domain/runtime-link-config'
 
 export type AssociationValidation = {
   copyLabel?: string
@@ -18,7 +19,10 @@ function stringArray(value: unknown) {
     : []
 }
 
-function appleConfiguration(app: AppDTO): AssociationValidation | null {
+function appleConfiguration(
+  app: AppDTO,
+  pathStyle: PublicLinkPathStyle,
+): AssociationValidation | null {
   if (!app.iosTeamId || !app.iosBundleId) {
     return {
       detail: `${app.name} is missing its Apple Team ID or Bundle ID.`,
@@ -26,16 +30,29 @@ function appleConfiguration(app: AppDTO): AssociationValidation | null {
       remediation: 'Open Apps, edit this app and add both values from the Apple developer team.',
     }
   }
+  if (pathStyle === 'shared-clean' && !app.publicKey) {
+    return {
+      detail: `${app.name} has no shared public app key.`,
+      passed: false,
+      remediation: 'Create the link again after the app receives a shared public key.',
+    }
+  }
   return null
 }
 
-function validateAppleDocument(value: unknown, app: AppDTO): AssociationValidation {
-  const configurationError = appleConfiguration(app)
+function validateAppleDocument(
+  value: unknown,
+  app: AppDTO,
+  pathStyle: PublicLinkPathStyle,
+): AssociationValidation {
+  const configurationError = appleConfiguration(app, pathStyle)
   if (configurationError) return configurationError
   const applinks = isRecord(value) && isRecord(value.applinks) ? value.applinks : null
   const details = applinks && Array.isArray(applinks.details) ? applinks.details : []
   const expectedAppID = `${app.iosTeamId}.${app.iosBundleId}`
-  const expectedPath = `/l/${app.slug}/*`
+  const appKey = pathStyle === 'shared-clean' ? app.publicKey : app.slug
+  if (!appKey) return configurationError ?? { detail: 'App key unavailable.', passed: false }
+  const expectedPath = pathStyle === 'shared-clean' ? `/${appKey}/*` : `/l/${appKey}/*`
   const expectedEntry = JSON.stringify(
     {
       appID: expectedAppID,
@@ -138,12 +155,19 @@ export async function validateAssociation(
   origin: string,
   platform: 'ios' | 'android',
   app: AppDTO | null,
+  pathStyle: PublicLinkPathStyle = 'host-scoped',
 ): Promise<AssociationValidation> {
   if (!app) {
     return {
       detail: 'The selected app configuration could not be loaded.',
       passed: false,
       remediation: 'Confirm your account can access the app, then reload Test Lab.',
+    }
+  }
+  if (app.routingMode === 'scheme-handoff') {
+    return {
+      detail: `${platform === 'ios' ? 'Apple' : 'Android'} association is optional for scheme handoff.`,
+      passed: true,
     }
   }
   const path =
@@ -163,7 +187,7 @@ export async function validateAssociation(
     }
     const document: unknown = await response.json()
     return platform === 'ios'
-      ? validateAppleDocument(document, app)
+      ? validateAppleDocument(document, app, pathStyle)
       : validateAndroidDocument(document, app)
   } catch {
     return {

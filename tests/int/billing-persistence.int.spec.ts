@@ -1,10 +1,11 @@
 import { REST_POST } from '@payloadcms/next/routes'
 import { TextEncoder as NodeTextEncoder } from 'node:util'
+import { InMemoryRateLimitProvider } from '@/lib/application/rate-limit-provider'
 import { buildFallbackOriginInstructions } from '@/lib/domain/fallback-origin'
 import config from '@/payload.config'
 import type { App, Organization, Subscription, User, Workspace } from '@/payload-types'
 import type { BillingProvider } from '@/lib/application/billing-provider'
-import { planCatalog } from '@/lib/domain/plan-catalog'
+import { PLAN_CATALOG_VERSION, planCatalog } from '@/lib/domain/plan-catalog'
 import type { SubscriptionEvent } from '@/lib/domain/subscription-state'
 import { processBillingWebhook } from '@/lib/server/billing-webhook'
 import {
@@ -24,6 +25,8 @@ import {
   meterResolvedApp,
   monthlyUsagePeriodStart,
 } from '@/lib/server/resolution-metering'
+import { admitResolvedLinkEvent } from '@/lib/server/link-event-rate-limit'
+import { linkEventResourceKey } from '@/lib/server/link-event-token'
 import { recordLinkEvent } from '@/lib/server/record-link-event'
 import { resolvePublicLink } from '@/lib/server/resolve-public-link'
 import { ensureFreeSubscriptionForOrganization } from '@/lib/server/subscription-bootstrap'
@@ -270,7 +273,7 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
         : await payload.create({
             collection: 'subscriptions',
             data: {
-              catalogVersion: 1,
+              catalogVersion: PLAN_CATALOG_VERSION,
               lastEventAt: '2026-01-01T00:00:00.000Z',
               lastProviderEventID: `initialized:${slug}`,
               organization: organization.id,
@@ -321,7 +324,15 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
 
   it('resolves Community, Free, Starter, and Pro from server-owned state', async () => {
     await expect(resolveOrganizationPlan(payload, free.organization.id)).resolves.toMatchObject({
-      plan: { key: 'free', limits: { apps: 1, monthlyResolutions: 15_000 } },
+      plan: {
+        key: 'free',
+        limits: {
+          apps: 1,
+          monthlyResolutions: 1_000,
+          savedLinks: 25,
+          workspaces: 1,
+        },
+      },
       source: 'subscription',
     })
     await expect(resolveOrganizationPlan(payload, starter.organization.id)).resolves.toMatchObject({
@@ -336,6 +347,21 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
       plan: { key: 'community', limits: { apps: 'unlimited' } },
       source: 'community',
     })
+  })
+
+  it('blocks Free workspace creation after the first saved workspace', async () => {
+    await expect(
+      payload.create({
+        collection: 'workspaces',
+        data: {
+          name: 'Blocked second Free workspace',
+          organization: free.organization.id,
+          slug: 'billing-free-second-workspace',
+          status: 'active',
+        },
+        overrideAccess: true,
+      }),
+    ).rejects.toMatchObject({ status: 402 })
   })
 
   it('fails closed when the HTTP webhook is disabled and rejects oversized raw bodies', async () => {
@@ -550,6 +576,47 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
         overrideAccess: true,
       }),
     ).resolves.toBeTruthy()
+
+    const existingSavedLinks = planCatalog.free.limits.activeLinks + 1
+    for (
+      let index = existingSavedLinks;
+      index < planCatalog.free.limits.savedLinks - 1;
+      index += 1
+    ) {
+      await payload.create({
+        collection: 'deep-links',
+        data: {
+          app: freeApp.id,
+          destinationPath: `/saved-quota/${index}`,
+          name: `Free saved link ${index}`,
+          slug: `billing-free-saved-link-${index}`,
+          status: 'draft',
+        },
+        overrideAccess: true,
+      })
+    }
+    const savedLinkRace = await Promise.all(
+      ['a', 'b'].map(async (suffix) => {
+        try {
+          await payload.create({
+            collection: 'deep-links',
+            data: {
+              app: freeApp.id,
+              destinationPath: `/saved-quota/race-${suffix}`,
+              name: `Racing saved Free link ${suffix}`,
+              slug: `billing-free-saved-link-race-${suffix}`,
+              status: 'draft',
+            },
+            overrideAccess: true,
+          })
+          return 201
+        } catch (error: unknown) {
+          expect(error).toMatchObject({ status: 402 })
+          return 402
+        }
+      }),
+    )
+    expect(savedLinkRace.sort()).toEqual([201, 402])
 
     const starterApp = await payload.create({
       collection: 'apps',
@@ -854,6 +921,8 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
     expect(resolution.access).toMatchObject({ canCreate: false, canResolve: true })
 
     const now = new Date('2026-07-27T10:00:00.000Z')
+    const eventHashSecret = process.env.EVENT_HASH_SECRET
+    if (!eventHashSecret) throw new Error('EVENT_HASH_SECRET is required for event tests.')
     await Promise.all([
       meterResolvedApp(payload, freeApp.id, now),
       meterResolvedApp(payload, freeApp.id, now),
@@ -891,32 +960,44 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
       overrideAccess: true,
       where: { link: { equals: resolverLink.id } },
     })
-    await expect(
-      Promise.all([
-        recordLinkEvent({
-          appID: freeApp.id,
-          eventType: 'resolved',
-          linkID: resolverLink.id,
-          platform: 'web',
-          referrer: 'https://same-referrer.example/path',
-          userAgent: 'Same browser agent',
-        }),
-        recordLinkEvent({
-          appID: freeApp.id,
-          eventType: 'resolved',
-          linkID: resolverLink.id,
-          platform: 'web',
-          referrer: 'https://same-referrer.example/path',
-          userAgent: 'Same browser agent',
-        }),
-      ]),
-    ).resolves.toEqual([true, true])
+    const resolverProvider = new InMemoryRateLimitProvider(() => now.getTime())
+    const resolverAdmissions = await Promise.all([
+      admitResolvedLinkEvent({
+        clientKey: 'a'.repeat(64),
+        eventHashSecret,
+        provider: resolverProvider,
+        resourceKey: linkEventResourceKey(freeApp.id, resolverLink.id, eventHashSecret),
+      }),
+      admitResolvedLinkEvent({
+        clientKey: 'a'.repeat(64),
+        eventHashSecret,
+        provider: resolverProvider,
+        resourceKey: linkEventResourceKey(freeApp.id, resolverLink.id, eventHashSecret),
+      }),
+    ])
+    const resolverRecordings = await Promise.all(
+      resolverAdmissions.map((admission) =>
+        admission.allowed
+          ? recordLinkEvent(
+              {
+                admission: admission.grant,
+                appID: freeApp.id,
+                linkID: resolverLink.id,
+                platform: 'web',
+                referrer: 'https://same-referrer.example/path',
+              },
+              { now: () => now },
+            )
+          : false,
+      ),
+    )
+    expect(resolverRecordings.filter(Boolean)).toHaveLength(1)
     const resolverEventsAfter = await payload.count({
       collection: 'link-events',
       overrideAccess: true,
       where: { link: { equals: resolverLink.id } },
     })
-    expect(resolverEventsAfter.totalDocs).toBe(resolverEventsBefore.totalDocs + 2)
+    expect(resolverEventsAfter.totalDocs).toBe(resolverEventsBefore.totalDocs + 1)
 
     const freeResolutionLimit = planCatalog.free.limits.monthlyResolutions
     await payload.update({
@@ -924,12 +1005,6 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
       id: usage.docs[0]!.id,
       data: { count: freeResolutionLimit - 1 },
       overrideAccess: true,
-    })
-    const exhaustion = await meterResolvedApp(payload, freeApp.id, now)
-    expect(exhaustion).toMatchObject({
-      allowDetailedAnalytics: true,
-      count: freeResolutionLimit,
-      limit: freeResolutionLimit,
     })
     const boundaryLinks = await payload.find({
       collection: 'deep-links',
@@ -948,14 +1023,23 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
       overrideAccess: true,
       where: { link: { equals: boundaryLink.id } },
     })
+    const boundaryAdmission = await admitResolvedLinkEvent({
+      clientKey: 'b'.repeat(64),
+      eventHashSecret,
+      provider: resolverProvider,
+      resourceKey: linkEventResourceKey(freeApp.id, boundaryLink.id, eventHashSecret),
+    })
+    if (!boundaryAdmission.allowed) throw new Error('Expected a boundary event admission.')
     await expect(
-      recordLinkEvent({
-        appID: freeApp.id,
-        eventType: 'resolved',
-        linkID: boundaryLink.id,
-        platform: 'web',
-        sessionID: 'billing-limit-session',
-      }),
+      recordLinkEvent(
+        {
+          admission: boundaryAdmission.grant,
+          appID: freeApp.id,
+          linkID: boundaryLink.id,
+          platform: 'web',
+        },
+        { now: () => now },
+      ),
     ).resolves.toBe(true)
     const boundaryEventsAfter = await payload.count({
       collection: 'link-events',
@@ -963,13 +1047,27 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
       where: { link: { equals: boundaryLink.id } },
     })
     expect(boundaryEventsAfter.totalDocs).toBe(boundaryEventsBefore.totalDocs + 1)
+    const atLimit = await payload.findByID({
+      collection: 'usage-counters',
+      id: usage.docs[0]!.id,
+      depth: 0,
+      overrideAccess: true,
+    })
+    expect(atLimit.count).toBe(freeResolutionLimit)
     const overage = await meterResolvedApp(payload, freeApp.id, now)
     expect(overage).toMatchObject({
       allowDetailedAnalytics: false,
       count: freeResolutionLimit + 1,
       limit: freeResolutionLimit,
     })
-    await Promise.all(Array.from({ length: 8 }, () => meterResolvedApp(payload, freeApp.id, now)))
+    const cappedBefore = await payload.findByID({
+      collection: 'usage-counters',
+      id: usage.docs[0]!.id,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const later = new Date(now.getTime() + 60_000)
+    await Promise.all(Array.from({ length: 8 }, () => meterResolvedApp(payload, freeApp.id, later)))
     const capped = await payload.findByID({
       collection: 'usage-counters',
       id: usage.docs[0]!.id,
@@ -977,6 +1075,7 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
       overrideAccess: true,
     })
     expect(capped.count).toBe(freeResolutionLimit + 1)
+    expect(capped.updatedAt).toBe(cappedBefore.updatedAt)
     await expect(canRecordDetailedAnalytics(payload, freeApp.id, now)).resolves.toBe(false)
 
     const links = await payload.find({
@@ -1013,14 +1112,23 @@ describe.sequential('Cloud billing persistence and quota enforcement', () => {
       overrideAccess: true,
       where: { link: { equals: link.id } },
     })
+    const cappedAdmission = await admitResolvedLinkEvent({
+      clientKey: 'c'.repeat(64),
+      eventHashSecret,
+      provider: resolverProvider,
+      resourceKey: linkEventResourceKey(freeApp.id, link.id, eventHashSecret),
+    })
+    if (!cappedAdmission.allowed) throw new Error('Expected a capped event admission.')
     await expect(
-      recordLinkEvent({
-        appID: freeApp.id,
-        eventType: 'resolved',
-        linkID: link.id,
-        platform: 'web',
-        sessionID: 'billing-capped-session',
-      }),
+      recordLinkEvent(
+        {
+          admission: cappedAdmission.grant,
+          appID: freeApp.id,
+          linkID: link.id,
+          platform: 'web',
+        },
+        { now: () => later },
+      ),
     ).resolves.toBe(false)
     const eventsAfter = await payload.count({
       collection: 'link-events',

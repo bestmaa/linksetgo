@@ -6,11 +6,21 @@ const baseURL =
   process.env.NEXT_PUBLIC_APP_URL?.trim() ||
   'http://127.0.0.1:3100'
 const configuredSuite = process.env.E2E_SUITE?.trim()
-const e2eSuite = configuredSuite === 'marketing' ? 'marketing' : 'community'
+const e2eSuite =
+  configuredSuite === 'marketing' || configuredSuite === 'cloud-signup'
+    ? configuredSuite
+    : 'community'
+const cloudSignupSpec = /cloud-signup\.e2e\.spec\.ts/
 const marketingSpec = /marketing\.e2e\.spec\.ts/
+const suiteSelection =
+  e2eSuite === 'marketing'
+    ? { testMatch: marketingSpec }
+    : e2eSuite === 'cloud-signup'
+      ? { testMatch: cloudSignupSpec }
+      : { testIgnore: [cloudSignupSpec, marketingSpec] }
 
 export default defineConfig({
-  ...(e2eSuite === 'marketing' ? { testMatch: marketingSpec } : { testIgnore: marketingSpec }),
+  ...suiteSelection,
   expect: {
     timeout: 10_000,
   },

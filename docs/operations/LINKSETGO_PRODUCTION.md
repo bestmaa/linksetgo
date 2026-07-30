@@ -13,6 +13,7 @@ hostname.
 | `linksetgo.com`             | Public product website    | Landing page, pricing, documentation, legal and security pages               |
 | `www.linksetgo.com`         | Optional alias            | Permanent redirect to `https://linksetgo.com` at the edge                    |
 | `app.linksetgo.com`         | Authenticated application | Signup, login, dashboard, Payload APIs and operator CMS                      |
+| `go.linksetgo.com`          | Shared Free links         | `/{publicAppKey}/{linkSlug}` and the bounded public resolver APIs only       |
 | `{workspace}.linksetgo.com` | Managed workspace links   | `/l/{appKey}/{linkSlug}`, association files and the bounded public APIs only |
 | `links.customer.com`        | Customer custom domain    | The same public-link surface, after exact verification and activation        |
 | `ingress.linksetgo.com`     | Infrastructure target     | CNAME target for verified customer domains; not a product page               |
@@ -46,6 +47,7 @@ EVENT_HASH_SECRET=<A_DIFFERENT_32_CHARACTER_RANDOM_SECRET>
 
 RELAY_EDITION=cloud
 PUBLIC_LINK_BASE_URL=https://app.linksetgo.com
+SHARED_LINK_BASE_URL=https://go.linksetgo.com
 NEXT_PUBLIC_SITE_URL=https://linksetgo.com
 MARKETING_SITE_URL=https://linksetgo.com
 CLOUD_APP_BASE_URL=https://app.linksetgo.com
@@ -57,6 +59,17 @@ TRUST_PROXY_HOST_HEADER=false
 TRUST_PROXY_CLIENT_IP_HEADER=false
 
 CLOUD_SIGNUP_ENABLED=false
+# Choose exactly one complete delivery mode before enabling signup. This
+# production example uses authenticated, mandatory STARTTLS.
+CLOUD_SMTP_HOST=<SMTP_HOSTNAME>
+CLOUD_SMTP_PORT=587
+CLOUD_SMTP_SECURITY=starttls
+CLOUD_SMTP_USERNAME=<SMTP_USERNAME>
+CLOUD_SMTP_PASSWORD=<SMTP_PASSWORD>
+CLOUD_SMTP_FROM_EMAIL=<VERIFIED_FROM_ADDRESS>
+CLOUD_SMTP_FROM_NAME=LinksetGo Cloud
+CLOUD_ACCOUNT_EMAIL_SWEEP_SECRET=<INDEPENDENT_32_CHARACTER_RANDOM_SECRET>
+CLOUD_ACCOUNT_EMAIL_SWEEP_BATCH_SIZE=10
 SOURCE_CODE_URL=https://github.com/bestmaa/linksetgo
 NEXT_PUBLIC_APP_ENV=Production
 NEXT_PUBLIC_DATABASE_LABEL=linksetgo
@@ -67,12 +80,14 @@ CORS, CSRF checks, authenticated mutation checks, checkout return URLs and
 invitation links use the application origin, with `CLOUD_APP_BASE_URL` taking
 priority in Cloud mode. `PUBLIC_LINK_BASE_URL` remains required at runtime and is
 also the Community installation origin; Cloud does not use it as an unscoped
-public resolver.
+public resolver. `SHARED_LINK_BASE_URL` is the exact dedicated origin for Free
+clean links. It must not share a hostname with the application or marketing
+surface.
 
 Keep `CLOUD_SIGNUP_ENABLED=false` until the verification-delivery adapter,
 abuse controls and launch checks in [Cloud signup](./CLOUD_SIGNUP.md) are
-operational. Enabling signup additionally requires its documented webhook URL
-and secret.
+operational. Enabling signup additionally requires exactly one of the
+documented, complete HTTPS-webhook or authenticated-SMTP delivery modes.
 
 Build the `runner` with these public arguments:
 
@@ -83,8 +98,9 @@ NEXT_PUBLIC_DATABASE_LABEL=linksetgo
 ```
 
 Do not put `DATABASE_URL`, `PAYLOAD_SECRET`, `EVENT_HASH_SECRET`, webhook
-secrets, database passwords, certificate private keys, or provider tokens in
-build arguments. Public build arguments are embedded in browser-visible output.
+secrets, SMTP credentials, database passwords, certificate private keys, or
+provider tokens in build arguments. Public build arguments are embedded in
+browser-visible output.
 
 The one-shot `migrator` needs `DATABASE_URL`, `PAYLOAD_SECRET`,
 `EVENT_HASH_SECRET`, and `PUBLIC_LINK_BASE_URL`. Copying the non-secret edition
@@ -100,11 +116,12 @@ Create DNS records that send the managed service hosts to the trusted ingress:
 | ----------------------- | -------------- | --------------------- | -------------------------------------------------- |
 | `linksetgo.com`         | `A` or `CNAME` | Managed ingress       | Proxied                                            |
 | `app.linksetgo.com`     | `A` or `CNAME` | Managed ingress       | Proxied                                            |
+| `go.linksetgo.com`      | `A` or `CNAME` | Managed ingress       | Proxied                                            |
 | `*.linksetgo.com`       | `A` or `CNAME` | Managed ingress       | Proxied                                            |
 | `www.linksetgo.com`     | `CNAME`        | `linksetgo.com`       | Proxied, with an apex redirect rule                |
 | `ingress.linksetgo.com` | `A` or `CNAME` | Custom-domain ingress | According to the selected custom-hostname provider |
 
-An explicit `app` record is recommended even when the wildcard would resolve it.
+Explicit `app` and `go` records are recommended even when the wildcard would resolve them.
 The wildcard is one label deep: it covers `example.linksetgo.com`, not
 `one.two.linksetgo.com`.
 
@@ -125,22 +142,24 @@ browsers. Do not expose that origin directly as a browser endpoint.
 
 ## Dokploy and Traefik routers
 
-Create three managed-service routers to the same `LinksetGo Web`/LinksetGo `runner`:
+Create four managed-service routers to the same `LinksetGo Web`/LinksetGo `runner`:
 
 | Router          | Host rule                                | Path | Internal path | Container port |
 | --------------- | ---------------------------------------- | ---- | ------------- | -------------: |
 | Marketing       | Exact `linksetgo.com`                    | `/`  | `/`           |         `3000` |
 | Application     | Exact `app.linksetgo.com`                | `/`  | `/`           |         `3000` |
+| Shared links    | Exact `go.linksetgo.com`                 | `/`  | `/`           |         `3000` |
 | Workspace links | One-label wildcard under `linksetgo.com` | `/`  | `/`           |         `3000` |
 
 For every router, leave path stripping off. The exact apex and application
-routers should have higher priority than the wildcard router. DNS alone is not a
-Traefik route: after adding `*.linksetgo.com` in DNS, verify that Dokploy emitted
-a wildcard/`HostRegexp` router. If the installed Dokploy UI accepts only exact
-hosts, add the equivalent Traefik rule through Dokploy's supported advanced
-configuration instead of creating one router manually per workspace.
+routers and the exact shared-link router should have higher priority than the
+wildcard router. DNS alone is not a Traefik route: after adding
+`*.linksetgo.com` in DNS, verify that Dokploy emitted a wildcard/`HostRegexp`
+router. If the installed Dokploy UI accepts only exact hosts, add the equivalent
+Traefik rule through Dokploy's supported advanced configuration instead of
+creating one router manually per workspace.
 
-All three routers preserve the original `Host` header. Keep
+All four routers preserve the original `Host` header. Keep
 `TRUST_PROXY_HOST_HEADER=false` in this topology. Set it to `true` only if a
 separate trusted ingress blocks direct origin access, removes every
 client-supplied `X-Forwarded-Host`, and writes exactly one normalized value.
@@ -196,7 +215,7 @@ Use the same immutable source revision for `migrator` and `runner`:
    Dokploy network.
 2. Add server-only runtime secrets to both services. Add public build arguments
    only to the `runner`.
-3. Configure the Cloudflare records, origin certificate and the three Dokploy
+3. Configure the Cloudflare records, origin certificate and the four Dokploy
    routers. Keep traffic disabled or return maintenance responses until
    readiness succeeds.
 4. Build and deploy the Docker target `migrator`. It runs
@@ -207,10 +226,13 @@ Use the same immutable source revision for `migrator` and `runner`:
 6. Build and deploy the Docker target `runner`. It runs `node server.js` and
    remains active.
 7. Check `GET https://app.linksetgo.com/api/health/ready`; require HTTP `200`
-   before enabling traffic.
-8. Create the first private operator account, verify app login, then test one
-   active workspace link and both association files from their real workspace
-   hostname.
+   before enabling traffic. This verifies the process and database only.
+8. Create the first private operator account and a disposable active quick link.
+   Verify its clean page and resolver response through
+   `https://go.linksetgo.com/{publicAppKey}/{linkSlug}`, and verify
+   `https://go.linksetgo.com/admin/login` returns `404`.
+9. Test one active paid workspace link and both association files from its real
+   workspace hostname.
 
 Keep migrator autodeploy disabled unless the delivery pipeline explicitly
 serializes backup, migration and application rollout. Two independent services

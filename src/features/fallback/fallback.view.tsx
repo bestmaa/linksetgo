@@ -34,13 +34,18 @@ export function FallbackView(props: FallbackViewProps) {
               href={store.href}
               key={store.href}
               onClick={store.onClick}
+              rel="noreferrer noopener"
             >
               {store.label} <Icon name="external" />
             </a>
           ))}
           {props.fallbackHref ? (
-            <a className="button button-secondary" href={props.fallbackHref}>
-              Continue on the web
+            <a
+              className="button button-secondary"
+              href={props.fallbackHref}
+              rel="nofollow noreferrer noopener"
+            >
+              Continue to {props.fallbackLabel ?? 'the verified website'}
             </a>
           ) : null}
           <Button onClick={props.onCopy} variant="quiet">

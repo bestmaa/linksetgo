@@ -1,5 +1,6 @@
 import { errorMessage, payloadClient } from '@/lib/client/payload-client'
 import type { AppDTO, PublicLinkResponse } from '@/lib/client/payload-types'
+import type { PublicLinkPathStyle } from '@/lib/domain/runtime-link-config'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -23,6 +24,7 @@ function isPublicLinkResponse(value: unknown): value is PublicLinkResponse {
   if (!isRecord(value) || !isRecord(value.app) || !isRecord(value.link)) return false
   return (
     value.status === 'active' &&
+    typeof value.eventToken === 'string' &&
     typeof value.publicUrl === 'string' &&
     typeof value.app.name === 'string' &&
     typeof value.app.slug === 'string' &&
@@ -78,10 +80,22 @@ export async function checkPublicLink(origin: string, appSlug: string, linkSlug:
   }
 }
 
-export async function loadAppConfiguration(slug: string, workspaceID: string) {
+export async function loadAppConfiguration(
+  appKey: string,
+  workspaceID: string,
+  pathStyle: PublicLinkPathStyle = 'host-scoped',
+) {
   try {
+    if (pathStyle === 'shared-clean') {
+      const apps = await payloadClient.listApps({ limit: 100, workspaceId: workspaceID })
+      const app = apps.docs.find((candidate) => candidate.publicKey === appKey) ?? null
+      return {
+        data: app,
+        error: app ? null : 'No accessible app matches this shared public key.',
+      } satisfies { data: AppDTO | null; error: string | null }
+    }
     return {
-      data: await payloadClient.getAppBySlug(slug, workspaceID),
+      data: await payloadClient.getAppBySlug(appKey, workspaceID),
       error: null,
     } satisfies { data: AppDTO | null; error: string | null }
   } catch (requestError) {

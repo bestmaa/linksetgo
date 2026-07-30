@@ -12,7 +12,10 @@ test.describe('workspace app management', () => {
     page,
   }) => {
     await page.goto('/admin/apps')
-    const appCard = page.locator('article').filter({ hasText: seededApp.name })
+    const appCard = page
+      .locator('article')
+      .filter({ has: page.getByText(seededApp.slug, { exact: true }) })
+      .first()
     await appCard.getByRole('link').click()
 
     await expect(page).toHaveURL(/\/admin\/apps\/[^/]+$/)

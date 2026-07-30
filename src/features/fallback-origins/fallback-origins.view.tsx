@@ -17,7 +17,8 @@ export function FallbackOriginsView(props: FallbackOriginsViewProps) {
           <h1 className="page-title">Fallback origins</h1>
           <p className="page-copy">
             Prove which HTTPS fallback hostnames are controlled by{' '}
-            {props.workspaceName ?? 'the selected workspace'}.
+            {props.workspaceName ?? 'the selected workspace'}. DNS ownership and exact-URL safety
+            scans must both pass before Cloud redirects.
           </p>
         </div>
         {props.required ? (

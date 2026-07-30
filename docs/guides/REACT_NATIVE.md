@@ -156,22 +156,32 @@ After the app validates the response and successfully hands the known screen to
 navigation, it can send a best-effort acknowledgement to the same LinksetGo origin:
 
 ```ts
-void fetch(new URL('/api/public/link-events', url.origin), {
-  method: 'POST',
-  headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({
-    appSlug: match[1],
-    linkSlug: match[2],
-    eventType: 'app-opened',
-  }),
-}).catch(() => {
-  // Analytics must never block app navigation.
-})
+async function acknowledgeHandledRoute(
+  url: URL,
+  eventToken: string,
+  appSlug: string,
+  linkSlug: string,
+): Promise<void> {
+  await fetch(new URL('/api/public/link-events', url.origin), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      appSlug,
+      eventToken,
+      linkSlug,
+      eventType: 'app-opened',
+    }),
+  }).catch(() => {
+    // Analytics must never block app navigation.
+  })
+}
 ```
 
-Do not send the acknowledgement before validation or retry it in a way that delays
-the user. The event endpoint is intentionally unauthenticated, so counts are
-approximate and not proof that a real person opened the screen.
+Retain the resolver response's signed `eventToken` only for this best-effort
+acknowledgement. Do not send the acknowledgement before validation or retry it
+in a way that delays the user. The token expires after 10 minutes and is bound
+to the exact app, link, and hostname. Counts remain approximate and are not
+proof that a real person opened the screen.
 
 ## iOS association
 

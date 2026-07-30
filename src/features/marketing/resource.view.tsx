@@ -51,7 +51,7 @@ const resourceContent = {
       'Deep links sit on a public trust boundary. LinksetGo keeps private configuration authenticated, exposes narrow public projections and refuses arbitrary redirect targets.',
     sections: [
       {
-        body: 'Fallback destinations must match app-owned allowlists. Cloud activation also requires exact hostname ownership verification; revocation fails closed at resolution time.',
+        body: 'Fallback destinations must match app-owned allowlists. Cloud activation also requires exact hostname ownership verification; revocation removes the web fallback without disabling an otherwise active native link.',
         title: 'No open redirects',
       },
       {

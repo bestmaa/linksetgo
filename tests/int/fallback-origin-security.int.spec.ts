@@ -260,7 +260,7 @@ describe.sequential('Cloud fallback-origin ownership', () => {
     expect(JSON.stringify(result.origin.lastEvidence)).not.toContain(expected.value)
   })
 
-  it('blocks forged/unverified hosts, then fails closed immediately after revocation', async () => {
+  it('blocks forged hosts and omits a revoked fallback without killing the native link', async () => {
     await payload!.create({
       collection: 'fallback-origins',
       overrideAccess: true,
@@ -354,9 +354,13 @@ describe.sequential('Cloud fallback-origin ownership', () => {
         workspaceID: String(workspaceID),
       }),
     ).resolves.toMatchObject({
-      ok: false,
-      httpStatus: 410,
-      body: { error: { code: 'FALLBACK_UNAVAILABLE' } },
+      ok: true,
+      httpStatus: 200,
+      body: {
+        app: { fallbackUrl: null },
+        link: { fallbackUrl: null, nativeUrl: 'relayverified://offer' },
+        status: 'active',
+      },
     })
   })
 })

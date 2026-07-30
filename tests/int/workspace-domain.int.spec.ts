@@ -34,6 +34,7 @@ describe('workspace domain contract', () => {
     expect(normalizeWorkspaceSlug('example-app')).toBe('example-app')
     expect(normalizeWorkspaceSlug('API')).toBeNull()
     expect(normalizeWorkspaceSlug('ingress')).toBeNull()
+    expect(normalizeWorkspaceSlug('go')).toBeNull()
     expect(normalizeWorkspaceSlug('linksetgo')).toBeNull()
     expect(normalizeWorkspaceSlug('bad_slug')).toBeNull()
   })

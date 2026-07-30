@@ -32,6 +32,7 @@ describe('public link-event request boundary', () => {
       new Request('https://links.linksetgo.example/api/public/link-events', {
         body: JSON.stringify({
           appSlug: 'app',
+          eventToken: 'not-a-signed-token',
           eventType: 'fallback-viewed',
           extra: true,
           linkSlug: 'offer',
@@ -45,8 +46,18 @@ describe('public link-event request boundary', () => {
 
   it('rejects non-canonical or overlong app and link slugs', async () => {
     const invalidBodies = [
-      { appSlug: 'A-Bad-Slug', eventType: 'fallback-viewed', linkSlug: 'offer' },
-      { appSlug: 'app', eventType: 'fallback-viewed', linkSlug: 'x'.repeat(81) },
+      {
+        appSlug: 'A-Bad-Slug',
+        eventToken: 'not-a-signed-token',
+        eventType: 'fallback-viewed',
+        linkSlug: 'offer',
+      },
+      {
+        appSlug: 'app',
+        eventToken: 'not-a-signed-token',
+        eventType: 'fallback-viewed',
+        linkSlug: 'x'.repeat(81),
+      },
     ]
 
     for (const body of invalidBodies) {
@@ -64,13 +75,14 @@ describe('public link-event request boundary', () => {
     }
   })
 
-  it('accepts the documented mobile app-opened event at the request boundary', async () => {
+  it('requires a server-minted token before caller session data has any authority', async () => {
     const response = await POST(
       new Request('https://links.linksetgo.example/api/public/link-events', {
         body: JSON.stringify({
           appSlug: 'app',
           eventType: 'app-opened',
           linkSlug: 'offer',
+          sessionID: 'attacker-rotated-session',
         }),
         headers: {
           'content-type': 'application/json',
@@ -80,8 +92,9 @@ describe('public link-event request boundary', () => {
       }),
     )
 
+    expect(response.status).toBe(400)
     expect(await response.json()).toMatchObject({
-      error: { code: 'INVALID_HOST' },
+      error: { code: 'INVALID_EVENT' },
     })
   })
 })

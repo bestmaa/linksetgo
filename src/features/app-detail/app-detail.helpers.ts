@@ -92,7 +92,7 @@ export function validateAppDetailForm(
   if (fingerprints.some((value) => !sha256Pattern.test(value))) {
     errors.androidSha256CertFingerprints = 'Use one colon-separated SHA-256 fingerprint per line.'
   }
-  if (!secureURL(form.fallbackUrl.trim())) {
+  if (form.fallbackUrl.trim() && !secureURL(form.fallbackUrl.trim())) {
     errors.fallbackUrl = 'Enter a complete HTTPS fallback URL.'
   }
   if (

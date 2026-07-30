@@ -70,7 +70,7 @@ export function TestLabQrView(props: TestLabQrViewProps) {
       <p className="test-caveat">
         LinksetGo validates the web and association configuration. It cannot prove that the
         installed app opened the intended native screen; confirm that final step on a physical
-        device.
+        device. A real-device test is still required.
       </p>
     </aside>
   )

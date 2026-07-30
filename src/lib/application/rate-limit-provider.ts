@@ -13,6 +13,7 @@ export type RateLimitDecision = {
 
 export interface RateLimitProvider {
   consume(request: RateLimitRequest): Promise<RateLimitDecision>
+  consumePair(first: RateLimitRequest, second: RateLimitRequest): Promise<RateLimitDecision>
 }
 
 type FixedWindow = {
@@ -46,6 +47,45 @@ export class InMemoryRateLimitProvider implements RateLimitProvider {
       remaining: Math.max(0, limit - window.count),
       resetAt: new Date(window.resetAtMs).toISOString(),
     }
+  }
+
+  async consumePair(first: RateLimitRequest, second: RateLimitRequest): Promise<RateLimitDecision> {
+    const nowMs = this.now()
+    const firstWindow = this.readWindow(first, nowMs)
+    const secondWindow = this.readWindow(second, nowMs)
+    const firstLimit = Math.max(1, Math.floor(first.limit))
+    const secondLimit = Math.max(1, Math.floor(second.limit))
+    const blocked = [
+      { limit: firstLimit, window: firstWindow },
+      { limit: secondLimit, window: secondWindow },
+    ].filter(({ limit, window }) => window.count >= limit)
+
+    if (blocked.length > 0) {
+      return {
+        allowed: false,
+        remaining: 0,
+        resetAt: new Date(Math.max(...blocked.map(({ window }) => window.resetAtMs))).toISOString(),
+      }
+    }
+
+    firstWindow.count += 1
+    secondWindow.count += 1
+    this.windows.set(`${first.bucket}:${first.key}`, firstWindow)
+    this.windows.set(`${second.bucket}:${second.key}`, secondWindow)
+    this.pruneExpired(nowMs)
+    return {
+      allowed: true,
+      remaining: Math.min(firstLimit - firstWindow.count, secondLimit - secondWindow.count),
+      resetAt: new Date(Math.max(firstWindow.resetAtMs, secondWindow.resetAtMs)).toISOString(),
+    }
+  }
+
+  private readWindow(request: RateLimitRequest, nowMs: number): FixedWindow {
+    const windowMs = Math.max(1_000, Math.floor(request.windowMs))
+    const current = this.windows.get(`${request.bucket}:${request.key}`)
+    return !current || current.resetAtMs <= nowMs
+      ? { count: 0, resetAtMs: nowMs + windowMs }
+      : current
   }
 
   private pruneExpired(nowMs: number): void {

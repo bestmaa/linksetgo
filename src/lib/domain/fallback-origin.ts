@@ -23,6 +23,13 @@ export type FallbackOriginEvidenceResult =
       message: string
     }
 
+export type FallbackOriginOwnershipFreshness =
+  | { mode: 'fresh' | 'outage-grace'; ok: true }
+  | {
+      ok: false
+      reason: 'expired' | 'invalid-time' | 'missing-expiry' | 'missing-proof' | 'unverified'
+    }
+
 const challengePrefix = 'linksetgo-fallback-verification='
 const transitions: Readonly<Record<FallbackOriginStatus, readonly FallbackOriginStatus[]>> = {
   pending: ['revoked', 'verifying'],
@@ -82,4 +89,35 @@ export function canTransitionFallbackOrigin(
   to: FallbackOriginStatus,
 ): boolean {
   return from === to || transitions[from].includes(to)
+}
+
+const instantAfter = (value: unknown, time: number): boolean =>
+  typeof value === 'string' && Number.isFinite(Date.parse(value)) && Date.parse(value) > time
+
+export function evaluateFallbackOriginOwnershipFreshness(
+  origin: {
+    outageGraceExpiresAt?: null | string
+    status: FallbackOriginStatus
+    verificationExpiresAt?: null | string
+    verifiedAt?: null | string
+  },
+  now: Date = new Date(),
+): FallbackOriginOwnershipFreshness {
+  const nowTime = now.getTime()
+  if (!Number.isFinite(nowTime)) return { ok: false, reason: 'invalid-time' }
+  if (origin.status !== 'verified') return { ok: false, reason: 'unverified' }
+  const verifiedAt =
+    typeof origin.verifiedAt === 'string' && Number.isFinite(Date.parse(origin.verifiedAt))
+      ? Date.parse(origin.verifiedAt)
+      : null
+  if (verifiedAt === null) return { ok: false, reason: 'missing-proof' }
+  if (verifiedAt > nowTime) return { ok: false, reason: 'invalid-time' }
+  if (instantAfter(origin.verificationExpiresAt, nowTime)) return { mode: 'fresh', ok: true }
+  if (instantAfter(origin.outageGraceExpiresAt, nowTime)) {
+    return { mode: 'outage-grace', ok: true }
+  }
+  return {
+    ok: false,
+    reason: origin.verificationExpiresAt ? 'expired' : 'missing-expiry',
+  }
 }

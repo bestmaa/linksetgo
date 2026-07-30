@@ -1,0 +1,43 @@
+name: Fallback URL safety sweep
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fallback-url-safety-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SWEEP_SECRET: ${{ secrets.FALLBACK_URL_SAFETY_SWEEP_SECRET }}
+      SWEEP_URL: ${{ secrets.FALLBACK_URL_SAFETY_SWEEP_URL }}
+    steps:
+      - name: Validate configuration
+        shell: bash
+        run: |
+          test -n "$SWEEP_URL"
+          test -n "$SWEEP_SECRET"
+          case "$SWEEP_URL" in
+            https://*/api/internal/fallback-url-safety/sweep) ;;
+            *) echo "FALLBACK_URL_SAFETY_SWEEP_URL is invalid." >&2; exit 1 ;;
+          esac
+      - name: Renew DNS ownership and process URL safety assessments
+        shell: bash
+        run: |
+          curl \
+            --fail-with-body \
+            --location \
+            --max-redirs 0 \
+            --max-time 240 \
+            --request POST \
+            --header "Authorization: Bearer $SWEEP_SECRET" \
+            --header "Content-Type: application/json" \
+            --url "$SWEEP_URL"

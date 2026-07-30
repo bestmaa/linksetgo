@@ -7,7 +7,7 @@ import {
   enforceAppScope,
 } from '@/lib/server/access'
 import { enforceDeepLinkFallbackHost } from '@/lib/server/collection-guards'
-import { enforceActiveLinkQuota } from '@/lib/server/quota-enforcement'
+import { enforceActiveLinkQuota, enforceSavedLinkQuota } from '@/lib/server/quota-enforcement'
 import { enforceDeepLinkLifecycle } from '@/lib/server/deep-link-lifecycle'
 import {
   enforcePlatformSuspensionFields,
@@ -20,6 +20,11 @@ import {
   validateParameters,
   validateSlug,
 } from './validators'
+import {
+  applyDeepLinkFallbackBinding,
+  cleanupDeletedDeepLinkFallbackBinding,
+  cleanupReplacedDeepLinkFallbackBinding,
+} from '@/lib/server/fallback-binding-hooks'
 
 export const DeepLinks: CollectionConfig = {
   slug: 'deep-links',
@@ -109,11 +114,15 @@ export const DeepLinks: CollectionConfig = {
     ...platformSuspensionFields,
   ],
   hooks: {
+    afterChange: [cleanupReplacedDeepLinkFallbackBinding],
+    afterDelete: [cleanupDeletedDeepLinkFallbackBinding],
     beforeValidate: [
       enforcePlatformSuspensionFields,
       enforceAppScope,
       enforceDeepLinkFallbackHost,
+      applyDeepLinkFallbackBinding,
       enforceDeepLinkLifecycle,
+      enforceSavedLinkQuota,
       enforceActiveLinkQuota,
     ],
   },

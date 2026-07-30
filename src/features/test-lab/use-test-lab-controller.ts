@@ -6,6 +6,7 @@ import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'r
 import { errorMessage } from '@/lib/client/payload-client'
 import { useRuntimeLinkConfig } from '@/features/runtime-config/use-runtime-link-config'
 import { useWorkspaceSelection } from '@/features/workspaces/workspace-context'
+import { buildPublicURL } from '@/lib/domain/public-link'
 
 import { validateAssociation } from './association-validator'
 import {
@@ -27,16 +28,19 @@ export function useTestLabController() {
   const { selectedWorkspaceId } = useWorkspaceSelection()
   const runtimeConfig = useRuntimeLinkConfig(selectedWorkspaceId)
   const configuredOrigin = runtimeConfig.config?.baseUrl ?? null
+  const pathStyle = runtimeConfig.config?.pathStyle ?? 'host-scoped'
   const [urlDraft, setUrlDraft] = useState(searchParams.get('url') ?? '')
-  const url = urlDraft || (configuredOrigin ? `${configuredOrigin}/l/app/example` : '')
+  const url =
+    urlDraft ||
+    (configuredOrigin ? buildPublicURL(configuredOrigin, 'app', 'example', pathStyle) : '')
   const [platform, setPlatform] = useState<TestPlatform>('both')
   const [checks, setChecks] = useState<CheckResult[]>([])
   const [isRunning, setIsRunning] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null)
   const runId = useRef(0)
-  const openUrl = configuredOrigin ? safeLinksetGoUrl(url, configuredOrigin) : null
+  const openUrl = configuredOrigin ? safeLinksetGoUrl(url, configuredOrigin, pathStyle) : null
   const qr = useTestLabQr(openUrl)
-  const savedLinks = useSavedLinkOptions(configuredOrigin, selectedWorkspaceId)
+  const savedLinks = useSavedLinkOptions(configuredOrigin, pathStyle, selectedWorkspaceId)
 
   useEffect(() => {
     if (!copyFeedback) return
@@ -80,7 +84,7 @@ export function useTestLabController() {
 
     let parsed: ReturnType<typeof parseLinksetGoUrl>
     try {
-      parsed = parseLinksetGoUrl(url.trim(), configuredOrigin)
+      parsed = parseLinksetGoUrl(url.trim(), configuredOrigin, pathStyle)
     } catch (parseError) {
       setChecks(
         pendingChecks(platform).map((check, index) =>
@@ -97,11 +101,11 @@ export function useTestLabController() {
 
     const [lookup, appLookup] = await Promise.all([
       checkPublicLink(parsed.origin, parsed.appSlug, parsed.linkSlug),
-      loadAppConfiguration(parsed.appSlug, selectedWorkspaceId),
+      loadAppConfiguration(parsed.appSlug, selectedWorkspaceId, pathStyle),
     ])
     const associationResults = await Promise.all(
       platformsFor(platform).map(async (target) => ({
-        result: await validateAssociation(parsed.origin, target, appLookup.data),
+        result: await validateAssociation(parsed.origin, target, appLookup.data, pathStyle),
         target,
       })),
     )
@@ -227,5 +231,11 @@ export function useTestLabController() {
           ? 'Use the remediation below, publish the change and rerun.'
           : 'Web configuration passed. A real-device test is still required.',
     url,
+    urlPlaceholder:
+      configuredOrigin && runtimeConfig.config
+        ? buildPublicURL(configuredOrigin, 'app', 'link', pathStyle)
+        : pathStyle === 'shared-clean'
+          ? 'https://go.example.com/app/link'
+          : 'https://links.example.com/l/app/link',
   }
 }

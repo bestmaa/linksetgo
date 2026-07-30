@@ -7,6 +7,7 @@ import {
   workspaceReadAccess,
 } from '@/lib/server/access'
 import { enforceWorkspaceOrganizationScope } from '@/lib/server/tenant-guards'
+import { enforceWorkspaceQuota } from '@/lib/server/quota-enforcement'
 import { normalizeSlug, validateSlug } from './validators'
 import {
   enforcePlatformSuspensionFields,
@@ -66,6 +67,10 @@ export const Workspaces: CollectionConfig = {
     ...platformSuspensionFields,
   ],
   hooks: {
-    beforeValidate: [enforcePlatformSuspensionFields, enforceWorkspaceOrganizationScope],
+    beforeValidate: [
+      enforcePlatformSuspensionFields,
+      enforceWorkspaceOrganizationScope,
+      enforceWorkspaceQuota,
+    ],
   },
 }

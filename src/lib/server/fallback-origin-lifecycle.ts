@@ -32,9 +32,11 @@ type FallbackOriginRecord = {
     valueHashes: string[]
   }
   lastVerificationError?: null | string
+  outageGraceExpiresAt?: null | string
   revokedAt?: null | string
   status: FallbackOriginStatus
   verificationToken: string
+  verificationExpiresAt?: null | string
   verifiedAt?: null | string
   workspace: number | string | { id: number | string }
 }
@@ -49,6 +51,14 @@ export type FallbackOriginLifecycleResult =
     }
 
 const lifecycleRequests = new WeakSet<PayloadRequest>()
+export const fallbackOriginDNSFreshnessDefaults = {
+  evidenceMaxAgeMs: 24 * 60 * 60 * 1_000,
+  outageGraceMs: 6 * 60 * 60 * 1_000,
+} as const
+
+const minimumEvidenceMaxAgeMs = 60 * 60 * 1_000
+const maximumEvidenceMaxAgeMs = 7 * 24 * 60 * 60 * 1_000
+const maximumOutageGraceMs = 24 * 60 * 60 * 1_000
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -72,8 +82,10 @@ const isLifecycleFieldMutation = (
     'lastCheckedAt',
     'lastEvidence',
     'lastVerificationError',
+    'outageGraceExpiresAt',
     'revokedAt',
     'status',
+    'verificationExpiresAt',
     'verifiedAt',
   ].some((field) => Object.hasOwn(next, field) && next[field] !== previous[field])
 
@@ -108,7 +120,10 @@ function assertHostnameIsCustomerOwned(hostname: string): void {
 
 async function assertWorkspaceManager(req: PayloadRequest, workspace: unknown): Promise<string> {
   const workspaceID = relationID(workspace)
-  if (!workspaceID || !(await canAccessWorkspace(req, workspaceID, 'manage'))) {
+  if (
+    !workspaceID ||
+    (!lifecycleRequests.has(req) && !(await canAccessWorkspace(req, workspaceID, 'manage')))
+  ) {
     throw new APIError('Select a workspace you are allowed to manage.', 403)
   }
   return workspaceID
@@ -173,7 +188,17 @@ async function loadOrigin(
   req: PayloadRequest,
   id: number | string,
 ): Promise<FallbackOriginRecord> {
-  const origin = asFallbackOrigin(
+  const origin = await loadOriginUnchecked(payload, req, id)
+  await assertWorkspaceManager(req, origin.workspace)
+  return origin
+}
+
+async function loadOriginUnchecked(
+  payload: Payload,
+  req: PayloadRequest,
+  id: number | string,
+): Promise<FallbackOriginRecord> {
+  return asFallbackOrigin(
     await payload.findByID({
       collection: 'fallback-origins',
       id,
@@ -182,8 +207,6 @@ async function loadOrigin(
       req,
     }),
   )
-  await assertWorkspaceManager(req, origin.workspace)
-  return origin
 }
 
 export const enforceFallbackOriginLifecycle: CollectionBeforeValidateHook = async ({
@@ -243,6 +266,7 @@ export const enforceFallbackOriginLifecycle: CollectionBeforeValidateHook = asyn
 
 export async function beginFallbackOriginVerification(input: {
   id: number | string
+  now?: Date
   payload: Payload
   req: PayloadRequest
 }): Promise<FallbackOriginLifecycleResult> {
@@ -255,24 +279,45 @@ export async function beginFallbackOriginVerification(input: {
       origin,
     }
   }
+  const now = input.now ?? new Date()
+  if (!Number.isFinite(now.getTime()))
+    throw new APIError('A valid verification time is required.', 500)
 
   return {
     ok: true,
     origin: await updateOrigin(input.payload, input.req, input.id, {
-      lastCheckedAt: new Date().toISOString(),
+      lastCheckedAt: now.toISOString(),
       lastVerificationError: null,
       status: 'verifying',
     }),
   }
 }
 
-export async function verifyFallbackOriginWithProvider(input: {
-  id: number | string
+function boundedDuration(
+  value: number | undefined,
+  fallback: number,
+  minimum: number,
+  maximum: number,
+): number {
+  const selected = value ?? fallback
+  return Number.isFinite(selected)
+    ? Math.min(maximum, Math.max(minimum, Math.floor(selected)))
+    : fallback
+}
+
+const optionalInstant = (value: unknown): number | null =>
+  typeof value === 'string' && Number.isFinite(Date.parse(value)) ? Date.parse(value) : null
+
+async function completeFallbackOriginVerification(input: {
+  evidenceMaxAgeMs?: number
+  now?: Date
+  origin: FallbackOriginRecord
+  outageGraceMs?: number
   payload: Payload
   provider: DNSOwnershipEvidenceProvider
   req: PayloadRequest
 }): Promise<FallbackOriginLifecycleResult> {
-  const origin = await loadOrigin(input.payload, input.req, input.id)
+  const { origin } = input
   if (origin.status !== 'verifying') {
     return {
       ok: false,
@@ -286,17 +331,48 @@ export async function verifyFallbackOriginWithProvider(input: {
   if (!instructions)
     throw new APIError('Fallback-origin verification instructions are invalid.', 500)
 
+  const now = input.now ?? new Date()
+  if (!Number.isFinite(now.getTime()))
+    throw new APIError('A valid verification time is required.', 500)
+  const checkedAt = now.toISOString()
+  const evidenceMaxAgeMs = boundedDuration(
+    input.evidenceMaxAgeMs,
+    fallbackOriginDNSFreshnessDefaults.evidenceMaxAgeMs,
+    minimumEvidenceMaxAgeMs,
+    maximumEvidenceMaxAgeMs,
+  )
+  const outageGraceMs = boundedDuration(
+    input.outageGraceMs,
+    fallbackOriginDNSFreshnessDefaults.outageGraceMs,
+    0,
+    maximumOutageGraceMs,
+  )
+
   // This is the only provider call: fixed-record TXT lookup, never an arbitrary URL fetch.
   let evidence: ReturnType<typeof boundedEvidence>
   try {
     evidence = boundedEvidence(instructions.name, await input.provider.lookupTXT(instructions.name))
   } catch {
-    const checkedAt = new Date().toISOString()
     const message = 'The trusted DNS verification provider is temporarily unavailable.'
-    const updated = await updateOrigin(input.payload, input.req, input.id, {
+    const proofExpiry = optionalInstant(origin.verificationExpiresAt)
+    const previousGraceExpiry = optionalInstant(origin.outageGraceExpiresAt)
+    const configuredGraceExpiry =
+      proofExpiry === null ? null : proofExpiry + Math.max(0, outageGraceMs)
+    const graceExpiry =
+      configuredGraceExpiry === null
+        ? null
+        : previousGraceExpiry === null
+          ? configuredGraceExpiry
+          : Math.min(previousGraceExpiry, configuredGraceExpiry)
+    const graceActive =
+      optionalInstant(origin.verifiedAt) !== null &&
+      graceExpiry !== null &&
+      now.getTime() < graceExpiry
+    const updated = await updateOrigin(input.payload, input.req, origin.id, {
       lastCheckedAt: checkedAt,
       lastVerificationError: message,
-      status: 'pending',
+      outageGraceExpiresAt: graceActive ? new Date(graceExpiry).toISOString() : null,
+      status: graceActive ? 'verified' : 'pending',
     })
     return {
       ok: false,
@@ -305,7 +381,6 @@ export async function verifyFallbackOriginWithProvider(input: {
       origin: updated,
     }
   }
-  const checkedAt = new Date().toISOString()
   const snapshot = {
     observedAt: evidence.observedAt,
     recordName: evidence.recordName,
@@ -315,11 +390,13 @@ export async function verifyFallbackOriginWithProvider(input: {
     txtValues: evidence.txtValues,
   })
   if (!result.ok) {
-    const updated = await updateOrigin(input.payload, input.req, input.id, {
+    const updated = await updateOrigin(input.payload, input.req, origin.id, {
       lastCheckedAt: checkedAt,
       lastEvidence: snapshot,
       lastVerificationError: result.message,
+      outageGraceExpiresAt: null,
       status: 'pending',
+      verificationExpiresAt: null,
     })
     return {
       ok: false,
@@ -331,15 +408,93 @@ export async function verifyFallbackOriginWithProvider(input: {
 
   return {
     ok: true,
-    origin: await updateOrigin(input.payload, input.req, input.id, {
+    origin: await updateOrigin(input.payload, input.req, origin.id, {
       lastCheckedAt: checkedAt,
       lastEvidence: snapshot,
       lastVerificationError: null,
+      outageGraceExpiresAt: null,
       revokedAt: null,
       status: 'verified',
+      verificationExpiresAt: new Date(now.getTime() + evidenceMaxAgeMs).toISOString(),
       verifiedAt: checkedAt,
     }),
   }
+}
+
+export async function verifyFallbackOriginWithProvider(input: {
+  evidenceMaxAgeMs?: number
+  id: number | string
+  now?: Date
+  outageGraceMs?: number
+  payload: Payload
+  provider: DNSOwnershipEvidenceProvider
+  req: PayloadRequest
+}): Promise<FallbackOriginLifecycleResult> {
+  return completeFallbackOriginVerification({
+    ...input,
+    origin: await loadOrigin(input.payload, input.req, input.id),
+  })
+}
+
+export async function beginFallbackOriginReverification(input: {
+  id: number | string
+  now?: Date
+  payload: Payload
+  req: PayloadRequest
+}): Promise<FallbackOriginLifecycleResult> {
+  const existing = await loadOriginUnchecked(input.payload, input.req, input.id)
+  if (existing.status !== 'verified' && existing.status !== 'verifying') {
+    return {
+      ok: false,
+      code: 'INVALID_STATE',
+      message: 'Scheduled DNS renewal requires a verified or recoverable origin.',
+      origin: existing,
+    }
+  }
+  const now = input.now ?? new Date()
+  if (!Number.isFinite(now.getTime()))
+    throw new APIError('A valid verification time is required.', 500)
+
+  return {
+    ok: true,
+    origin: await updateOrigin(input.payload, input.req, input.id, {
+      lastCheckedAt: now.toISOString(),
+      lastVerificationError: null,
+      status: 'verifying',
+    }),
+  }
+}
+
+export async function reverifyFallbackOriginWithProvider(input: {
+  evidenceMaxAgeMs?: number
+  id: number | string
+  now?: Date
+  outageGraceMs?: number
+  payload: Payload
+  provider: DNSOwnershipEvidenceProvider
+  req: PayloadRequest
+}): Promise<FallbackOriginLifecycleResult> {
+  const existing = await loadOriginUnchecked(input.payload, input.req, input.id)
+  if (existing.status !== 'verified' && existing.status !== 'verifying') {
+    return {
+      ok: false,
+      code: 'INVALID_STATE',
+      message: 'Scheduled DNS renewal requires a verified or recoverable origin.',
+      origin: existing,
+    }
+  }
+  const now = input.now ?? new Date()
+  if (!Number.isFinite(now.getTime()))
+    throw new APIError('A valid verification time is required.', 500)
+  const origin =
+    existing.status === 'verifying'
+      ? existing
+      : await updateOrigin(input.payload, input.req, input.id, {
+          lastCheckedAt: now.toISOString(),
+          lastVerificationError: null,
+          status: 'verifying',
+        })
+  return completeFallbackOriginVerification({ ...input, now, origin })
 }
 
 export async function revokeFallbackOrigin(input: {
@@ -354,8 +509,10 @@ export async function revokeFallbackOrigin(input: {
     ok: true,
     origin: await updateOrigin(input.payload, input.req, input.id, {
       lastVerificationError: null,
+      outageGraceExpiresAt: null,
       revokedAt: new Date().toISOString(),
       status: 'revoked',
+      verificationExpiresAt: null,
     }),
   }
 }

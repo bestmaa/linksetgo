@@ -1,17 +1,20 @@
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
+import type { Payload } from 'payload'
 
 import {
   MAX_ACCOUNT_RECOVERY_BODY_BYTES,
   parseAccountEmailRequest,
 } from '@/lib/domain/account-recovery'
+import { waitForNonEnumeratingAccountResponse } from '@/lib/server/account-response-timing'
 import { readBoundedJSON } from '@/lib/server/bounded-json'
+import { runCloudAccountEmailOutboxSafely } from '@/lib/server/cloud-account-email-sweep'
+import { queueCloudAccountEmailDelivery } from '@/lib/server/cloud-account-email-outbox'
 import { getCloudSignupConfiguration } from '@/lib/server/cloud-signup-config'
 import { resendCloudSignupVerification } from '@/lib/server/cloud-signup-service'
 import {
-  rateLimitCloudVerificationResendEmail,
+  rateLimitCloudEmailDelivery,
   rateLimitCloudVerificationResendRequest,
 } from '@/lib/server/cloud-signup-rate-limit'
-import { createWebhookVerificationSender } from '@/lib/server/cloud-verification-webhook'
 import { getServerEnvironment } from '@/lib/server/env'
 import { getPayloadClient } from '@/lib/server/payload-client'
 
@@ -51,14 +54,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     )
   }
 
-  const environment = getServerEnvironment()
-  const requestLimit = await rateLimitCloudVerificationResendRequest({
-    eventHashSecret: environment.eventHashSecret,
-    request,
-    trustProxy: environment.trustProxyClientIPHeader,
-  })
-  if (!requestLimit.allowed) return limited(requestLimit.resetAt)
-
   const body = await readBoundedJSON(request, MAX_ACCOUNT_RECOVERY_BODY_BYTES)
   if (!body.ok) return json({ status: 'error', error: { code: 'INVALID_REQUEST' } }, body.status)
   const parsed = parseAccountEmailRequest(body.value)
@@ -69,23 +64,44 @@ export async function POST(request: Request): Promise<NextResponse> {
     )
   }
 
-  const emailLimit = await rateLimitCloudVerificationResendEmail({
-    email: parsed.email,
+  const environment = getServerEnvironment()
+  const requestLimit = await rateLimitCloudVerificationResendRequest({
     eventHashSecret: environment.eventHashSecret,
+    request,
+    trustProxy: environment.trustProxyClientIPHeader,
   })
-  if (!emailLimit.allowed) return limited(emailLimit.resetAt)
+  if (!requestLimit.allowed) return limited(requestLimit.resetAt)
 
+  const responseStartedAt = performance.now()
+  let payload: Payload | null = null
   try {
+    payload = await getPayloadClient()
     await resendCloudSignupVerification(parsed.email, {
       appBaseURL: configuration.appBaseURL,
-      payload: await getPayloadClient(),
-      sendVerification: createWebhookVerificationSender({
-        secret: configuration.verificationWebhookSecret,
-        url: configuration.verificationWebhookURL,
-      }),
+      authorizeDelivery: async (email) => {
+        const deliveryLimit = await rateLimitCloudEmailDelivery({
+          email,
+          eventHashSecret: environment.eventHashSecret,
+          flow: 'verification-resend',
+        })
+        return deliveryLimit.allowed
+      },
+      payload,
+      queueVerification: (delivery, req) =>
+        queueCloudAccountEmailDelivery({
+          delivery: { delivery, kind: 'verification' },
+          encryptionSecret: environment.eventHashSecret,
+          payload: req.payload,
+          req,
+        }),
     })
   } catch {
     // Keep delivery and account existence non-enumerating.
   }
+  if (payload) {
+    const queuedPayload = payload
+    after(() => runCloudAccountEmailOutboxSafely(queuedPayload))
+  }
+  await waitForNonEnumeratingAccountResponse(responseStartedAt)
   return accepted()
 }

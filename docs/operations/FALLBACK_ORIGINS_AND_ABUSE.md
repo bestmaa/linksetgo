@@ -11,13 +11,15 @@ collection. A hostname:
 
 - is one exact public DNS hostname, not a URL, wildcard, IP address, loopback
   address, LinksetGo installation hostname, or managed link hostname;
-- belongs permanently to one workspace;
+- is registered independently per workspace, with a distinct verification
+  token even when another workspace uses the same hostname;
 - begins in `pending`;
 - publishes the generated
   `_linksetgo-fallback.<hostname>` TXT challenge;
 - moves through `verifying` to `verified` only after exact TXT evidence; and
-- can be moved to `revoked`, which immediately makes dependent public links
-  unavailable.
+- can be moved to `revoked`, which immediately removes that workspace's
+  fallback destination while otherwise active native links continue to their
+  neutral or store landing.
 
 Verification calls the provider-neutral
 `DNSOwnershipEvidenceProvider.lookupTXT(recordName)` boundary. The caller
@@ -42,8 +44,17 @@ Workspace verification does not modify an app. Each app's
 `allowedFallbackHosts` remains a narrower app-specific allowlist, and app
 activation requires both workspace ownership proof and that app-level policy.
 
-The default provider reuses the trusted domain-provisioning webhook configured
-by `DOMAIN_PROVISIONING_WEBHOOK_URL` and
+Cloud uses Node's server-side TXT resolver by default. It resolves only the
+strictly validated `_linksetgo-fallback.<normalized-hostname>` record, joins
+multi-string TXT chunks by record, times out after eight seconds, and accepts
+at most 50 records, 1 KiB per record, and 16 KiB in total. Missing records are
+treated as missing ownership evidence, while resolver failures fail closed.
+The deployment must allow the Node process to reach its configured recursive
+DNS resolver over the network. The application never fetches the tenant URL.
+
+A fully configured trusted domain-provisioning webhook takes precedence over
+the built-in resolver. Configure it with
+`DOMAIN_PROVISIONING_WEBHOOK_URL` and
 `DOMAIN_PROVISIONING_WEBHOOK_SECRET`. LinksetGo sends only:
 
 ```json
@@ -67,14 +78,47 @@ The adapter returns already-observed, bounded evidence:
 
 LinksetGo follows no redirect, times out after eight seconds, accepts at most 16
 KiB, and validates that `recordName` is exactly the generated fallback TXT
-name before contacting the adapter. Network or malformed-evidence failures
-return the origin to `pending`, so a provider outage never leaves a tenant
-record stranded in `verifying`.
+name before contacting the adapter. A configured webhook must implement
+`lookup-txt`; LinksetGo does not silently switch providers after a webhook
+runtime failure.
+
+Ownership evidence is a renewable lease, not a permanent approval. By default,
+successful TXT evidence expires after 24 hours. The scheduled internal fallback
+sweep starts renewal up to one hour before expiry and processes at most 20
+origins per call. Configure the bounded policy with:
+
+```dotenv
+FALLBACK_ORIGIN_DNS_EVIDENCE_MAX_AGE_SECONDS=86400
+FALLBACK_ORIGIN_DNS_OUTAGE_GRACE_SECONDS=21600
+FALLBACK_ORIGIN_DNS_SWEEP_BATCH_SIZE=20
+```
+
+Evidence age is limited to 1 hour through 7 days, outage grace to 0 through 24
+hours, and each batch to 1 through 50 records. A successful renewal resets the
+lease. If the TXT challenge is absent, ownership returns to `pending`
+immediately and every public resolver omits that fallback.
+
+A provider transport failure may use the last successful proof only until the
+fixed grace instant derived from the proof's original expiry (six hours by
+default). Repeated provider failures cannot move that instant. Once grace
+expires, or when no prior successful proof exists, ownership fails closed as
+`pending`. A stale `verified` row is also rejected at read time, so a delayed
+or failed scheduler cannot make old evidence usable. The existing
+`fallback-safety-sweep` workflow runs TXT renewal and exact-URL safety checks
+every five minutes. It stores counts and hashed TXT evidence only.
+
+The DNS-freshness migration derives an existing verified row's first expiry as
+`verifiedAt + 24 hours`. A row with null, future, or already-expired proof is
+not made ready by migration; it remains omitted until the scheduled or manual
+verification observes the exact TXT challenge again.
 
 An active Cloud app requires its default fallback host and every
-`allowedFallbackHosts` entry to be verified for the same workspace. Runtime
-resolution repeats the verification check so revocation fails closed without
-requiring an app edit or redeploy.
+`allowedFallbackHosts` entry to have current ownership evidence for the same
+workspace. Runtime resolution repeats the status and lease check, so a
+revoked, removed, or stale fallback is omitted without requiring an app edit or
+redeploy. The active native link continues to the neutral or configured store
+landing. Platform abuse suspension, not fallback revocation, is the control
+that makes the link itself unavailable.
 
 In Community edition, LinksetGo does not require the Cloud ownership registry.
 The app-specific fallback allowlist is an explicit operator policy: only

@@ -79,11 +79,12 @@ export async function meterResolvedApp(
       (${organizationID}, 'monthly-resolutions', ${monthlyUsagePeriodStart(now)}, 1, ${instant}, ${instant})
     ON CONFLICT ("organization_id", "metric", "period_start")
     DO UPDATE SET
-      "count" = LEAST("usage_counters"."count" + 1, ${limit + 1}),
+      "count" = "usage_counters"."count" + 1,
       "updated_at" = EXCLUDED."updated_at"
+    WHERE "usage_counters"."count" <= ${limit}
     RETURNING "count"
   `)
-  const count = resultCount(result.rows[0] as unknown)
+  const count = result.rows.length === 0 ? limit + 1 : resultCount(result.rows[0] as unknown)
   return { allowDetailedAnalytics: count <= limit, count, limit }
 }
 

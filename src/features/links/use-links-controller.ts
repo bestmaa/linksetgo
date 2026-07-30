@@ -1,5 +1,4 @@
 'use client'
-
 import { useRouter, useSearchParams } from 'next/navigation'
 import { type ChangeEvent, type FormEvent, useCallback, useEffect, useState } from 'react'
 
@@ -24,7 +23,6 @@ import { createLinkRows } from './links.presenter'
 import type { ParameterRowViewModel } from './links.types'
 import { useLinkCatalog } from './use-link-catalog'
 import { useNativeLinkImport } from './use-native-link-import'
-
 export function useLinksController() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -102,8 +100,9 @@ export function useLinksController() {
     try {
       const publicUrl = buildPublicLinkUrl(
         runtimeConfig.config.baseUrl,
-        selectedApp?.slug ?? 'app',
+        selectedApp,
         form.slug,
+        runtimeConfig.config.pathStyle,
       )
       if (!publicUrl) throw new Error('The workspace link domain is unavailable.')
       await payloadClient.createDeepLink(buildCreateLinkInput(form))
@@ -145,6 +144,7 @@ export function useLinksController() {
     apps,
     links,
     linkOrigin: runtimeConfig.config?.baseUrl ?? null,
+    pathStyle: runtimeConfig.config?.pathStyle ?? 'host-scoped',
     onCopy: (url) => {
       if (url) copyLinkToClipboard(url, setToast)
       else setToast(runtimeConfig.error ?? 'Workspace domain is still loading.')
@@ -173,8 +173,9 @@ export function useLinksController() {
       publicUrl:
         buildPublicLinkUrl(
           runtimeConfig.config?.baseUrl ?? null,
-          apps.find((app) => String(app.id) === form.appId)?.slug ?? 'app',
+          apps.find((app) => String(app.id) === form.appId),
           form.slug,
+          runtimeConfig.config?.pathStyle ?? 'host-scoped',
         ) ?? 'Loading workspace domain...',
     },
     formError,

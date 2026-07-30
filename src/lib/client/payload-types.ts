@@ -189,6 +189,8 @@ export type AppDTO = {
   name: string
   nativeScheme?: string | null
   playStoreUrl?: string | null
+  publicKey?: string | null
+  routingMode?: 'scheme-handoff' | 'verified-app-links' | null
   slug: string
   status?: AppStatus | null
   updatedAt?: string
@@ -292,11 +294,31 @@ export type CreateDeepLinkInput = {
   status: LinkStatus
 }
 
+export type QuickLinkCreateInput = {
+  appStoreUrl?: string
+  fallbackUrl?: string
+  name?: string
+  nativeUrl: string
+  playStoreUrl?: string
+  workspaceId: string
+}
+
+export type QuickLinkCreateDTO = {
+  appId: string
+  appKey: string
+  fallbackStatus: 'not-requested' | 'pending-verification' | 'ready'
+  linkId: string
+  linkSlug: string
+  name: string
+  publicUrl: string
+}
+
 export type LinkConsoleDetailDTO = {
   app: {
     id: Identifier
     name: string
     nativeScheme: string | null
+    publicKey: string | null
     slug: string
     status: AppStatus
   }
@@ -351,6 +373,7 @@ export type PublicLinkResponse = {
     slug: string
     status: 'active'
   }
+  eventToken: string
   publicUrl: string
   status: 'active'
 }
@@ -371,6 +394,8 @@ export type BillingSummaryDTO = {
       customDomains: number | 'unlimited'
       members: number | 'unlimited'
       monthlyResolutions: number | 'unlimited'
+      savedLinks: number | 'unlimited'
+      workspaces: number | 'unlimited'
     }
     name: string
     priceMonthlyMinor: number | null

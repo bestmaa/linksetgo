@@ -10,6 +10,7 @@ type BasicsStepProps = {
   form: AppOnboardingForm
   onFieldBlur: (field: AppOnboardingField) => void
   onFieldChange: (field: AppOnboardingField, value: string) => void
+  publicUrlPreview: string
 }
 
 export function BasicsStepView(props: BasicsStepProps) {
@@ -80,7 +81,7 @@ export function BasicsStepView(props: BasicsStepProps) {
       </div>
       <aside className="onboarding-callout">
         <strong>What customers will see</strong>
-        <code>/l/{props.form.slug || 'your-app'}/welcome-offer</code>
+        <code>{props.publicUrlPreview}</code>
         <span>The workspace domain and link slug are added when you create a deep link.</span>
       </aside>
     </section>

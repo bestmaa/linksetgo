@@ -1,3 +1,4 @@
+import { ACCOUNT_PASSWORD_REQUIREMENTS, isStrongAccountPassword } from './account-password'
 import { isCloudVerificationToken } from './cloud-verification-token'
 
 export const MAX_TEAM_INVITATION_BODY_BYTES = 8 * 1024
@@ -122,15 +123,6 @@ export function parseTeamMemberMutation(value: unknown): ParseResult<TeamMemberM
   }
 }
 
-const validPassword = (value: string): boolean =>
-  value.length >= 12 &&
-  value.length <= 128 &&
-  !CONTROL_CHARACTER_PATTERN.test(value) &&
-  /[a-z]/.test(value) &&
-  /[A-Z]/.test(value) &&
-  /[0-9]/.test(value) &&
-  /[^A-Za-z0-9]/.test(value)
-
 export function parseAcceptTeamInvitation(value: unknown): ParseResult<AcceptTeamInvitationInput> {
   if (!isRecord(value) || !hasOnlyKeys(value, ['name', 'password', 'token'])) {
     return { message: 'This invitation request is invalid.', ok: false }
@@ -149,10 +141,10 @@ export function parseAcceptTeamInvitation(value: unknown): ParseResult<AcceptTea
   if (!name || name.length < 2 || name.length > 120 || CONTROL_CHARACTER_PATTERN.test(name)) {
     return { field: 'name', message: 'Enter your name using 2 to 120 characters.', ok: false }
   }
-  if (!validPassword(password)) {
+  if (!isStrongAccountPassword(password)) {
     return {
       field: 'password',
-      message: 'Use 12–128 characters with upper, lower, number, and symbol.',
+      message: ACCOUNT_PASSWORD_REQUIREMENTS,
       ok: false,
     }
   }

@@ -13,6 +13,7 @@ describe('public fallback branding and cross-host navigation', () => {
         appName: 'Example App',
         destination: '/offer',
         fallbackHref: null,
+        fallbackLabel: null,
         isLoading: false,
         message: 'Choose another way to continue.',
         onCopy: vi.fn(),

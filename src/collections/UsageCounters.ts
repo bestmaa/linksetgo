@@ -33,7 +33,7 @@ export const UsageCounters: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'monthly-resolutions',
-      options: [{ label: 'Monthly resolutions', value: 'monthly-resolutions' }],
+      options: [{ label: 'Monthly tracked resolutions', value: 'monthly-resolutions' }],
     },
     {
       name: 'periodStart',

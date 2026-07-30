@@ -1,17 +1,19 @@
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
+import type { Payload } from 'payload'
 
 import {
   MAX_ACCOUNT_RECOVERY_BODY_BYTES,
   parseAccountEmailRequest,
 } from '@/lib/domain/account-recovery'
 import { requestCloudPasswordReset } from '@/lib/server/account-recovery-service'
+import { waitForNonEnumeratingAccountResponse } from '@/lib/server/account-response-timing'
 import { readBoundedJSON } from '@/lib/server/bounded-json'
+import { runCloudAccountEmailOutboxSafely } from '@/lib/server/cloud-account-email-sweep'
 import { getCloudAccountRecoveryConfiguration } from '@/lib/server/cloud-signup-config'
 import {
-  rateLimitPasswordRecoveryEmail,
+  rateLimitCloudEmailDelivery,
   rateLimitPasswordRecoveryRequest,
 } from '@/lib/server/cloud-signup-rate-limit'
-import { createWebhookPasswordResetSender } from '@/lib/server/cloud-verification-webhook'
 import { getServerEnvironment } from '@/lib/server/env'
 import { getPayloadClient } from '@/lib/server/payload-client'
 
@@ -42,14 +44,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     )
   }
 
-  const environment = getServerEnvironment()
-  const requestLimit = await rateLimitPasswordRecoveryRequest({
-    eventHashSecret: environment.eventHashSecret,
-    request,
-    trustProxy: environment.trustProxyClientIPHeader,
-  })
-  if (!requestLimit.allowed) return limited(requestLimit.resetAt)
-
   const body = await readBoundedJSON(request, MAX_ACCOUNT_RECOVERY_BODY_BYTES)
   if (!body.ok) return json({ status: 'error', error: { code: 'INVALID_REQUEST' } }, body.status)
   const parsed = parseAccountEmailRequest(body.value)
@@ -59,25 +53,41 @@ export async function POST(request: Request): Promise<NextResponse> {
       400,
     )
   }
-  const emailLimit = await rateLimitPasswordRecoveryEmail({
-    email: parsed.email,
-    eventHashSecret: environment.eventHashSecret,
-  })
-  if (!emailLimit.allowed) return limited(emailLimit.resetAt)
 
+  const environment = getServerEnvironment()
+  const requestLimit = await rateLimitPasswordRecoveryRequest({
+    eventHashSecret: environment.eventHashSecret,
+    request,
+    trustProxy: environment.trustProxyClientIPHeader,
+  })
+  if (!requestLimit.allowed) return limited(requestLimit.resetAt)
+
+  const responseStartedAt = performance.now()
+  let payload: Payload | null = null
   try {
+    payload = await getPayloadClient()
     await requestCloudPasswordReset({
       appBaseURL: configuration.appBaseURL,
+      authorizeDelivery: async (email) => {
+        const deliveryLimit = await rateLimitCloudEmailDelivery({
+          email,
+          eventHashSecret: environment.eventHashSecret,
+          flow: 'password-recovery',
+        })
+        return deliveryLimit.allowed
+      },
       email: parsed.email,
-      payload: await getPayloadClient(),
-      sendReset: createWebhookPasswordResetSender({
-        secret: configuration.verificationWebhookSecret,
-        url: configuration.verificationWebhookURL,
-      }),
+      eventHashSecret: environment.eventHashSecret,
+      payload,
     })
   } catch {
     // The public response must not reveal whether delivery or lookup failed.
   }
+  if (payload) {
+    const queuedPayload = payload
+    after(() => runCloudAccountEmailOutboxSafely(queuedPayload))
+  }
+  await waitForNonEnumeratingAccountResponse(responseStartedAt)
   return json(
     {
       status: 'accepted',

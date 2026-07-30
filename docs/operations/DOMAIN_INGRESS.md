@@ -37,8 +37,12 @@ back to the legacy global resolver.
 `DOMAIN_PROVISIONING_WEBHOOK_URL` must be one HTTPS URL without credentials or a
 fragment. LinksetGo sends its secret as a bearer token, follows no redirects, uses
 an eight-second timeout, and accepts at most 16 KiB of JSON. Leaving both
-webhook values empty keeps automatic checks disabled, which is the Community
-default. A partial or unsafe configuration fails closed.
+webhook values empty keeps custom-domain DNS/TLS automation disabled, which is
+the Community default. Cloud fallback-origin TXT checks still use the built-in
+fixed-record Node DNS resolver. A fully configured webhook overrides that
+built-in fallback-origin resolver; partial or unsafe webhook configuration is
+ignored for fallback-origin lookup but remains unavailable for custom-domain
+automation.
 
 ## Lifecycle ownership
 
@@ -103,9 +107,10 @@ or:
 The opaque certificate reference and renewal time are operator-only fields.
 Provider errors are bounded and sanitized before they reach tenant users.
 
-The same authenticated webhook also performs Cloud fallback-origin ownership
-checks. That operation receives a server-generated fixed TXT name, never a
-tenant URL:
+Cloud fallback-origin ownership checks use the built-in fixed-record Node DNS
+resolver when no complete webhook configuration exists. When the authenticated
+webhook is fully configured, it takes precedence and receives a
+server-generated fixed TXT name, never a tenant URL:
 
 ```json
 {
@@ -126,9 +131,11 @@ Its successful response contains the observation time and TXT strings:
 }
 ```
 
-The application bounds and hashes this evidence before persistence. Supporting
-`lookup-txt` is required before LinksetGo Cloud tenants can activate apps that use
-customer-owned fallback hosts.
+The application bounds and hashes this evidence before persistence. A
+configured webhook must support `lookup-txt`; otherwise its runtime failure
+fails closed. Without a configured webhook, the built-in resolver provides this
+operation and requires working access to the deployment's recursive DNS
+resolver.
 
 After TLS readiness, LinksetGo publishes host-scoped AASA and Android Asset Links
 while routing remains gated. An organization owner must type the exact hostname

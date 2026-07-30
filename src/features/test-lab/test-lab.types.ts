@@ -45,4 +45,5 @@ export type TestLabViewProps = {
   summary: string
   summaryDetail: string
   url: string
+  urlPlaceholder: string
 }

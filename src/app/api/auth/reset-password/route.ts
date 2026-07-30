@@ -60,6 +60,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   try {
     await resetCloudPassword({
+      eventHashSecret: environment.eventHashSecret,
       password: parsed.password,
       payload: await getPayloadClient(),
       token: parsed.token,

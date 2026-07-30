@@ -23,7 +23,6 @@ import { buildManagedWorkspaceHostname } from '@/lib/domain/workspace-domain'
 import type { User } from '@/payload-types'
 import { relationID } from './tenant-context'
 import { CLOUD_SIGNUP_CONTEXT_KEY } from './user-creation-policy'
-import { MANAGED_DOMAIN_PROVISIONING_CONTEXT_KEY } from './managed-domain-provisioning'
 import { ensureFreeSubscriptionForOrganization } from './subscription-bootstrap'
 import { MEMBERSHIP_OWNER_OVERRIDE_CONTEXT } from './membership-owner-guards'
 import { acquireTransactionLock } from './postgres-lock'
@@ -57,28 +56,55 @@ export type VerificationDelivery = {
 }
 
 export type VerificationSender = (delivery: VerificationDelivery) => Promise<void>
+export type VerificationQueuer = (
+  delivery: VerificationDelivery,
+  req: PayloadRequest,
+) => Promise<void>
 
-type CloudSignupServiceOptions = {
+type CloudSignupServiceCommonOptions = {
   appBaseURL: string
-  managedLinkRootDomain: string
+  managedLinkRootDomain?: null | string | undefined
   now?: () => Date
   payload: Payload
   randomToken?: () => string
-  sendVerification: VerificationSender
 }
 
-type CloudVerificationResendOptions = {
+type CloudSignupServiceOptions = CloudSignupServiceCommonOptions &
+  (
+    | {
+        queueVerification: VerificationQueuer
+        sendVerification?: never
+      }
+    | {
+        queueVerification?: never
+        sendVerification: VerificationSender
+      }
+  )
+
+type CloudVerificationResendCommonOptions = {
   appBaseURL: string
+  authorizeDelivery?: (email: string) => Promise<boolean>
   now?: () => Date
   payload: Payload
   randomToken?: () => string
-  sendVerification: VerificationSender
 }
+
+type CloudVerificationResendOptions = CloudVerificationResendCommonOptions &
+  (
+    | {
+        queueVerification: VerificationQueuer
+        sendVerification?: never
+      }
+    | {
+        queueVerification?: never
+        sendVerification: VerificationSender
+      }
+  )
 
 export type CloudSignupResult = {
   email: string
   expiresAt: string
-  managedHostname: string
+  managedHostname: null
   organizationID: string
   userID: string
   workspaceID: string
@@ -112,14 +138,14 @@ const requireSingleRelation = (value: unknown): string => {
 }
 
 async function canReclaimPendingSignup(input: {
-  managedLinkRootDomain: string
+  managedLinkRootDomain?: null | string | undefined
   now: Date
   payload: Payload
   req: PayloadRequest
   user: User
 }): Promise<
   | {
-      domainID: number
+      domainID: number | null
       membershipID: number
       organizationID: number
       userID: number
@@ -206,16 +232,16 @@ async function canReclaimPendingSignup(input: {
     req: input.req,
     where: { workspace: { equals: workspace.id } },
   })
-  const domain = domains.docs.length === 1 ? domains.docs[0] : null
-  const expectedHostname = buildManagedWorkspaceHostname(
-    workspace.slug,
-    input.managedLinkRootDomain,
-  )
+  if (domains.docs.length > 1) return false
+  const domain = domains.docs[0] ?? null
+  const expectedHostname = input.managedLinkRootDomain
+    ? buildManagedWorkspaceHostname(workspace.slug, input.managedLinkRootDomain)
+    : null
   if (
-    !domain ||
-    domain.type !== 'managed' ||
-    domain.hostname !== expectedHostname ||
-    domain.platformSuspended
+    domain &&
+    (domain.type !== 'managed' ||
+      (expectedHostname !== null && domain.hostname !== expectedHostname) ||
+      domain.platformSuspended)
   ) {
     return false
   }
@@ -267,7 +293,10 @@ async function canReclaimPendingSignup(input: {
     overrideAccess: true,
     req: input.req,
     where: {
-      or: [{ workspace: { equals: workspace.id } }, { domain: { equals: domain.id } }],
+      or: [
+        { workspace: { equals: workspace.id } },
+        ...(domain ? [{ domain: { equals: domain.id } }] : []),
+      ],
     },
   })
   const abuseCases = await input.payload.count({
@@ -275,7 +304,10 @@ async function canReclaimPendingSignup(input: {
     overrideAccess: true,
     req: input.req,
     where: {
-      or: [{ workspace: { equals: workspace.id } }, { domain: { equals: domain.id } }],
+      or: [
+        { workspace: { equals: workspace.id } },
+        ...(domain ? [{ domain: { equals: domain.id } }] : []),
+      ],
     },
   })
   const enforcementEvents = await input.payload.count({
@@ -296,12 +328,16 @@ async function canReclaimPendingSignup(input: {
             { resourceID: { equals: String(workspace.id) } },
           ],
         },
-        {
-          and: [
-            { resourceType: { equals: 'domain' } },
-            { resourceID: { equals: String(domain.id) } },
-          ],
-        },
+        ...(domain
+          ? [
+              {
+                and: [
+                  { resourceType: { equals: 'domain' } },
+                  { resourceID: { equals: String(domain.id) } },
+                ],
+              },
+            ]
+          : []),
       ],
     },
   })
@@ -322,7 +358,7 @@ async function canReclaimPendingSignup(input: {
   }
 
   return {
-    domainID: domain.id,
+    domainID: domain?.id ?? null,
     membershipID: membership.id,
     organizationID,
     userID: input.user.id,
@@ -331,7 +367,7 @@ async function canReclaimPendingSignup(input: {
 }
 
 async function reclaimPendingSignup(input: {
-  managedLinkRootDomain: string
+  managedLinkRootDomain?: null | string | undefined
   now: Date
   payload: Payload
   req: PayloadRequest
@@ -341,12 +377,14 @@ async function reclaimPendingSignup(input: {
   const graph = await canReclaimPendingSignup(input)
   if (!graph) return false
 
-  await input.payload.delete({
-    collection: 'domains',
-    id: graph.domainID,
-    overrideAccess: true,
-    req: input.req,
-  })
+  if (graph.domainID !== null) {
+    await input.payload.delete({
+      collection: 'domains',
+      id: graph.domainID,
+      overrideAccess: true,
+      req: input.req,
+    })
+  }
   await input.payload.delete({
     collection: 'organization-memberships',
     context: { [MEMBERSHIP_OWNER_OVERRIDE_CONTEXT]: true },
@@ -390,20 +428,12 @@ export async function createCloudSignup(
     )
   }
 
-  const managedHostname = buildManagedWorkspaceHostname(
-    input.workspaceSlug,
-    options.managedLinkRootDomain,
-  )
-  if (!managedHostname) {
-    throw new CloudSignupError('WORKSPACE_UNAVAILABLE', 'That workspace URL is unavailable.')
-  }
-
   const now = (options.now ?? (() => new Date()))()
   const expiresAt = new Date(now.getTime() + CLOUD_VERIFICATION_TOKEN_TTL_MS).toISOString()
   const verificationToken = (options.randomToken ?? safeToken)()
   if (!isCloudVerificationToken(verificationToken)) {
     throw new CloudSignupError(
-      'VERIFICATION_DELIVERY_FAILED',
+      'SIGNUP_FAILED',
       'A secure verification token could not be generated.',
     )
   }
@@ -412,7 +442,6 @@ export async function createCloudSignup(
     {
       context: {
         [CLOUD_SIGNUP_CONTEXT_KEY]: true,
-        [MANAGED_DOMAIN_PROVISIONING_CONTEXT_KEY]: options.managedLinkRootDomain,
       },
     },
     options.payload,
@@ -425,6 +454,8 @@ export async function createCloudSignup(
     )
   }
 
+  let delivery: VerificationDelivery | null = null
+  let result: CloudSignupResult | null = null
   try {
     const platformAdmins = await options.payload.find({
       collection: 'users',
@@ -444,6 +475,12 @@ export async function createCloudSignup(
       )
     }
 
+    await acquireTransactionLock(req, 'cloud-signup-email', input.email)
+    await acquireTransactionLock(req, 'cloud-signup-workspace', input.workspaceSlug)
+
+    // Check the email before the slug so a lost-response retry follows the
+    // route's generic duplicate/resend path instead of leaking a workspace
+    // collision. Only an expired, otherwise-empty pending graph is reclaimed.
     const existingUsers = await options.payload.find({
       collection: 'users',
       depth: 0,
@@ -487,16 +524,7 @@ export async function createCloudSignup(
       req,
       where: { slug: { equals: input.workspaceSlug } },
     })
-    const domains = await options.payload.find({
-      collection: 'domains',
-      depth: 0,
-      limit: 1,
-      overrideAccess: true,
-      pagination: false,
-      req,
-      where: { hostname: { equals: managedHostname } },
-    })
-    if (organizations.docs.length || workspaces.docs.length || domains.docs.length) {
+    if (organizations.docs.length || workspaces.docs.length) {
       throw new CloudSignupError('WORKSPACE_UNAVAILABLE', 'That workspace URL is unavailable.')
     }
 
@@ -551,54 +579,26 @@ export async function createCloudSignup(
       overrideAccess: true,
       req,
     })
-    const evidenceAt = now.toISOString()
-    await options.payload.create({
-      collection: 'domains',
-      context: {
-        [MANAGED_DOMAIN_PROVISIONING_CONTEXT_KEY]: options.managedLinkRootDomain,
-      },
-      data: {
-        activatedAt: evidenceAt,
-        associationsVerifiedAt: evidenceAt,
-        cnameVerifiedAt: evidenceAt,
-        dnsVerifiedAt: evidenceAt,
-        hostname: managedHostname,
-        status: 'active',
-        tlsReadyAt: evidenceAt,
-        type: 'managed',
-        verificationToken: safeToken(),
-        workspace: workspace.id,
-      },
-      depth: 0,
-      overrideAccess: true,
-      req,
-    })
-
     const verificationURL = new URL('/verify-email', options.appBaseURL)
     verificationURL.hash = new URLSearchParams({ token: verificationToken }).toString()
-    try {
-      await options.sendVerification({
-        email: input.email,
-        expiresAt,
-        name: input.name,
-        verificationURL: verificationURL.toString(),
-      })
-    } catch {
-      throw new CloudSignupError(
-        'VERIFICATION_DELIVERY_FAILED',
-        'The verification email could not be queued.',
-      )
-    }
-
-    await commitTransaction(req)
-    return {
+    delivery = {
       email: input.email,
       expiresAt,
-      managedHostname,
+      name: input.name,
+      verificationURL: verificationURL.toString(),
+    }
+    result = {
+      email: input.email,
+      expiresAt,
+      managedHostname: null,
       organizationID: String(organization.id),
       userID: String(user.id),
       workspaceID: String(workspace.id),
     }
+    if (options.queueVerification) {
+      await options.queueVerification(delivery, req)
+    }
+    await commitTransaction(req)
   } catch (error) {
     await killTransaction(req)
     if (error instanceof CloudSignupError) throw error
@@ -607,6 +607,20 @@ export async function createCloudSignup(
       'The account could not be created with those details.',
     )
   }
+
+  if (!delivery || !result) {
+    throw new CloudSignupError('SIGNUP_FAILED', 'The account could not be created.')
+  }
+  if (options.queueVerification) return result
+  try {
+    await options.sendVerification(delivery)
+  } catch {
+    throw new CloudSignupError(
+      'VERIFICATION_DELIVERY_FAILED',
+      'The verification email could not be queued.',
+    )
+  }
+  return result
 }
 
 export async function resendCloudSignupVerification(
@@ -622,8 +636,11 @@ export async function resendCloudSignupVerification(
   const now = (options.now ?? (() => new Date()))()
   const req = await createLocalReq({}, options.payload)
   const ownsTransaction = await initTransaction(req)
-  if (!ownsTransaction) throw new Error('Could not start a verification-resend transaction.')
+  if (!ownsTransaction) {
+    throw new CloudSignupError('VERIFICATION_FAILED', 'Verification could not be requested.')
+  }
 
+  let delivery: VerificationDelivery | null = null
   try {
     const users = await options.payload.find({
       collection: 'users',
@@ -719,6 +736,10 @@ export async function resendCloudSignupVerification(
       await commitTransaction(req)
       return { deliveryAttempted: false }
     }
+    if (options.authorizeDelivery && !(await options.authorizeDelivery(user.email))) {
+      await commitTransaction(req)
+      return { deliveryAttempted: false }
+    }
 
     const token = (options.randomToken ?? safeToken)()
     if (!isCloudVerificationToken(token)) throw new Error('Could not generate a reset token.')
@@ -750,18 +771,32 @@ export async function resendCloudSignupVerification(
 
     const verificationURL = new URL('/verify-email', options.appBaseURL)
     verificationURL.hash = new URLSearchParams({ token }).toString()
-    await options.sendVerification({
+    delivery = {
       email: user.email,
       expiresAt,
       name: user.name,
       verificationURL: verificationURL.toString(),
-    })
+    }
+    if (options.queueVerification) {
+      await options.queueVerification(delivery, req)
+    }
     await commitTransaction(req)
-    return { deliveryAttempted: true }
-  } catch (error) {
+  } catch {
     await killTransaction(req)
-    throw error
+    throw new CloudSignupError('VERIFICATION_FAILED', 'Verification could not be requested.')
   }
+
+  if (!delivery) return { deliveryAttempted: false }
+  if (options.queueVerification) return { deliveryAttempted: true }
+  try {
+    await options.sendVerification(delivery)
+  } catch {
+    throw new CloudSignupError(
+      'VERIFICATION_DELIVERY_FAILED',
+      'The verification email could not be queued.',
+    )
+  }
+  return { deliveryAttempted: true }
 }
 
 export async function verifyCloudSignupEmail(
@@ -940,7 +975,7 @@ export async function verifyCloudSignupEmail(
 export async function pruneExpiredPendingCloudSignups(input: {
   batchSize?: number
   candidateUserIDs?: number[]
-  managedLinkRootDomain: string
+  managedLinkRootDomain?: null | string | undefined
   now?: Date
   payload: Payload
 }): Promise<PendingSignupPruneResult> {

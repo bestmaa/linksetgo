@@ -10,6 +10,8 @@ import {
   getDomainProvisioningWebhookConfiguration,
   type DomainProvisioningWebhookConfiguration,
 } from './domain-provisioning-webhook'
+import { getLinksetGoEdition } from './deployment-edition'
+import { createNodeFallbackOriginDNSProvider } from './fallback-origin-dns-node'
 
 type FetchImplementation = typeof fetch
 type ReadyWebhookConfiguration = Extract<
@@ -19,6 +21,8 @@ type ReadyWebhookConfiguration = Extract<
 
 const maximumResponseBytes = 16 * 1024
 const recordPrefix = '_linksetgo-fallback.'
+const maximumProviderObservationAgeMilliseconds = 5 * 60 * 1_000
+const maximumProviderClockSkewMilliseconds = 2 * 60 * 1_000
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -55,13 +59,18 @@ async function readBoundedJSON(response: Response): Promise<unknown> {
   return JSON.parse(body) as unknown
 }
 
-function parseTXTEvidence(value: unknown): TXTEvidence | null {
+function parseTXTEvidence(value: unknown, now: Date): TXTEvidence | null {
   if (!isRecord(value) || value.kind !== 'success' || !isRecord(value.value)) return null
   const observedAt = value.value.observedAt
   const values = value.value.values
+  const observedAtMilliseconds =
+    typeof observedAt === 'string' ? Date.parse(observedAt) : Number.NaN
   if (
     typeof observedAt !== 'string' ||
-    !Number.isFinite(Date.parse(observedAt)) ||
+    !Number.isFinite(now.getTime()) ||
+    !Number.isFinite(observedAtMilliseconds) ||
+    observedAtMilliseconds < now.getTime() - maximumProviderObservationAgeMilliseconds ||
+    observedAtMilliseconds > now.getTime() + maximumProviderClockSkewMilliseconds ||
     !Array.isArray(values) ||
     values.length > 50 ||
     !values.every((entry) => typeof entry === 'string' && entry.length <= 1_024) ||
@@ -75,6 +84,7 @@ function parseTXTEvidence(value: unknown): TXTEvidence | null {
 export function createWebhookFallbackOriginDNSProvider(
   configuration: ReadyWebhookConfiguration,
   fetchImplementation: FetchImplementation = fetch,
+  now: () => Date = () => new Date(),
 ): DNSOwnershipEvidenceProvider {
   return {
     async lookupTXT(recordName) {
@@ -106,7 +116,7 @@ export function createWebhookFallbackOriginDNSProvider(
 
       let evidence: TXTEvidence | null = null
       try {
-        evidence = parseTXTEvidence(await readBoundedJSON(response))
+        evidence = parseTXTEvidence(await readBoundedJSON(response), now())
       } catch {
         // Normalize parsing and transport details into one operator-safe error.
       }
@@ -120,6 +130,7 @@ export type FallbackOriginDNSProviderConfiguration =
   | {
       available: true
       provider: DNSOwnershipEvidenceProvider
+      source?: 'node-dns' | 'webhook'
     }
   | {
       available: false
@@ -127,12 +138,23 @@ export type FallbackOriginDNSProviderConfiguration =
       provider: null
     }
 
-export function getFallbackOriginDNSProviderConfiguration(): FallbackOriginDNSProviderConfiguration {
-  const webhook = getDomainProvisioningWebhookConfiguration()
+export function getFallbackOriginDNSProviderConfiguration(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+  builtInProvider: DNSOwnershipEvidenceProvider = createNodeFallbackOriginDNSProvider(),
+): FallbackOriginDNSProviderConfiguration {
+  const webhook = getDomainProvisioningWebhookConfiguration(environment)
   if (webhook.status === 'ready') {
     return {
       available: true,
       provider: createWebhookFallbackOriginDNSProvider(webhook),
+      source: 'webhook',
+    }
+  }
+  if (getLinksetGoEdition(environment.RELAY_EDITION) === 'cloud') {
+    return {
+      available: true,
+      provider: builtInProvider,
+      source: 'node-dns',
     }
   }
   return {
@@ -140,7 +162,7 @@ export function getFallbackOriginDNSProviderConfiguration(): FallbackOriginDNSPr
     message:
       webhook.status === 'misconfigured'
         ? webhook.message
-        : 'Automatic fallback-origin TXT verification is not configured.',
+        : 'Automatic fallback-origin TXT verification is available in LinksetGo Cloud.',
     provider: null,
   }
 }

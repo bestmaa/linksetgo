@@ -27,9 +27,9 @@ export function FallbackOriginDetailView(props: {
         </div>
         <p>
           {origin.status === 'verified'
-            ? 'This workspace may use HTTPS fallback URLs on this hostname.'
+            ? 'DNS ownership is verified. Each exact fallback URL must also pass a current independent safety scan before routing.'
             : origin.status === 'revoked'
-              ? 'This hostname is permanently revoked and Cloud fallback routing fails closed.'
+              ? 'This hostname is revoked. Its fallback is omitted while active native links continue to the neutral or store landing.'
               : 'Publish the exact TXT record below, then ask LinksetGo to verify it.'}
         </p>
         <small>Last trusted DNS check: {origin.lastCheckedLabel}</small>
@@ -88,8 +88,9 @@ export function FallbackOriginDetailView(props: {
           </article>
         ) : null}
         <p className="domain-dns-note">
-          LinksetGo asks only the trusted operator webhook for this fixed TXT name. It never fetches
-          a URL supplied by the tenant.
+          LinksetGo resolves only this fixed TXT name through server-side DNS. A configured trusted
+          operator adapter can override the built-in resolver. This ownership check never fetches a
+          URL supplied by the tenant. It and the exact-URL malware scan are independent gates.
         </p>
       </section>
 

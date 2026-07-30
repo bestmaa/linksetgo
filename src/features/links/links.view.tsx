@@ -11,7 +11,7 @@ import type { LinksViewProps } from './links.types'
 
 export function LinksView(props: LinksViewProps) {
   return (
-    <main className="page">
+    <section className="links-catalog">
       <header className="page-header">
         <div>
           <p className="eyebrow">Destinations</p>
@@ -19,7 +19,7 @@ export function LinksView(props: LinksViewProps) {
           <p className="page-copy">Create, share and inspect every route from one place.</p>
         </div>
         <Button onClick={props.onCreate}>
-          <Icon name="plus" /> Create link
+          <Icon name="plus" /> Advanced link
         </Button>
       </header>
       {props.lastCreatedLink ? (
@@ -139,6 +139,6 @@ export function LinksView(props: LinksViewProps) {
           </div>
         </div>
       ) : null}
-    </main>
+    </section>
   )
 }

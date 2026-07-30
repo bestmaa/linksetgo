@@ -7,7 +7,10 @@ import { acquireTransactionLock, requiredTransaction } from './postgres-lock'
 import { resolveOrganizationPlan } from './billing-plan'
 import { relationID } from './tenant-context'
 
-type CountedMetric = Extract<PlanMetric, 'activeLinks' | 'apps' | 'customDomains' | 'members'>
+type CountedMetric = Extract<
+  PlanMetric,
+  'activeLinks' | 'apps' | 'customDomains' | 'members' | 'savedLinks' | 'workspaces'
+>
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
@@ -72,10 +75,20 @@ async function countUsage(
               INNER JOIN "workspaces" w ON w."id" = d."workspace_id"
               WHERE w."organization_id" = ${relationshipInput(organizationID)}
                 AND d."type" = 'custom'`
-          : sql<{ used: number }>`SELECT COUNT(*)::integer AS "used"
-              FROM "organization_memberships" m
-              WHERE m."organization_id" = ${relationshipInput(organizationID)}
-                AND m."status" = 'active'`
+          : metric === 'savedLinks'
+            ? sql<{ used: number }>`SELECT COUNT(*)::integer AS "used"
+                FROM "deep_links" l
+                INNER JOIN "apps" a ON a."id" = l."app_id"
+                INNER JOIN "workspaces" w ON w."id" = a."workspace_id"
+                WHERE w."organization_id" = ${relationshipInput(organizationID)}`
+            : metric === 'workspaces'
+              ? sql<{ used: number }>`SELECT COUNT(*)::integer AS "used"
+                  FROM "workspaces" w
+                  WHERE w."organization_id" = ${relationshipInput(organizationID)}`
+              : sql<{ used: number }>`SELECT COUNT(*)::integer AS "used"
+                  FROM "organization_memberships" m
+                  WHERE m."organization_id" = ${relationshipInput(organizationID)}
+                    AND m."status" = 'active'`
 
   const result = await db.execute(query)
   const row = result.rows[0] as unknown
@@ -178,6 +191,29 @@ export const enforceActiveLinkQuota: CollectionBeforeValidateHook = async ({
   return data
 }
 
+export const enforceSavedLinkQuota: CollectionBeforeValidateHook = async ({
+  data,
+  operation,
+  originalDoc,
+  req,
+}) => {
+  if (getLinksetGoEdition() === 'community') return data
+  const next = isRecord(data) ? data : {}
+  const previous = isRecord(originalDoc) ? originalDoc : {}
+  const appID = relationID(selected(next, previous, 'app'))
+  if (!appID) throw new APIError('A saved link requires an app.', 400)
+
+  const previousAppID = relationID(previous.app)
+  if (operation !== 'create' && appID === previousAppID) return data
+
+  const organizationID = await organizationForApp(req, appID)
+  const previousOrganizationID = previousAppID ? await organizationForApp(req, previousAppID) : null
+  if (operation === 'create' || organizationID !== previousOrganizationID) {
+    await enforceQuota(req, organizationID, 'savedLinks')
+  }
+  return data
+}
+
 export const enforceCustomDomainQuota: CollectionBeforeValidateHook = async ({
   data,
   operation,
@@ -214,5 +250,24 @@ export const enforceMemberQuota: CollectionBeforeValidateHook = async ({
   const organizationID = relationID(selected(next, previous, 'organization'))
   if (!organizationID) throw new APIError('An active membership requires an organization.', 400)
   await enforceQuota(req, organizationID, 'members')
+  return data
+}
+
+export const enforceWorkspaceQuota: CollectionBeforeValidateHook = async ({
+  data,
+  operation,
+  originalDoc,
+  req,
+}) => {
+  if (getLinksetGoEdition() === 'community') return data
+  const next = isRecord(data) ? data : {}
+  const previous = isRecord(originalDoc) ? originalDoc : {}
+  const organizationID = relationID(selected(next, previous, 'organization'))
+  if (!organizationID) throw new APIError('A workspace requires an organization.', 400)
+
+  const previousOrganizationID = relationID(previous.organization)
+  if (operation === 'create' || organizationID !== previousOrganizationID) {
+    await enforceQuota(req, organizationID, 'workspaces')
+  }
   return data
 }

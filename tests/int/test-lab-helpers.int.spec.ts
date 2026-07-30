@@ -19,6 +19,7 @@ const app: AppDTO = {
   iosBundleId: 'com.example.shop',
   iosTeamId: 'TEAM123456',
   name: 'Example Shop',
+  publicKey: 'example-shop-global',
   slug: 'example-shop',
 }
 const link: DeepLinkDTO = {
@@ -51,6 +52,21 @@ describe('Test Lab controller helpers', () => {
     expect(() =>
       parseLinksetGoUrl(`${origin}/l/example-shop/welcome-offer?campaign=sale`, origin),
     ).toThrow(/without query parameters/i)
+
+    expect(
+      parseLinksetGoUrl(`${origin}/example-shop-global/welcome-offer`, origin, 'shared-clean'),
+    ).toEqual({
+      appSlug: 'example-shop-global',
+      linkSlug: 'welcome-offer',
+      origin,
+      url: `${origin}/example-shop-global/welcome-offer`,
+    })
+    expect(
+      safeLinksetGoUrl(`${origin}/example-shop-global/welcome-offer/`, origin, 'shared-clean'),
+    ).toBe(`${origin}/example-shop-global/welcome-offer`)
+    expect(() =>
+      parseLinksetGoUrl(`${origin}/l/example-shop/welcome-offer`, origin, 'shared-clean'),
+    ).toThrow(/exactly \/\{app\}\/\{link\}/i)
   })
 
   it('builds saved-link options from populated and identifier app relations', () => {
@@ -71,6 +87,18 @@ describe('Test Lab controller helpers', () => {
         id: '12',
         label: 'Example Shop / Rewards',
         url: `${origin}/l/example-shop/rewards`,
+      },
+    ])
+    expect(buildSavedLinkOptions([link, relationLink], [app], origin, 'shared-clean')).toEqual([
+      {
+        id: '11',
+        label: 'Example Shop / Welcome offer',
+        url: `${origin}/example-shop-global/welcome-offer`,
+      },
+      {
+        id: '12',
+        label: 'Example Shop / Rewards',
+        url: `${origin}/example-shop-global/rewards`,
       },
     ])
   })
@@ -105,6 +133,27 @@ describe('Test Lab controller helpers', () => {
     expect(result.copyValue).toContain('/l/example-shop/*')
   })
 
+  it('uses the clean shared app key in Apple association remediation', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ applinks: { details: [] } }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        }),
+      ),
+    )
+
+    const result = await validateAssociation(origin, 'ios', app, 'shared-clean')
+
+    expect(result).toMatchObject({
+      copyLabel: 'Copy expected AASA entry',
+      passed: false,
+    })
+    expect(result.copyValue).toContain('/example-shop-global/*')
+    expect(result.copyValue).not.toContain('/l/example-shop/')
+  })
+
   it('returns a copy-ready Android association remediation', async () => {
     vi.stubGlobal(
       'fetch',
@@ -125,5 +174,18 @@ describe('Test Lab controller helpers', () => {
     })
     expect(result.copyValue).toContain('com.example.shop')
     expect(result.copyValue).toContain('AA:BB:CC')
+  })
+
+  it('treats platform association as optional for scheme-handoff apps', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(
+      validateAssociation(origin, 'ios', { ...app, routingMode: 'scheme-handoff' }, 'shared-clean'),
+    ).resolves.toMatchObject({
+      detail: expect.stringMatching(/optional.*scheme handoff/i),
+      passed: true,
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

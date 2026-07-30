@@ -33,6 +33,7 @@ type ConsoleResult<T> =
         | 'INVALID_STATE'
         | 'NOT_FOUND'
         | 'NOT_REQUIRED'
+        | 'PLAN_LIMIT'
         | 'REGISTRATION_REJECTED'
         | 'UNAVAILABLE'
         | 'VERIFICATION_FAILED'
@@ -186,13 +187,19 @@ export async function registerConsoleFallbackOrigin(input: {
       user: input.user,
     })
     return { ok: true, value: projectConsoleFallbackOrigin(origin) }
-  } catch {
+  } catch (error) {
+    const status =
+      typeof error === 'object' && error !== null && 'status' in error && error.status === 402
+        ? 402
+        : 409
     return {
-      code: 'REGISTRATION_REJECTED',
+      code: status === 402 ? 'PLAN_LIMIT' : 'REGISTRATION_REJECTED',
       message:
-        'LinksetGo could not register this fallback hostname. It may already be in use or unavailable to this workspace.',
+        status === 402 && error instanceof Error
+          ? error.message
+          : 'LinksetGo could not register this fallback hostname. It may already be in use or unavailable to this workspace.',
       ok: false,
-      status: 409,
+      status,
     }
   }
 }
@@ -324,7 +331,7 @@ export async function runConsoleFallbackOriginAction(input: {
         ? {
             ok: true,
             value: {
-              message: 'Fallback origin revoked. Cloud fallback routing now fails closed.',
+              message: 'Fallback origin revoked. Active native links now omit this web fallback.',
               origin: projectConsoleFallbackOrigin(result.origin as FallbackOrigin),
             },
           }

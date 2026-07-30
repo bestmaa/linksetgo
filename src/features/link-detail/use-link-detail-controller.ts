@@ -76,7 +76,11 @@ export function useLinkDetailController(linkID: string) {
     return () => window.clearTimeout(timeout)
   }, [toast])
 
-  const publicURL = publicURLForLink(record, runtimeConfig.config?.baseUrl ?? null)
+  const publicURL = publicURLForLink(
+    record,
+    runtimeConfig.config?.baseUrl ?? null,
+    runtimeConfig.config?.pathStyle ?? 'host-scoped',
+  )
   const qr = useTestLabQr(publicURL)
   const analytics = useLinkAnalytics(linkID, selectedWorkspaceId, Boolean(record))
 
@@ -173,6 +177,7 @@ export function useLinkDetailController(linkID: string) {
           baseURL: runtimeConfig.config?.baseUrl ?? null,
           canManage,
           detail: record,
+          pathStyle: runtimeConfig.config?.pathStyle ?? 'host-scoped',
           qrDataURL: qr.qrDataUrl,
           qrError: runtimeConfig.error ?? qr.qrError,
         })

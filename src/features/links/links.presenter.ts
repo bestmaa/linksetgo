@@ -1,4 +1,5 @@
 import type { AppDTO, DeepLinkDTO } from '@/lib/client/payload-types'
+import type { PublicLinkPathStyle } from '@/lib/domain/runtime-link-config'
 
 import {
   buildPublicLinkUrl,
@@ -13,6 +14,7 @@ export function createLinkRows(input: {
   apps: readonly AppDTO[]
   links: readonly DeepLinkDTO[]
   linkOrigin: string | null
+  pathStyle: PublicLinkPathStyle
   onCopy: (url: string | null) => void
   search: string
   statusFilter: string
@@ -34,7 +36,7 @@ export function createLinkRows(input: {
       return []
     }
 
-    const url = buildPublicLinkUrl(input.linkOrigin, app?.slug ?? 'app', link.slug)
+    const url = buildPublicLinkUrl(input.linkOrigin, app, link.slug, input.pathStyle)
     return [
       {
         appName: app?.name ?? 'Unknown app',
