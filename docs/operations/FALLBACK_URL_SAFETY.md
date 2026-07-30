@@ -84,7 +84,9 @@ use that account's credentials.
 
 Recommended deployment order:
 
-1. Back up PostgreSQL and apply the fallback-safety schema migration.
+1. Back up PostgreSQL and apply all migrations through
+   `20260730_134938_fallback_origin_dns_freshness`, including
+   `20260730_120636_shared_free_links_and_fallback_safety`.
 2. Run the dry-run backfill and resolve unexpected counts.
 3. Run the apply backfill.
 4. Confirm `failures` is zero.
@@ -94,36 +96,21 @@ Recommended deployment order:
 
 ## Provider setup
 
-The preferred managed provider is Google Cloud Web Risk Lookup API. Set:
-
-```dotenv
-GOOGLE_WEB_RISK_API_KEY=replace-with-a-restricted-api-key
-FALLBACK_URL_SAFETY_MAX_AGE_SECONDS=3600
-```
-
-LinksetGo sends the canonical URL only to the fixed
-`https://webrisk.googleapis.com/v1/uris:search` endpoint and asks for `MALWARE`,
-`SOCIAL_ENGINEERING`, and `UNWANTED_SOFTWARE`. It never fetches a tenant-controlled URL.
-The API key is sent in the `x-goog-api-key` header, never in the request URL. Restrict the key to
-Web Risk and, where the deployment supports it, to the worker's egress addresses. Google
-configuration takes precedence when both provider options are present.
-
-Official references:
-
-- [Web Risk Lookup API](https://docs.cloud.google.com/web-risk/docs/lookup-api)
-- [`uris.search` REST reference](https://docs.cloud.google.com/web-risk/docs/reference/rest/v1/uris/search)
-- [Use API keys securely](https://docs.cloud.google.com/docs/authentication/api-keys-use)
-
-Alternatively, configure the operator-owned adapter:
+The sandboxed fallback-URL scanner is mandatory. Configure the operator-owned
+adapter:
 
 ```dotenv
 FALLBACK_URL_SAFETY_WEBHOOK_URL=https://scanner.operator.example/url-safety
-FALLBACK_URL_SAFETY_WEBHOOK_SECRET=replace-with-a-different-long-random-secret
+FALLBACK_URL_SAFETY_WEBHOOK_SECRET=replace-with-a-long-random-secret
 FALLBACK_URL_SAFETY_MAX_AGE_SECONDS=3600
 ```
 
-The webhook is a fixed operator URL. It receives `POST` JSON containing
-`{"action":"assess-url","url":"https://canonical.example/path"}` and must return one of:
+The webhook is a fixed operator URL. LinksetGo authenticates every request with
+`Authorization: Bearer <FALLBACK_URL_SAFETY_WEBHOOK_SECRET>`. The scanner must
+validate that secret in constant time before parsing or queuing work. It then
+receives `POST` JSON containing
+`{"action":"assess-url","url":"https://canonical.example/path"}` and returns one
+of:
 
 ```json
 { "kind": "safe", "value": { "observedAt": "2026-07-30T10:00:00Z", "redirectCount": 0 } }
@@ -136,10 +123,42 @@ The webhook is a fixed operator URL. It receives `POST` JSON containing
 }
 ```
 
+For a temporary scanner failure, it may return:
+
+```json
+{ "kind": "error", "message": "Scanner temporarily unavailable.", "retryable": true }
+```
+
 The webhook may include `expiresAt` in `value`. LinksetGo uses the earlier of that instant and
 the configured maximum age. A `safe` or `unsafe` result is rejected if `observedAt` is more than
 five minutes old or more than two minutes in the future. Provider errors and malformed,
 oversized, stale, or future-dated responses remain unready.
+
+Run this adapter in an egress-isolated sandbox that blocks private, loopback,
+link-local, metadata-service, and internal network destinations on every DNS
+resolution and redirect hop. Bound response bytes, redirect count, content
+inspection time, and decompression. LinksetGo never treats a reputation lookup
+alone as a safe verdict.
+
+Google Cloud Web Risk Lookup API is optional defense in depth:
+
+```dotenv
+GOOGLE_WEB_RISK_API_KEY=replace-with-a-restricted-api-key
+```
+
+When this key is configured, LinksetGo first asks the fixed
+`https://webrisk.googleapis.com/v1/uris:search` endpoint about `MALWARE`,
+`SOCIAL_ENGINEERING`, and `UNWANTED_SOFTWARE`. A reputation hit blocks the URL.
+A reputation miss must still pass the mandatory sandboxed redirect/content
+scanner; configuring Google without the scanner fails closed. The API key is
+sent in the `x-goog-api-key` header, never in the request URL. Restrict it to
+Web Risk and, where supported, to the worker's egress addresses.
+
+Official references:
+
+- [Web Risk Lookup API](https://docs.cloud.google.com/web-risk/docs/lookup-api)
+- [`uris.search` REST reference](https://docs.cloud.google.com/web-risk/docs/reference/rest/v1/uris/search)
+- [Use API keys securely](https://docs.cloud.google.com/docs/authentication/api-keys-use)
 
 ## Durable sweep
 
@@ -190,13 +209,20 @@ grace.
 See [Fallback-origin ownership and abuse operations](./FALLBACK_ORIGINS_AND_ABUSE.md)
 for evidence lifetime, outage grace, and batch settings.
 
-Deploy the schema migration that adds the assessment claim fields before enabling the scheduler.
+Apply all migrations through `20260730_134938_fallback_origin_dns_freshness`
+before enabling the scheduler. The earlier
+`20260730_120636_shared_free_links_and_fallback_safety` migration adds the
+assessment and claim state; `134938` adds the DNS verification-expiry and
+outage-grace state used by the same combined sweep.
 
 ## Migration rollback warning
 
-The old schema permits only one fallback-origin record per hostname across the whole installation.
-The rollback therefore refuses to run while workspace-scoped fallback origins share a hostname;
-it never chooses a record or silently deletes another workspace's ownership proof. Export or
-explicitly remove the conflicting records before retrying a rollback. A successful rollback still
-removes exact-URL safety assessments because the old schema has nowhere to store them, so back up
-PostgreSQL first.
+The `down()` for
+`20260730_120636_shared_free_links_and_fallback_safety` is intentionally
+irreversible and always refuses to run. The old schema's global hostname
+uniqueness cannot preserve independent same-hostname ownership records across
+workspaces. It also cannot preserve the migration's shared-link routing,
+nullable fallback state, or exact-URL safety evidence without losing or
+inventing tenant state. Do not attempt `migrate:down` for this migration and do
+not remove tenant records to force a rollback. Restore a verified pre-migration
+PostgreSQL backup in a controlled maintenance window instead.
